@@ -1,3 +1,6 @@
+/*
+ * Definition of all RAL colors according to http://www.ralcolor.com/
+ */
 #ifndef RAL_H_
 #define RAL_H_
 
@@ -5,9 +8,6 @@
 #include <GL/gl.h>
 #include <GL/freeglut.h>
 #include <GL/glut.h>
-
-// use this macro to define an openGL color array with a specific alpha value
-#define GL_COLOR_4v(rgb,alpha) { ((float)(rgb>>16))/255.0, ((float)((rgb>>8) & 255))/255.0, ((float)(rgb & 255))/255.0, alpha }
 
 // definition of all RAL colors, generated via Excel sheet Manfred_Bom.xlsx
 #define GreenBeige                0xCCCC99
@@ -166,12 +166,13 @@
 #define AgateGrey                 0xBABDBA
 #define QuartzGrey                0x615E59
 #define WindowGrey                0x9EA3B0
-#define VerkehrsgrauA             0x8F9699
-#define VerkehrsgrauB             0x404545
+#define TrafficGreyA              0x8F9699
+#define TrafficGreyB             0x404545
 #define SilkGrey                  0xC2BFB8
-#define Telegrau1                 0x8F949E
-#define Telegrau2                 0x78828C
-#define Telegrau4                 0xD9D6DB
+#define TeleGrey1                 0x8F949E
+#define TeleGrey2                 0x78828C
+#define TeleGrey4                 0xD9D6DB
+#define PearlMouseGrey			  0x858274
 #define GreenBrown                0x7D5C38
 #define OcherBrown                0x91522E
 #define SignalBrown               0x6E3B3A
