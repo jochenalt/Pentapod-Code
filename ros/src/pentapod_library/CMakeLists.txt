@@ -113,10 +113,10 @@ catkin_package(
 
 ## This is the directory where the git clone is
 ## and the directories used here
-set(pentapod_repository ~/Pentapod)
-set(pentapod_common_path ${pentapod_repository}/code/Common)
-set(pentapod_kinematics_path ${pentapod_repository}/code/Kinematics)
-set(pentapod_library ${pentapod_repository}/code/ros/pentapod_library)
+set(pentapod_repository ~/Pentapod-Code)
+set(pentapod_common_path ${pentapod_repository}/Common)
+set(pentapod_kinematics_path ${pentapod_repository}/Kinematics)
+set(pentapod_library ${pentapod_repository}/ros/pentapod_library)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
