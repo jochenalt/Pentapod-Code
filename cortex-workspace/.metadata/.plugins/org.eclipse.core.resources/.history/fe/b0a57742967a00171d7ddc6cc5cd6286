@@ -1,0 +1,108 @@
+/*
+ * core.cpp
+ * Basic definitions
+ *
+ * Author: JochenAlt
+ */
+
+#ifndef _PENTAPOD_CORE_H_
+#define _PENTAPOD_CORE_H_
+
+#include <stdlib.h>
+#include <string>
+
+using namespace std;
+
+// all errors coming from the cortex
+enum ErrorCodeType { ABSOLUTELY_NO_ERROR = 0,
+	// cortex communication errors
+	CHECKSUM_EXPECTED = 1 , CHECKSUM_WRONG = 2,	PARAM_WRONG = 3, PARAM_NUMBER_WRONG = 4, UNRECOGNIZED_CMD = 5,
+	CORTEX_POWER_ON_WITHOUT_SETUP= 6,	CORTEX_SETUP_MISSING = 7,
+
+	// IMU errors
+	IMU_NOT_CALIBRATED = 10,
+
+	// herkulex errors
+	HERKULEX_COMMUNICATION_FAILED = 40, HERKULEX_STATUS_FAILED = 41,SERVO_NOT_ENABLED= 42, SERVO_NOT_POWERED =43, SERVO_NOT_SETUP = 44,
+
+	// Cortex errors
+	CORTEX_CONNECTION_FAILED = 50, CORTEX_COM_FAILED = 51, CORTEX_LOG_COM_FAILED=52, CORTEX_NO_RESPONSE =53,CORTEX_RESPONSE_NOT_PARSED = 54,
+
+	// Webserver errors
+	WEBSERVER_TIMEOUT = 60,
+
+	// IMU errors
+	IMU_NOT_DETECTED = 70,
+
+	// last exit Brooklyn
+	UNKNOWN_ERROR= 99
+};
+
+
+
+// set error gto NO_ERROR
+void resetError();
+
+// return last error set by setError
+ErrorCodeType getLastError();
+
+// set the passed error
+void setError(ErrorCodeType err);
+
+// returns prosa message of error code
+string getErrorMessage(ErrorCodeType err);
+string getLastErrorMessage();
+
+// true, if error has been set. When called again after an error, false is returned.
+bool isError();
+
+#define WIFI_WEB_SERVER_HOST "192.168.178.58" 	// static IP of Odroid X2 hosting the Cortex
+#define LINUX_WEB_SERVER_PORT 8000
+#define WIN_WEB_SERVER_HOST "192.168.178.57" 	// Jochens Notebook
+#define WIN_WEB_SERVER_PORT 8080
+
+// communication between Cerebellum and Cortex
+#ifdef _WIN32
+	#define LEG_CONTROLLER_COMMAND_SERIAL_PORT "COM1"
+	#define LEG_CONTROLLER_LOGGER_SERIAL_PORT "COM1"
+#else
+	#define LEG_CONTROLLER_COMMAND_SERIAL_PORT "ttyS1"
+	#define LEG_CONTROLLER_LOGGER_SERIAL_PORT "ttyS1"
+#endif
+
+#define LEG_CONTROLLER_COMMAND_BAUD_RATE 115200 /*115200 */
+
+// status information of servos
+// HERKULEX STATUS ERROR - See Manual p39
+#define H_STATUS_OK					 0x00
+#define H_ERROR_INPUT_VOLTAGE 		 0x01
+#define H_ERROR_POS_LIMIT			 0x02
+#define H_ERROR_TEMPERATURE_LIMIT	 0x04
+#define H_ERROR_INVALID_PKT			 0x08
+#define H_ERROR_OVERLOAD			 0x10
+#define H_ERROR_DRIVER_FAULT  		 0x20
+#define H_ERROR_EEPREG_DISTORT		 0x40
+
+// Possible states of a Herkulex servo
+enum ServoStatusType { 	SERVO_STAT_OK,				// no error
+						SERVO_STAT_VOLTAGE,			// voltage not within 7.4-10V
+						SERVO_STAT_LIMIT,			// angle out of bounds
+						SERVO_STAT_TEMP,			// temperature too high
+						SERVO_STAT_INV_PKT,			// dont know
+						SERVO_STAT_OVERLOAD,		// servo overloaded, need to switch it off and on
+						SERVO_STAT_DRIVER_FAULT,	// driver error, that's really bad
+						SERVO_STAT_EEPREG_DISTORT,	// even worse
+						SERVO_STAT_NO_COMM,			// communication error between cortex and servo
+					};
+
+// every [ms] the motors get a new position. 11.2ms is the unit
+// Herkulex servos are working with, sample rate should be a multiple of that
+// With 22.4ms, we run at 45Hz
+#define HERKULEX_MIN_SAMPLE 11.2
+#define CORTEX_SAMPLE_RATE  (2.0*HERKULEX_MIN_SAMPLE)
+
+// there is a low prio loop running at 1Hz that checks the
+// voltage, the servo status and other stuff
+#define LOW_PRIO_LOOP_RATE_MS 1000
+
+#endif

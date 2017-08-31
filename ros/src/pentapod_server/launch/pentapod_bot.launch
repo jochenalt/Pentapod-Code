@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
+  <include file="$(find pentapod_engine)/launch/pentapod_engine.launch" />
+</launch>

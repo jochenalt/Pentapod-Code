@@ -1,0 +1,26 @@
+#Mon Apr 10 14:38:17 CEST 2017
+eclipse.preferences.version=1
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/CPATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/CPATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/CPLUS_INCLUDE_PATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/CPLUS_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/C_INCLUDE_PATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/C_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/append=true
+environment/buildEnvironmentInclude/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/appendContributed=true
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/CPATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/CPATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/CPLUS_INCLUDE_PATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/CPLUS_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/C_INCLUDE_PATH/delimiter=;
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/C_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/append=true
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/appendContributed=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/LIBRARY_PATH/delimiter=;
+environment/buildEnvironmentLibrary/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/LIBRARY_PATH/operation=remove
+environment/buildEnvironmentLibrary/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/append=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.config.gnu.cygwin.exe.debug.1904890223/appendContributed=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/LIBRARY_PATH/delimiter=;
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/LIBRARY_PATH/operation=remove
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/append=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.cygwin.base.1284812992/appendContributed=true

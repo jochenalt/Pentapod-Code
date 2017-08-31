@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;Cortex/BinaryCommandInterface.h&apos; to &apos;I2CPort.h&apos;" description="Rename resource &apos;BinaryCommandInterface.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="BinaryCommandInterface.h" name="I2CPort.h" stamp="1503153932724" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;Cortex/BinaryCommandInterface.cpp&apos; to &apos;I2CPort.cpp&apos;" description="Rename resource &apos;BinaryCommandInterface.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="BinaryCommandInterface.cpp" name="I2CPort.cpp" stamp="1503153938544" updateReferences="true"/>
+</session>

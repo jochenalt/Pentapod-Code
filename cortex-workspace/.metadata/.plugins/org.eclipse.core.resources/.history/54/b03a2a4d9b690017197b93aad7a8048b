@@ -1,0 +1,79 @@
+#include "core.h"
+#include <sstream>
+#include <string>
+
+ErrorCodeType glbError = ErrorCodeType::ABSOLUTELY_NO_ERROR;
+
+void resetError() {
+	glbError = ErrorCodeType::ABSOLUTELY_NO_ERROR;
+}
+
+ErrorCodeType getLastError() {
+	return glbError;
+}
+
+void setError(ErrorCodeType err) {
+	// set error only if error has been reset upfront
+	if (glbError == ErrorCodeType::ABSOLUTELY_NO_ERROR)
+		glbError = err;
+}
+
+bool isError() {
+	return glbError != ErrorCodeType::ABSOLUTELY_NO_ERROR;
+}
+
+
+std::string getErrorMessage(ErrorCodeType err) {
+	std::ostringstream msg;
+	switch (err) {
+	case ABSOLUTELY_NO_ERROR: msg << "no error";break;
+
+	// hostCommunication
+	case CHECKSUM_EXPECTED: 			msg << "checksum expected";break;
+	case CHECKSUM_WRONG: 				msg << "checksum wrong";break;
+	case PARAM_WRONG: 					msg << "parameter wrong";break;
+	case PARAM_NUMBER_WRONG: 			msg << "number of parameter wrong";break;
+	case UNRECOGNIZED_CMD: 				msg << "unknown command";break;
+
+	// encoder
+	case IMU_NOT_CALIBRATED: 			msg << "IMU not fully calibrated";break;
+
+	// servos
+	case HERKULEX_COMMUNICATION_FAILED: msg << "HerkuleX communication failed";break;
+	case HERKULEX_STATUS_FAILED: 		msg << "HerkuleX status could not be retrieved";break;
+	case SERVO_NOT_POWERED: 			msg << "HerkuleX servo not powered";break;
+	case SERVO_NOT_SETUP: 				msg << "HerkuleX servo not setup";break;
+	case SERVO_NOT_ENABLED: 			msg << "HerkuleX servo not enabled";break;
+
+	// Cortex Controller
+	case CORTEX_CONNECTION_FAILED: 		msg << "cortex connection failed";break;
+	case CORTEX_NO_RESPONSE: 			msg << "no response from cortex";break;
+	case CORTEX_POWER_ON_WITHOUT_SETUP: msg << "cannot power on without being setup";break;
+	case CORTEX_SETUP_MISSING: 			msg << "call setup upfront";break;
+	case CORTEX_RESPONSE_COULD_NOT_PARSED:	msg << "cortex reponse could not parsed";break;
+
+
+	// configuration errors
+	case MISCONFIG_NO_ENCODERS: 		msg << "misconfiguration: no encoders";break;
+	case MISCONFIG_STEPPER: 			msg << "misconfiguration: no servo";break;
+	case MISCONFIG_TOO_MANY_SERVOS: 	msg << "misconfiguration: too many servos";break;
+	case MISCONFIG_TOO_MANY_ENCODERS: 	msg << "misconfiguration: too many encoders";break;
+
+	// Webserver
+	case WEBSERVER_TIMEOUT: 			msg << "no response from webserver (timeout)";break;
+
+	case UNKNOWN_ERROR: 				msg << "mysterious error";break;
+
+	default:
+		msg << "unknown error message";
+	}
+	msg << " (" << (int)err << ")";
+
+	return msg.str();
+}
+
+std::string getLastErrorMessage() {
+	if (isError())
+		return getErrorMessage(getLastError());
+	return "";
+}

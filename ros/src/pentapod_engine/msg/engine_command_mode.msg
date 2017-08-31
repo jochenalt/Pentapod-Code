@@ -1,0 +1,9 @@
+int8 POWER_MODE_ON_CMD = 0
+int8 POWER_MODE_OFF_CMD = 1
+int8 AWAKE_CMD = 2
+int8 FALL_ASLEEP_CMD  = 3
+int8 TERRAIN_MODE_CMD  = 4
+int8 WALKING_MODE_CMD  = 5
+
+int8 command
+

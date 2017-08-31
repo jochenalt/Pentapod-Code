@@ -1,0 +1,76 @@
+
+/*
+ * Config.h
+ *
+
+ * Author: JochenAlt
+ */ 
+
+
+#ifndef __ACTUATOR_CONFIG_H_
+#define __ACTUATOR_CONFIG_H_
+
+#include "Arduino.h"
+#include "ActuatorProperty.h"
+
+#define NUMBER_OF_LEGS  5					// total number of legs
+
+#define HERKULEX_BAUD_RATE_DEFAULT 115200	// baud rate for connection to herkulex servos
+#define HERKULEX_BAUD_RATE_HIGH 115200		// incrreased baud rate for connection to herkulex servos
+
+#define I2C_BUS_RATE I2C_RATE_300			// frequency of i2c bus (1MHz KHz)
+#define I2C_BUS_TYPE I2C_OP_MODE_ISR		// I2C library is using interrupts
+
+#define SENSOR_HERKULEX_SERVO_ID 200
+#define SENSOR_CMD_REQUEST_DISTANCE  200
+#define SENSOR_CMD_SEND_DISTANCE  201
+
+
+enum LimbIdentifier {HIP=0 , THIGH=1, KNEE=2, FOOT=3 };
+
+void logLimbName(LimbIdentifier id);
+void logLegName(int id);
+
+class LimbConfigType {
+public:
+	LimbIdentifier id;
+	uint8_t herkulexMotorId;
+
+	bool   clockwise;
+	float  nullAngle;	// [°]
+	float  maxAngle;	// [°]
+	float  minAngle;	// [°]
+	float  gearRatio;	//
+
+	void print();
+	void println();
+
+	void set(LimbIdentifier limbId, int newHerkulexId, bool newClockwise, float newNullAngle, float newMinAngle, float newMaxAngle, float newGearRatio ) {
+		id = limbId;
+		herkulexMotorId = newHerkulexId;
+		clockwise = newClockwise;
+		nullAngle = newNullAngle;
+		maxAngle = newMaxAngle;
+		minAngle = newMinAngle;
+		gearRatio = newGearRatio;
+	}
+
+	float direction() {
+		return clockwise?1:-1;
+	}
+};
+
+class LegConfigType {
+public:
+	static void setDefaults();
+	void print();
+
+	int legId;
+	LimbConfigType limbs[NUMBER_OF_LIMBS];
+	int serialId;
+	int nullDistance;
+};
+
+
+
+#endif

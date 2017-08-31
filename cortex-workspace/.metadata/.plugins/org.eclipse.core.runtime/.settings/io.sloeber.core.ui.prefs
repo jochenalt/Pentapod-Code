@@ -1,0 +1,5 @@
+Build\ before\ upload\ option=TRUE
+Clean\ Serial\ Monitor\ after\ upload=false
+Gui\ entry\ for\ private\ hardware\ paths=C\:\\Program Files (x86)\\Arduino\\hardware
+Open\ serial\ connections\ with\ the\ monitor=true
+eclipse.preferences.version=1

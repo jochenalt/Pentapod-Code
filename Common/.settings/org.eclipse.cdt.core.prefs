@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.toolchain.gnu.mingw.base.178502234/ARM_LINUX_HOME/delimiter=;
+environment/project/cdt.managedbuild.toolchain.gnu.mingw.base.178502234/ARM_LINUX_HOME/operation=replace
+environment/project/cdt.managedbuild.toolchain.gnu.mingw.base.178502234/ARM_LINUX_HOME/value=D\:\\Programme\\gcc-linaro-arm-linux-gnueabihf-4.8-2013.09_win32\\arm-linux-gnueabihf
+environment/project/cdt.managedbuild.toolchain.gnu.mingw.base.178502234/append=true
+environment/project/cdt.managedbuild.toolchain.gnu.mingw.base.178502234/appendContributed=false

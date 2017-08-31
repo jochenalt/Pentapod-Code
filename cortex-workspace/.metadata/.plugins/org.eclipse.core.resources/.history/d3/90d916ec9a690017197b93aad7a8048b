@@ -1,0 +1,200 @@
+/*
+ * IMU.cpp
+ *
+ *  Created on: 04.06.2017
+ *      Author: JochenAlt
+ */
+
+#include <Arduino.h>
+#include <OrientationSensor.h>
+#include "i2c_t3-v9.1.h"
+#include "pins.h"
+#include "core.h"
+#include "BotMemory.h"
+
+OrientationSensor orientationSensor;
+const uint8_t sensorID = 55;
+
+void OrientationSensorData::print() {
+	logger->print("IMU(");
+	logger->print(sensorID);
+	logger->print("):");
+	logger->print(calib.accel_offset_x);
+	logger->print(' ');
+	logger->print(calib.accel_offset_y);
+	logger->print(' ');
+	logger->print(calib.accel_offset_z);
+	logger->print(' ');
+	logger->print(calib.gyro_offset_x);
+	logger->print(' ');
+	logger->print(calib.gyro_offset_y);
+	logger->print(' ');
+	logger->print(calib.gyro_offset_z);
+	logger->print(' ');
+	logger->print(calib.mag_offset_x);
+	logger->print(' ');
+	logger->print(calib.mag_offset_y);
+	logger->print(' ');
+	logger->print(calib.mag_offset_z);
+	logger->print(' ');
+	logger->print(calib.accel_radius);
+	logger->print(' ');
+	logger->print(calib.mag_radius);
+}
+
+void OrientationSensorData::setDefault () {
+	sensorID= 0;
+	calib.accel_offset_x = 0;
+	calib.accel_offset_y = 0;
+	calib.accel_offset_z = 0;
+	calib.gyro_offset_x = 0;
+	calib.gyro_offset_y = 0;
+	calib.gyro_offset_z = 0;
+	calib.mag_offset_x = 0;
+	calib.mag_offset_y = 0;
+	calib.mag_offset_z = 0;
+	calib.accel_radius = 0;
+	calib.mag_radius = 0;
+}
+OrientationSensor::OrientationSensor() {
+	bno = NULL;
+	systemCalibStatus = 0;
+	gyroCalibStatus = 0;
+	magCalibStatus = 0;
+	accelCalibStatus = 0;
+	setupOk = false;
+}
+
+void OrientationSensor::setup(i2c_t3* newWireline) {
+	if (bno == NULL)
+		bno = new Adafruit_BNO055(newWireline, sensorID);
+
+	// Initialise the sensor
+	if(!bno->begin())
+	{
+		// There was a problem detecting the BNO055 ... check the connections
+		setError(ErrorCodeType::IMU_NOT_DETECTED);
+		logger->println("no IMU found!");
+		setupOk = false;
+		return;
+	}
+	setupOk = true;
+
+	bno->setExtCrystalUse(true);
+
+	setupTime = millis();
+	calibrationRead = false;
+}
+
+
+bool OrientationSensor::getData(float &newX, float &newY, float &newZ, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc, uint8_t& newMag) {
+	newSystem = systemCalibStatus;
+	newGyro = gyroCalibStatus;
+	newAcc = accelCalibStatus;
+	newMag = magCalibStatus;
+	newX = event.orientation.x;
+	newY = event.orientation.y;
+	newZ = event.orientation.z;
+
+	return (newSystem > 0) || (newGyro > 0) || (newMag > 0) || (newAcc > 0);
+
+}
+
+void OrientationSensor::updateCalibration()
+{
+  /* Get the four calibration values (0..3) */
+  /* Any sensor data reporting 0 should be ignored, */
+  /* 3 means 'fully calibrated" */
+  bno->getCalibration(&systemCalibStatus, &gyroCalibStatus, &accelCalibStatus, &magCalibStatus);
+
+  /* The data should be ignored until the system calibration is > 0 */
+
+  if (!calibrationRead) {
+	  readCalibrationFromEprom();
+	  calibrationRead = true;
+  }
+
+  // if not yet in epprom but we are fully calibrated, store calibration
+  if ((memory.persMem.imuCalib.sensorID != sensorID) && bno->isFullyCalibrated()) {
+	  saveCalibration();
+  }
+}
+
+
+void OrientationSensor::saveCalibration() {
+	OrientationSensorData buffer;
+	bool ok = bno->getSensorOffsets(buffer.calib);
+	buffer.sensorID = sensorID;
+
+	if (ok) {
+		// logger->println("save calibratrion");
+		// buffer.print();
+		// logger->println();
+
+		uint8_t* bufferRead =(uint8_t*)&buffer;
+		uint8_t* persBuffer =(uint8_t*)&memory.persMem.imuCalib;
+		for (uint8_t i = 0;i<sizeof(OrientationSensorData);i++)
+			persBuffer[i] = bufferRead[i];
+		memory.delayedSave();
+	}
+}
+
+void OrientationSensor::readCalibrationFromEprom() {
+	logger->println("read calibratrion");
+	if (!calibrationRead && (memory.persMem.imuCalib.sensorID == sensorID)) {
+		// memory.persMem.imuCalib.print();
+		// logger->println();
+		// there's config data in eeprom
+		bno->setSensorOffsets(memory.persMem.imuCalib.calib);
+		calibrationRead = true;
+	}
+}
+
+bool OrientationSensor::ok() {
+	return (systemCalibStatus > 0) || (gyroCalibStatus> 0) || (magCalibStatus> 0) || (accelCalibStatus> 0);
+}
+
+void OrientationSensor::loop(uint32_t now) {
+	// first reading my no happen before one 1000s
+	if (now < setupTime+1000)
+		return;
+
+	static TimePassedBy timer;
+	if (setupOk && timer.isDue_ms(500, now)) {
+		updateCalibration();
+	}
+
+	static TimePassedBy sensorTimer;
+	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
+		/* Get a new sensor event */
+		event.orientation.x = 0;
+		event.orientation.y = 0;
+		event.orientation.z = 0;
+
+		bno->getEvent(&event);
+
+
+	}
+}
+
+void OrientationSensor::printData() {
+
+	/* Display the floating point data */
+	logger->print("Orientation=(");
+	logger->print(event.orientation.x, 1);
+	logger->print(",");
+	logger->print(event.orientation.y, 1);
+	logger->print(",");
+	logger->print(event.orientation.z, 1);
+	logger->print(") calib(Sys,Gyro,Acc,Mag)=(");
+	logger->print(systemCalibStatus, 1);
+	logger->print(",");
+	logger->print(gyroCalibStatus, 1);
+	logger->print(",");
+	logger->print(accelCalibStatus, 1);
+	logger->print(",");
+	logger->print(magCalibStatus, 1);
+	logger->print(")");
+	logger->println();
+
+}

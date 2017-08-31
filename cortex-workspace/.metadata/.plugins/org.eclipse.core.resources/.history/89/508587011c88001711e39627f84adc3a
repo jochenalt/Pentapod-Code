@@ -1,0 +1,49 @@
+/*
+ * BinaryCommandInterface.h
+ *
+ *  Created on: 14.08.2017
+ *      Author: JochenAlt
+ */
+
+#ifndef I2CSLAVE_H_
+#define I2CSLAVE_H_
+
+#include "i2c_t3-v9.1.h"
+#include "CortexComPackage.h"
+class I2CSlave {
+public:
+	I2CSlave();
+	virtual ~I2CSlave();
+
+	static I2CSlave& getInstance();
+
+	void setup(i2c_t3* wire);
+	void loop();
+
+
+	void executeRequest();
+
+	void onBlockReceive(size_t howManyBytes);
+	void onRequest();
+
+private:
+	i2c_t3* wire = NULL;
+
+	static const unsigned int maxBufferSize = 512;
+	uint8_t receiveBuffer[maxBufferSize];
+	unsigned int receiveBufferLen;
+
+	// semaphor set in onRequest indicating that a request as been received and is ready to be executed in the main loop
+	// (within a interrupt, no big tasks should be executed)
+	bool requestPending;
+
+	// semanphor set in onReceive
+	bool responsePending;
+	Cortex::RequestPackageData request;
+	Cortex::ResponsePackageData response;
+
+};
+
+extern I2CSlave i2cSlave;
+
+#endif /* I2CSLAVE_H_ */

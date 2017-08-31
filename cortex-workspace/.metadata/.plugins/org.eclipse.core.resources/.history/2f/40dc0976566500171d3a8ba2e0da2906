@@ -1,0 +1,128 @@
+/* 
+* Motors.cpp
+*
+* Created: 22.04.2016 19:26:44
+* Author: JochenAlt
+*/
+
+#include "Arduino.h"
+#include "utilities.h"
+#include "BotMemory.h"
+#include "Controller.h"
+#include <I2CPortScanner.h>
+#include "watchdog.h"
+#include "core.h"
+#include "limits.h"
+
+Controller controller;
+
+Controller::Controller()
+{
+	setuped= false;						// flag to indicate a finished setup (used in stepperloop())
+	enabled = false;					// motors are disabled until explicitly enabled
+	loopTime_us = 0;					// we measure the time per loop
+}
+
+void Controller::enable() {
+	resetError();
+
+	for (int legsNo = 0;legsNo<NUMBER_OF_LEGS;legsNo++) {
+		delay(50);
+		for (int limbNo = 0;limbNo<NUMBER_OF_LIMBS;limbNo++) {
+			legs[legsNo].servos[limbNo].enable();
+		}
+	}
+	enabled = true;
+}
+
+void Controller::disable() {
+	resetError();
+
+	for (int i = 0;i<NUMBER_OF_LEGS;i++) {
+		for (int j = 0;j<NUMBER_OF_LIMBS;j++) {
+			legs[i].servos[j].disable();
+		}
+	}
+	enabled = false;
+}
+
+
+void Controller::logConfiguration() {
+	memory.println();
+}
+
+bool Controller::setup() {
+	servoLoopTimer.setRate(SERVO_SAMPLE_RATE);
+
+	if (memory.persMem.logSetup) {
+		logger->println(F("--- setup controller "));
+	}
+
+	// reset any remains
+	resetError();
+	disable();
+
+	if (memory.persMem.logSetup) {
+		logger->println(F("--- servos disabled"));
+	}
+
+	for (int i = 0;i<NUMBER_OF_LEGS;i++) {
+		int serialId = memory.persMem.legs[i].serialId;
+
+		if (memory.persMem.logSetup) {
+			logger->print(F("--- setup leg "));
+			logger->print(i);
+
+			logger->print(" on Serial");
+			logger->print(serialId);
+			logger->println();
+		}
+		legs[i].setup(i, serialId);
+	}
+	for (int legId = 0;legId<NUMBER_OF_LEGS;legId++) {
+		for (int limbId = 0;limbId<NUMBER_OF_LIMBS;limbId++) {
+			legs[legId].servos[limbId].syncStatusTimer();
+		}
+	}
+
+
+	if (memory.persMem.logSetup) {
+		logger->println(F("--- setup done"));
+	}
+
+	setuped= true;
+	return !isError();
+}
+
+TimePassedBy& Controller::getTimer() {
+	return servoLoopTimer;
+}
+
+
+void Controller::loop(uint32_t now) {
+	// update the servo position
+	if (servoLoopTimer.isDue_ms(SERVO_SAMPLE_RATE,now))
+	{
+
+		uint32_t start = millis();
+		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
+			legs[leg].fetchDistance();
+		}
+
+		// important: to enable parallel use of
+		// all hardware serials, iterate over all limbs first (and not legs)
+		// Each loop just sends a fire-and-forget to-be position, it does not wait for a reply
+		// So, sending positions to all 25 servos takes between 10-14ms
+		// (there's a low level loop running with 1 Hz requesting the servos status)
+		for (int limb = 0;limb<NUMBER_OF_LIMBS;limb++) {
+			uint32_t now = millis();
+			for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
+				legs[leg].servos[limb].loop(now);
+			}
+		}
+
+		uint32_t end = millis();
+		loopTime_us = (end - start);
+	}
+}
+
