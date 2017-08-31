@@ -102,8 +102,8 @@ void BotView::drawCoordSystem(bool withRaster) {
 
 				glBegin(GL_LINES);
 					if (highlightX) {
-						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glRasterColor3Xv);
-						glColor3fv(glRasterColor3Xv);
+						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glRasterColor4v);
+						glColor3fv(glRasterColor4v);
 					} else {
 						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapAreaColor4v);
 						glColor3fv(glMapAreaColor4v);
@@ -114,8 +114,8 @@ void BotView::drawCoordSystem(bool withRaster) {
 					}
 
 					if (highlightY) {
-						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glRasterColor3Xv);
-						glColor3fv(glRasterColor3Xv);
+						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glRasterColor4v);
+						glColor3fv(glRasterColor4v);
 					} else {
 						glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapAreaColor4v);
 						glColor3fv(glMapAreaColor4v);

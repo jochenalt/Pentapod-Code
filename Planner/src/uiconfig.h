@@ -30,22 +30,20 @@ const float glAlphaSolid = 1.0;
 const float glAlphaTransparent = 0.5;
 static const GLfloat glCoordSystemAreaColor4v[]		= GL_COLOR_4v(TeleGrey4, glAlphaSolid );
 static const GLfloat glCoordSystemAxisColor4v[] 	= GL_COLOR_4v(PearlMouseGrey, glAlphaSolid );
-static const GLfloat glRasterColor3Xv[] 			= { 225./255., 215./255., 180./255., glAlphaSolid };
-static const GLfloat glRasterColor3Yv[] 			= { .15f, .45f, 0.3f, glAlphaSolid };
+static const GLfloat glRasterColor4v[] 				= GL_COLOR_4v(GraniteGrey, glAlphaSolid );
 
+static const GLfloat glGroundPointColor[] 			=  GL_COLOR_4v(PebbleGrey, glAlphaSolid );
+static const GLfloat glGroundDistancePointColor[] 	=  GL_COLOR_4v(MintGreen, glAlphaSolid );
 
-static const GLfloat glGroundPointColor[] 			= { 30.0/255.0, 13.0/255.0, 219.0/255.0,glAlphaSolid };
-static const GLfloat glGroundDistancePointColor[] 	= { 30.0/255.0, 213.0/255.0, 49.0/255.0,glAlphaSolid };
+static const GLfloat glBotBodyColor[] 				= GL_COLOR_4v(GraphiteBlack, glAlphaSolid );
+static const GLfloat glBotFrontLegColor[] 			= GL_COLOR_4v(DistantBlue, glAlphaSolid );
+static const GLfloat glBotLegColor[] 				= GL_COLOR_4v(AzureBlue, glAlphaSolid );
 
-static const GLfloat glBotBodyColor[] 				= { 62.0/255.0, 58.0/255.0, 45.0/255.0, glAlphaSolid };
-static const GLfloat glBotFrontLegColor[] 			= { 128.0/255.0, 123.0/255.0, 109.0/255.0,glAlphaSolid };
-static const GLfloat glBotLegColor[] 				= { 148.0/255.0, 143.0/255.0, 129.0/255.0, glAlphaSolid  };
-
-static const GLfloat glFootTouchPointColor[] 		= { 230.0/255.0, 13.0/255.0, 19.0/255.0,glAlphaSolid };
+static const GLfloat glFootTouchPointColor[] 		= GL_COLOR_4v(Ivory, glAlphaSolid );
 static const GLfloat glFootTouchPointAirColor[] 	= GL_COLOR_4v(SquirrelGrey, glAlphaSolid );
 static const GLfloat glFootTouchPointBackColor[] 	= GL_COLOR_4v(ResedaGreen, glAlphaSolid );
 static const GLfloat glFootTouchPointFrontColor[] 	= GL_COLOR_4v(OliveYellow, glAlphaSolid);
-static const GLfloat glFootTouchPointAreaColor[]	= GL_COLOR_4v(Vermilion, glAlphaSolid);
+static const GLfloat glFootTouchPointAreaColor[]	= GL_COLOR_4v(Vermilion, glAlphaTransparent);
 
 static const GLfloat glMapAreaColor4v[]		    		= GL_COLOR_4v( GreyWhite, glAlphaTransparent);
 static const GLfloat glSlamGridColor4v[]		    	= GL_COLOR_4v( ConcreteGrey, glAlphaTransparent);
