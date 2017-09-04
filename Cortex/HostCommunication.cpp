@@ -158,7 +158,9 @@ void cmdINFO() {
 				first = false;
 			}
 		}
-		cmdSerial->print(") Legs(");
+		cmdSerial->print(") ");
+		cmdSerial->print(voltage.getVoltage(),1);
+		cmdSerial->print("V) Legs(");
 
 		for (int i = 0;i<NumberOfLegs;i++) {
 			if (i>0)

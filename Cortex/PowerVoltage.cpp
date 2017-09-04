@@ -29,9 +29,9 @@ void PowerVoltage::loop(uint32_t now) {
 	// do a voltage measurement with 1Hz
 	static TimePassedBy timer;
 	if (timer.isDue_ms(LOW_PRIO_LOOP_RATE_MS, now)) {
-		// voltage divider of 10K/86K, maximum reference voltage is 1.2V
-		const float calibration = 1.0;
-		measuredVoltage = (float)analogRead(POWER_VOLTAGE_PIN) / 1024.0 * 1.2 / ( 10.0/(10.0+86.0)) * calibration;
+		// voltage divider of 10K/150K, maximum reference voltage is 1.2V
+		const float calibration = 1.01; // measured correction factor
+		measuredVoltage = (float)analogRead(POWER_VOLTAGE_PIN) / 1024.0 * 1.2 / ( 10.0/(10.0+150.0)) * calibration;
 	}
 }
 

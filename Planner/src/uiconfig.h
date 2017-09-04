@@ -21,29 +21,30 @@ const int InteractiveWindowHeight=182;			// height of the interactive window
 // RAL colors
 #include "ral.h"
 
-// macro to define an openGL color array with a specific alpha value
+// macro to define an openGL color array of a RAL color with a specific alpha(transparency) value
 #define GL_COLOR_4v(rgb,alpha) { ((float)(rgb>>16))/255.0, ((float)((rgb>>8) & 0xFF))/255.0, ((float)(rgb & 0xFF))/255.0, alpha }
 
 
 // transarency values
 const float glAlphaSolid = 1.0;
 const float glAlphaTransparent = 0.5;
-static const GLfloat glCoordSystemAreaColor4v[]		= GL_COLOR_4v(TeleGrey4, glAlphaSolid );
-static const GLfloat glCoordSystemAxisColor4v[] 	= GL_COLOR_4v(PearlMouseGrey, glAlphaSolid );
-static const GLfloat glRasterColor4v[] 				= GL_COLOR_4v(GraniteGrey, glAlphaSolid );
 
-static const GLfloat glGroundPointColor[] 			=  GL_COLOR_4v(PebbleGrey, glAlphaSolid );
-static const GLfloat glGroundDistancePointColor[] 	=  GL_COLOR_4v(MintGreen, glAlphaSolid );
+static const GLfloat glCoordSystemAreaColor4v[]			= GL_COLOR_4v(TeleGrey4, glAlphaSolid );
+static const GLfloat glCoordSystemAxisColor4v[] 		= GL_COLOR_4v(PearlMouseGrey, glAlphaSolid );
+static const GLfloat glRasterColor4v[] 					= GL_COLOR_4v(GraniteGrey, glAlphaSolid );
 
-static const GLfloat glBotBodyColor[] 				= GL_COLOR_4v(GraphiteBlack, glAlphaSolid );
-static const GLfloat glBotFrontLegColor[] 			= GL_COLOR_4v(DistantBlue, glAlphaSolid );
-static const GLfloat glBotLegColor[] 				= GL_COLOR_4v(AzureBlue, glAlphaSolid );
+static const GLfloat glGroundPointColor[] 				=  GL_COLOR_4v(PebbleGrey, glAlphaSolid );
+static const GLfloat glGroundDistancePointColor[] 		=  GL_COLOR_4v(MintGreen, glAlphaSolid );
 
-static const GLfloat glFootTouchPointColor[] 		= GL_COLOR_4v(Ivory, glAlphaSolid );
-static const GLfloat glFootTouchPointAirColor[] 	= GL_COLOR_4v(SquirrelGrey, glAlphaSolid );
-static const GLfloat glFootTouchPointBackColor[] 	= GL_COLOR_4v(ResedaGreen, glAlphaSolid );
-static const GLfloat glFootTouchPointFrontColor[] 	= GL_COLOR_4v(OliveYellow, glAlphaSolid);
-static const GLfloat glFootTouchPointAreaColor[]	= GL_COLOR_4v(Vermilion, glAlphaTransparent);
+static const GLfloat glBotBodyColor[] 					= GL_COLOR_4v(GraphiteBlack, glAlphaSolid );
+static const GLfloat glBotFrontLegColor[] 				= GL_COLOR_4v(DistantBlue, glAlphaSolid );
+static const GLfloat glBotLegColor[] 					= GL_COLOR_4v(AzureBlue, glAlphaSolid );
+
+static const GLfloat glFootTouchPointColor[] 			= GL_COLOR_4v(Ivory, glAlphaSolid );
+static const GLfloat glFootTouchPointAirColor[] 		= GL_COLOR_4v(SquirrelGrey, glAlphaSolid );
+static const GLfloat glFootTouchPointBackColor[] 		= GL_COLOR_4v(ResedaGreen, glAlphaSolid );
+static const GLfloat glFootTouchPointFrontColor[] 		= GL_COLOR_4v(OliveYellow, glAlphaSolid);
+static const GLfloat glFootTouchPointAreaColor[]		= GL_COLOR_4v(Vermilion, glAlphaTransparent);
 
 static const GLfloat glMapAreaColor4v[]		    		= GL_COLOR_4v( GreyWhite, glAlphaTransparent);
 static const GLfloat glSlamGridColor4v[]		    	= GL_COLOR_4v( ConcreteGrey, glAlphaTransparent);

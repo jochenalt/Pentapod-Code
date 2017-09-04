@@ -48,7 +48,7 @@ extern HardwareSerial* logger;
 #define POWER_VOLTAGE_PIN 23
 
 // pin for relay that turns on power to the servos
-#define RELAY_PIN 39
+#define RELAY_PIN 25
 
 // pin for LED on the outside
 #define SIGNAL_LED_PIN 28

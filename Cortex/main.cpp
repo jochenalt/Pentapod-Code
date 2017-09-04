@@ -93,18 +93,24 @@ void logPinAssignment() {
 		logger->print("PCB LED             = ");
 		logger->println(LED_PIN);
 
-		logger->print("Cmd     RX,TX       = (");
+		logger->print("Relay PIN           = ");
+		logger->println(RELAY_PIN);
+
+		logger->print("VDD AD PIN          = ");
+		logger->println(POWER_VOLTAGE_PIN);
+
+		logger->print("Cmd      RX,TX      = (");
 		logger->print(getRXPin(1));
 		logger->print(",");
 		logger->print(getTXPin(1));
 		logger->println(")");
-		logger->print("Logger  RX,TX       = (");
+		logger->print("Logger   RX,TX      = (");
 		logger->print(getRXPin(1));
 		logger->print(",");
 		logger->print(getTXPin(1));
 		logger->println(")");
 
-		logger->print("IMU     SCL,SDA    = (");
+		logger->print("IMU      SCL,SDA    = (");
 		logger->print(PIN_SCL0);
 		logger->print(",");
 		logger->print(PIN_SDA0);
@@ -171,6 +177,7 @@ void headlessSetup() {
 	IMUWire->begin(I2C_MASTER, 0, I2C_PINS_16_17, I2C_PULLUP_INT, I2C_RATE_800);
 	IMUWire->setDefaultTimeout(4000); // 4ms default timeout
 	IMUWire->resetBus();
+
 	orientationSensor.setup(IMUWire); // this takes 1000ms !
 
 	// load config data from EEPROM
@@ -207,6 +214,7 @@ void setup() {
 
 	// establish serial output (logging)
 	cmdSerial->begin(CORTEX_CLI_SERIAL_BAUDRATE);
+	cmdSerial->println("hello");
 
 	// establish I2C interface (commands from ODroid)
 	cortexWire = &Wire1;
