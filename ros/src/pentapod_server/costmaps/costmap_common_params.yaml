@@ -1,0 +1,26 @@
+# footprint of robot is a circle with radius 0.4[m]
+robot_radius: 0.4
+# footprint is polygon with 5 egde and radius of 0.4[m]
+# footprint: [ [-0.32,-0.24], [0.12,-0.38], [0.4,0], [0.12,0.38], [-0.32,0.24]]
+transform_tolerance: 0.2
+map_type: costmap
+obstacle_layer:
+  enabled: true
+  obstacle_range: 3.0
+  raytrace_range: 3.5
+# The inflation radius should be set to the maximum distance from obstacles 
+# at which a cost should be incurred. For example, setting the inflation 
+# radius at 0.55 meters means that the robot will treat all paths that 
+# stay 0.55 meters or more away from obstacles as having equal obstacle cost. 
+  inflation_radius: 0.5
+  track_unknown_space: false
+  combination_method: 1
+  observation_sources: laser_scan_sensor
+  laser_scan_sensor: {sensor_frame: base_link, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+inflation_layer:
+  enabled: true
+  cost_scaling_factor: 10.0 
+  inflation_radius: 0.5 
+static_layer:
+  enabled: true
+  map_topic: "/map"
