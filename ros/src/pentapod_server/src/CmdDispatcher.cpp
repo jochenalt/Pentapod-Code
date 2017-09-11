@@ -50,24 +50,24 @@ CommandDispatcher::CommandDispatcher() {
 void CommandDispatcher::setup(ros::NodeHandle& handle) {
 
 	// subscribe to the SLAM topic that deliveres the occupancyGrid
-	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::setOccupancyGrid, this);
+	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
 
 	// subscribe to the SLAM topic that deliveres the etimated position
-	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &CommandDispatcher::setSlamOut,  this);
+	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &CommandDispatcher::listenerSLAMout,  this);
 
 	// subscribe to the path
 	pathSubscriber = handle.subscribe("/trajectory", 1000, &CommandDispatcher::setTrajectory,  this);
 
-	// subscribe to the bots odom
-	odomSubscriber = handle.subscribe("/engine/odom", 1000, &CommandDispatcher::setOdometry, this);
+	// subscribe to the bots odom (without being fused with SLAM)
+	odomSubscriber = handle.subscribe("odom", 1000, &CommandDispatcher::listenerOdometry, this);
 
 	// subscribe to the bots state
-	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &CommandDispatcher::setEngineState,  this);
+	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &CommandDispatcher::listenerBotState,  this);
 
-	cmdVel 			= handle.advertise<geometry_msgs::Twist>("/engine/cmd_vel", 50);
+	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
 }
@@ -322,7 +322,7 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 
 }
 
-void CommandDispatcher::setOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	Map m;
 	if ((og->info.width > 0) && (og->info.height > 0)) {
 		m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
@@ -348,7 +348,7 @@ void CommandDispatcher::setOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPt
 	serializedMap = out.str();
 }
 
-void CommandDispatcher::setSlamOut (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
+void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
 
 	// mapPose of hector mapping is given in [m], we need [mm]
 	mapPose.position.x = og->pose.position.x*1000.0;
@@ -363,7 +363,7 @@ void CommandDispatcher::setSlamOut (const geometry_msgs::PoseStamped::ConstPtr& 
 	engineState.currentFusedPose = fusedMapOdomPose; // reset pose that is fused of map and odom
 }
 
-
+// subscription to path
 void CommandDispatcher::setTrajectory(const nav_msgs::Path::ConstPtr& path) {
 	Trajectory trajectory;
 	trajectory.clear();
@@ -383,8 +383,9 @@ void CommandDispatcher::setTrajectory(const nav_msgs::Path::ConstPtr& path) {
 	serializedTrajectory= out.str();
 }
 
-void CommandDispatcher::setOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
-	Pose odomPose;
+// subscription to odom
+void CommandDispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
+	// receive odometry from bot
 	odomPose.position.x = odom->pose.pose.position.x*1000.0;
 	odomPose.position.y = odom->pose.pose.position.y*1000.0;
 	Quaternion q(odom->pose.pose.orientation.x,odom->pose.pose.orientation.y,odom->pose.pose.orientation.z,odom->pose.pose.orientation.w);
@@ -396,7 +397,8 @@ void CommandDispatcher::setOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
 }
 
 
-void CommandDispatcher::setEngineState(const std_msgs::String::ConstPtr&  fullStateStr) {
+// subscription to bots state
+void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {
 	Pose previousOdom = engineState.currentOdomPose;
 
 	std::istringstream in(fullStateStr->data);
@@ -409,3 +411,16 @@ void CommandDispatcher::setEngineState(const std_msgs::String::ConstPtr&  fullSt
  	engineState.currentMapPose = mapPose;
 }
 
+/*
+void CommandDispatcher::broadcastTransformations() {
+	// map to odom is a correction introduced by localization or SLAM packages, to account for odometric errors.
+	// map to base_link is therefore the corrected pose of the robot in the inertial world frame. This is computed
+	// transitively out of map->odom and odom->base_link
+	broadcaster.sendTransform(
+		  tf::StampedTransform(
+			tf::Transform(tf::Quaternion(0, 0, 0, 1),
+					      tf::Vector3(0,0,0)),
+			ros::Time::now(),"map", "odom"));
+
+}
+*/

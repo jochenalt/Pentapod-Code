@@ -4,6 +4,8 @@ local_costmap:
   update_frequency: 3.0
   publish_frequency: 2.0
   static_map: false
+#  Setting the "rolling_window" parameter to true means that the costmap 
+# will remain centered around the robot as the robot moves through the world
   rolling_window: true
   width: 4
   height: 4

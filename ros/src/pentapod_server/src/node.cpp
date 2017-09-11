@@ -117,6 +117,7 @@ int main(int argc, char * argv[]) {
 	// setup all publishers and subscribers
 	cmdDispatcher.setup(rosNode);
 
+
 	// main loop that takes care of the webserver as well as ROS
 	while (rosNode.ok()) {
 

@@ -72,12 +72,12 @@ int main(int argc, char * argv[]) {
 
 		// broadcast transformations with 10Hz
 		if (transformationTimer.isDue(100)) {
-			// odomPublisher.breadcastTransformation();
+			odomPublisher.breadcastTransformation();
 		}
 
 		// broadcast the state with 10Hz
 		if (stateTimer.isDue(100)) {
-			// odomPublisher.broadcastOdom();
+			odomPublisher.broadcastOdom();
 			odomPublisher.broadcastState();
 		}
 

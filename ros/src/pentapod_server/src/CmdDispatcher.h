@@ -32,6 +32,9 @@
 // self-made message types
 #include "pentapod_engine/engine_command_mode.h"
 
+// publishing transformations
+#include <tf/transform_broadcaster.h>
+
 using namespace std;
 
 class CommandDispatcher {
@@ -42,13 +45,14 @@ public:
 
 	bool dispatch(string uri, string query, string body, string &response, bool &okOrNOk);
 
-	void setOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
 	void setLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
 
-	void setSlamOut (const geometry_msgs::PoseStamped::ConstPtr&  og );
-	void setOdometry(const nav_msgs::Odometry::ConstPtr& odom);
-	void setEngineState(const std_msgs::String::ConstPtr& fullStateStr);
+	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
+	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
+	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
 	void setTrajectory(const nav_msgs::Path::ConstPtr& path);
+
 
 private:
 
@@ -62,7 +66,7 @@ private:
 	EngineState engineState;
 	Pose mapPose;
 	Pose fusedMapOdomPose;
-
+	Pose odomPose;
 
 	ros::Publisher cmdVel;
 	ros::Publisher cmdBodyPose;

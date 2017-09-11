@@ -99,8 +99,17 @@ void OdomPublisher::modeCommandSubscriber (const pentapod_engine::engine_command
 
 void OdomPublisher::broadcastOdom() {
 
-	// compute odom->base_link transformation and broadcast
-	geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(engine->getCurrentNoseOrientation() + engine->getCurrentBodyPose().orientation.z);
+	// publish tranformation odom->base_link
+	// (consumed by whom? )
+	// This transformation is continous but drifting and works on base of the bots encoders only
+	// no slam pose is used here
+
+	Rotation bodyPoseOrientation = engine->getCurrentBodyPose().orientation;
+	geometry_msgs::Quaternion odom_quat  =
+			tf::createQuaternionMsgFromYaw(
+					bodyPoseOrientation.z +
+					engine->getCurrentNoseOrientation());
+
 	geometry_msgs::TransformStamped odom_trans;
 	ros::Time current_time = ros::Time::now();
 
@@ -109,11 +118,14 @@ void OdomPublisher::broadcastOdom() {
 	odom_trans.child_frame_id = "base_link";
 	odom_trans.transform.translation.x = engine->getOdomPose().position.x/1000.0;
 	odom_trans.transform.translation.y = engine->getOdomPose().position.y/1000.0;
-	odom_trans.transform.translation.z = 0.0;
+	odom_trans.transform.translation.z = engine->getOdomPose().position.z/1000.0 + CAD::LaserSensorHeight;
 	odom_trans.transform.rotation = odom_quat;
 	broadcaster.sendTransform(odom_trans);
 
-	// publish odom via ROS
+	// publish odometry via ROS (required by navigation stack)
+	// odom to base_link is the position of the robot in the inertial odometric frame,
+	// as reported by odometric sensor (like wheel encoders)
+	// consumed by navigation
 	nav_msgs::Odometry odom;
 	odom.header.stamp = current_time;
 	odom.header.frame_id = "odom";
@@ -130,6 +142,7 @@ void OdomPublisher::broadcastOdom() {
 
 void OdomPublisher::broadcastState() {
 	// publish serialized state via ROS
+	// This is no predefined ROS topic, it is proprietary to pentapod
 	EngineState state;
 	engine->getState(state);
 	std::stringstream out;
@@ -144,21 +157,46 @@ void OdomPublisher::broadcastState() {
 
 
 void OdomPublisher::breadcastTransformation() {
-	// send transformation from base to laser
 
+	// transform from base of bot to position of the laser
+	// influenced by body pose only
+	Quaternion bodyPoseQ(engine->getCurrentBodyPose().orientation);
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
+			tf::Transform(tf::Quaternion(bodyPoseQ.x, bodyPoseQ.y, bodyPoseQ.z, bodyPoseQ.w),
 					      tf::Vector3(engine->getCurrentBodyPose().position.x*1000.0,
 					    		      engine->getCurrentBodyPose().position.y*1000.0,
 									  engine->getCurrentBodyPose().position.z*1000.0 + CAD::LaserSensorHeight)),
 			ros::Time::now(),"base_link", "base_laser"));
 
+
+	/*
+	// in case the bot is running across hills, the base_footprint is different from the
+	// base_link. We do not do that, so we have a neutral transformation
 	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"map", "odom"));
+			  tf::StampedTransform(
+				tf::Transform(tf::Quaternion(0, 0, 0, 1),
+						      tf::Vector3(0,0,0)),
+				ros::Time::now(),"base_footprint", "base_link"));
+
+	// in case the bot is running across hills, the base_footprint is different from the
+	// base_link. We do not do that, so we have a neutral transformation
+	broadcaster.sendTransform(
+			  tf::StampedTransform(
+				tf::Transform(tf::Quaternion(0, 0, 0, 1),
+						      tf::Vector3(0,0,0)),
+				ros::Time::now(),"odom", "base_footprint"));
+
+	// in case the bot is running across hills, the base_link is different from base_stablized, which
+	// is actually base_link but horizontally to the ground
+	// we do not consider that, so use neutral transformation
+	broadcaster.sendTransform(
+			  tf::StampedTransform(
+				tf::Transform(tf::Quaternion(0, 0, 0, 1),
+						      tf::Vector3(0,0,0)),
+				ros::Time::now(),"base_link", "base_stabilized"));
+
+
 
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
@@ -166,11 +204,7 @@ void OdomPublisher::breadcastTransformation() {
 					      tf::Vector3(0,0,0)),
 			ros::Time::now(),"odom", "base_footprint"));
 
-	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"base_footprint", "base_link"));
+
 
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
@@ -183,6 +217,7 @@ void OdomPublisher::breadcastTransformation() {
 			tf::Transform(tf::Quaternion(0, 0, 0, 1),
 					      tf::Vector3(0,0,0)),
 			ros::Time::now(),"base_frame", "nav"));
+			*/
 }
 
 
@@ -190,11 +225,17 @@ void OdomPublisher::setup(ros::NodeHandle& pHandle, Engine& pEngine) {
 	handle = &pHandle;
 	engine = &pEngine;
 
-	// cmd_vel&odom are commonly used topics, so no namespace
-	cmd_vel 		= handle->subscribe("/engine/cmd_vel" ,  10 , &OdomPublisher::speedCommandSubscriber, this);
-	odom_pub 		= handle->advertise<nav_msgs::Odometry>("/engine/odom", 50);
+	// cmd_vel is commonly used topics, so no namespace
+	// cmd_vel is used by navigation stack and by pentapod_server
+	// engine
+	cmd_vel 		= handle->subscribe("cmd_vel" ,  10 , &OdomPublisher::speedCommandSubscriber, this);
+
+	// odometry is coming directly from bot without being merged with SLAM
+
+	odom_pub 		= handle->advertise<nav_msgs::Odometry>("odom", 50);
 
 	// these topcis are self_made and specific to the pentapod
+	// they are published by pentapod_server
 	cmd_body_pose 	= handle->subscribe("/engine/cmd_pose" , 10 , &OdomPublisher::bodyPoseCommandSubscriber, this);
 	cmd_mode 		= handle->subscribe("/engine/cmd_mode" , 10 , &OdomPublisher::modeCommandSubscriber, this);
 	state_pub 	    = handle->advertise<std_msgs::String>("/engine/get_state", 50);

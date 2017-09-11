@@ -1,12 +1,14 @@
 # footprint of robot is a circle with radius 0.4[m]
-robot_radius: 0.4
+# robot_radius: 0.4
 # footprint is polygon with 5 egde and radius of 0.4[m]
-# footprint: [ [-0.32,-0.24], [0.12,-0.38], [0.4,0], [0.12,0.38], [-0.32,0.24]]
+footprint: [ [-0.32,-0.24], [0.12,-0.38], [0.4,0], [0.12,0.38], [-0.32,0.24]]
 transform_tolerance: 0.2
 map_type: costmap
 obstacle_layer:
   enabled: true
-  obstacle_range: 3.0
+# the maximum range sensor reading that will result in an obstacle being put into the costmap
+  obstacle_range: 2.5  
+# determines the range to which we will raytrace freespace given a sensor reading
   raytrace_range: 3.5
 # The inflation radius should be set to the maximum distance from obstacles 
 # at which a cost should be incurred. For example, setting the inflation 
