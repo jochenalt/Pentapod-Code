@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/jochenalt/catkin_workspace/src
+CMAKE_SOURCE_DIR = /home/jochenalt/catkin_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/jochenalt/catkin_workspace/src
+CMAKE_BINARY_DIR = /home/jochenalt/catkin_ws/src
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -135,14 +135,14 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/jochenalt/catkin_workspace/src && $(CMAKE_COMMAND) -E cmake_progress_start /home/jochenalt/catkin_workspace/src/CMakeFiles /home/jochenalt/catkin_workspace/src/pentapod_server/CMakeFiles/progress.marks
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jochenalt/catkin_workspace/src/CMakeFiles 0
+	cd /home/jochenalt/catkin_ws/src && $(CMAKE_COMMAND) -E cmake_progress_start /home/jochenalt/catkin_ws/src/CMakeFiles /home/jochenalt/catkin_ws/src/pentapod_server/CMakeFiles/progress.marks
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jochenalt/catkin_ws/src/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/clean
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/clean
 .PHONY : clean
 
 # The main clean target
@@ -152,22 +152,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/preinstall
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/preinstall
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/jochenalt/catkin_workspace/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/jochenalt/catkin_ws/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 pentapod_server/CMakeFiles/pentapod_server_node.dir/rule:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/CMakeFiles/pentapod_server_node.dir/rule
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f CMakeFiles/Makefile2 pentapod_server/CMakeFiles/pentapod_server_node.dir/rule
 .PHONY : pentapod_server/CMakeFiles/pentapod_server_node.dir/rule
 
 # Convenience name for target.
@@ -177,7 +177,7 @@ pentapod_server_node: pentapod_server/CMakeFiles/pentapod_server_node.dir/rule
 
 # fast build rule for target.
 pentapod_server_node/fast:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/build
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/build
 .PHONY : pentapod_server_node/fast
 
 src/CmdDispatcher.o: src/CmdDispatcher.cpp.o
@@ -186,7 +186,7 @@ src/CmdDispatcher.o: src/CmdDispatcher.cpp.o
 
 # target to build an object file
 src/CmdDispatcher.cpp.o:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.o
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.o
 .PHONY : src/CmdDispatcher.cpp.o
 
 src/CmdDispatcher.i: src/CmdDispatcher.cpp.i
@@ -195,7 +195,7 @@ src/CmdDispatcher.i: src/CmdDispatcher.cpp.i
 
 # target to preprocess a source file
 src/CmdDispatcher.cpp.i:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.i
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.i
 .PHONY : src/CmdDispatcher.cpp.i
 
 src/CmdDispatcher.s: src/CmdDispatcher.cpp.s
@@ -204,7 +204,7 @@ src/CmdDispatcher.s: src/CmdDispatcher.cpp.s
 
 # target to generate assembly for a file
 src/CmdDispatcher.cpp.s:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.s
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/CmdDispatcher.cpp.s
 .PHONY : src/CmdDispatcher.cpp.s
 
 src/mongoose.o: src/mongoose.c.o
@@ -213,7 +213,7 @@ src/mongoose.o: src/mongoose.c.o
 
 # target to build an object file
 src/mongoose.c.o:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.o
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.o
 .PHONY : src/mongoose.c.o
 
 src/mongoose.i: src/mongoose.c.i
@@ -222,7 +222,7 @@ src/mongoose.i: src/mongoose.c.i
 
 # target to preprocess a source file
 src/mongoose.c.i:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.i
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.i
 .PHONY : src/mongoose.c.i
 
 src/mongoose.s: src/mongoose.c.s
@@ -231,7 +231,7 @@ src/mongoose.s: src/mongoose.c.s
 
 # target to generate assembly for a file
 src/mongoose.c.s:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.s
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/mongoose.c.s
 .PHONY : src/mongoose.c.s
 
 src/node.o: src/node.cpp.o
@@ -240,7 +240,7 @@ src/node.o: src/node.cpp.o
 
 # target to build an object file
 src/node.cpp.o:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.o
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.o
 .PHONY : src/node.cpp.o
 
 src/node.i: src/node.cpp.i
@@ -249,7 +249,7 @@ src/node.i: src/node.cpp.i
 
 # target to preprocess a source file
 src/node.cpp.i:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.i
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.i
 .PHONY : src/node.cpp.i
 
 src/node.s: src/node.cpp.s
@@ -258,7 +258,7 @@ src/node.s: src/node.cpp.s
 
 # target to generate assembly for a file
 src/node.cpp.s:
-	cd /home/jochenalt/catkin_workspace/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.s
+	cd /home/jochenalt/catkin_ws/src && $(MAKE) -f pentapod_server/CMakeFiles/pentapod_server_node.dir/build.make pentapod_server/CMakeFiles/pentapod_server_node.dir/src/node.cpp.s
 .PHONY : src/node.cpp.s
 
 # Help Target
@@ -295,6 +295,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/jochenalt/catkin_workspace/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/jochenalt/catkin_ws/src && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
