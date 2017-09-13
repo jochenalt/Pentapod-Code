@@ -34,6 +34,8 @@ using namespace std;
 
 int main(int argc, char * argv[]) {
 
+	ROS_INFO_STREAM("starting pentapod_engine node");
+
 	ros::init(argc, argv, "pentapod_engine_node");
 
 	ros::NodeHandle rosNode;
@@ -65,27 +67,24 @@ int main(int argc, char * argv[]) {
 
 	// main loop that takes care of the webserver as well as ROS
 	TimeSamplerStatic stateTimer;
-	TimeSamplerStatic transformationTimer;
+	const int publishEveryNthLoop = 3; // set to 3 to reach 10Hz transformation frequency
+	int loopCounter = 0;
 	while (rosNode.ok()) {
 		// pump callbacks of topics
 		ros::spinOnce();
-
-		// broadcast transformations with 10Hz
-		if (transformationTimer.isDue(100)) {
-			odomPublisher.breadcastTransformation();
-		}
-
-		// broadcast the state with 10Hz
-		if (stateTimer.isDue(100)) {
-			odomPublisher.broadcastOdom();
-			odomPublisher.broadcastState();
-		}
 
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
 		// so call right after sleep
 		mainLoopRate.sleep();
 		engine.loop();
+
+		// broadcast transformations at 10Hz which is 1000/(3*CORTEX_SAMPLE_RATE)
+		if ((loopCounter++ % publishEveryNthLoop) == 0) {
+			odomPublisher.broadcastState();
+			odomPublisher.breadcastTransformation();
+			odomPublisher.broadcastOdom();
+		}
 	}
 
 	return 0;

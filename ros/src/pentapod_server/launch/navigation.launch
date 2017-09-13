@@ -3,19 +3,28 @@
  -->
 <launch>
 
+   <master auto="start"/>
+   <!-- <param name="use_sim_time" value="true"/> -->
    <!-- without SLAM, the map2odom transformation is not done, replace that by static transformation.
         with SLAM, take care that hectorMapping parameter pub_map_odom_transform is set.
 	   <include file="$(find pentapod_server)/launch/pentapod_bot.launch" />
 
    -->
 
-   <include file="$(find pentapod_engine)/launch/pentapod_engine.launch" />
-   <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
+   <include file="$(find pentapod_engine)/launch/pentapod_engine.launch"/>
+   <include file="$(find pentapod_server)/launch/pentapod_server.launch"/>
 
-   <node name="map_server" pkg="map_server" type="map_server" args="$(find pentapod_server)/launch/mymap.yaml" />
+   <node name="map_server" pkg="map_server" type="map_server" args="$(find pentapod_server)/maps/mymap.yaml" output="screen" />
    <node pkg="tf" type="static_transform_publisher" name="map_2_odom"
-	     args="0 0 0 0 0 0 /map /odom 100"/>
+	     args="0 0 0 0 0 0 /map /odom 100"/> 
 	     
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+       <!-- parameters valid for local and global costmap -->
+       <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
+       <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" /> 
+
+       <rosparam file="$(find pentapod_server)/costmaps/local_costmap_params.yaml" command="load" /> 
+       <rosparam file="$(find pentapod_server)/costmaps/global_costmap_params.yaml" command="load" /> 
+       <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
    </node>
 </launch>

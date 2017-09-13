@@ -1,20 +1,22 @@
-# footprint of robot is a circle with radius 0.4[m]
-# robot_radius: 0.4
-# footprint is polygon with 5 egde and radius of 0.4[m]
-footprint: [ [-0.32,-0.24], [0.12,-0.38], [0.4,0], [0.12,0.38], [-0.32,0.24]]
-transform_tolerance: 0.2
+# footprint of the pentapod is actually 0.4m, but we use 0.2[m] for the sake of navigation stack
+# which works better with a smaller footprint and a bigger inflation radius
+robot_radius: 0.20
+# footprint is polygon with 5 egde and radius of 0.04[m]
+# footprint: [ [-0.032,-0.024], [0.012,-0.038], [0.04,0], [0.012,0.038], [-0.032,0.024]]
+# timing tolerance of transformation in [s] 
+transform_tolerance: 0.3
 map_type: costmap
 obstacle_layer:
   enabled: true
-# the maximum range sensor reading that will result in an obstacle being put into the costmap
+  # the maximum range sensor reading that will result in an obstacle being put into the costmap
   obstacle_range: 2.5  
-# determines the range to which we will raytrace freespace given a sensor reading
+  # determines the range to which we will raytrace freespace given a sensor reading
   raytrace_range: 3.5
-# The inflation radius should be set to the maximum distance from obstacles 
-# at which a cost should be incurred. For example, setting the inflation 
-# radius at 0.55 meters means that the robot will treat all paths that 
-# stay 0.55 meters or more away from obstacles as having equal obstacle cost. 
-  inflation_radius: 0.5
+  # The inflation radius should be set to the maximum distance from obstacles 
+  # Since we have defined a footprint that is smaller than the real footprint 
+  # we have to compensate that by setting a bigger inflation radius of 0.2m
+  inflation_radius: 0.2
+  # do not go in unknown space
   track_unknown_space: false
   combination_method: 1
   observation_sources: laser_scan_sensor
@@ -22,7 +24,10 @@ obstacle_layer:
 inflation_layer:
   enabled: true
   cost_scaling_factor: 10.0 
-  inflation_radius: 0.5 
+  # The inflation radius should be set to the maximum distance from obstacles 
+  # Since we have defined a footprint that is smaller than the real footprint 
+  # we have to compensate that by setting a bigger inflation radius of 0.2m
+  inflation_radius: 0.2
 static_layer:
   enabled: true
-  map_topic: "/map"
+  map_topic: /map

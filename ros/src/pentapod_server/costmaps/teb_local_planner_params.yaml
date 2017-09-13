@@ -21,7 +21,7 @@ acc_lim_theta: 0.5
 # change that to a proper insect modelling without turning radius
 
 min_turning_radius: 0.1 
-wheelbase: 0.8                 # Wheelbase of our robot 
+wheelbase: 0.01                 # Wheelbase of our robot 
 
 cmd_angle_instead_rotvel: True # stage simulator takes the angle instead of the rotvel as input (twist message)
 footprint_model: circular      # types: "point", "circular", "two_circles", "line", "polygon" type: "line"

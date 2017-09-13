@@ -75,6 +75,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 
 int main(int argc, char * argv[]) {
 
+	ROS_INFO_STREAM("starting pentapod_server node");
+
 	ros::init(argc, argv, "pentapod_server_node");
 
 	ros::NodeHandle rosNode;

@@ -55,6 +55,8 @@ void OdomPublisher::speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr
 	engine->setTargetSpeed(fullspeed);
 	engine->setTargetAngularSpeed(vel_msg->angular.z);
 	engine->setTargetWalkingDirection(newWalkingDirection);
+
+	ROS_INFO_STREAM("received cmd_vel=(x,y)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm])->" << fullspeed << ", " << newWalkingDirectionDeviation);
 }
 
 
@@ -138,7 +140,7 @@ void OdomPublisher::broadcastOdom() {
 	odom.twist.twist.linear.y = engine->getCurrentSpeedY()/1000.0;
 	odom.twist.twist.angular.z = engine->getCurrentAngularSpeed();
 	odom_pub.publish(odom);
-}
+	}
 
 void OdomPublisher::broadcastState() {
 	// publish serialized state via ROS
