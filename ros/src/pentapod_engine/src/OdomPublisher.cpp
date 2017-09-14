@@ -56,7 +56,12 @@ void OdomPublisher::speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr
 	engine->setTargetAngularSpeed(vel_msg->angular.z);
 	engine->setTargetWalkingDirection(newWalkingDirection);
 
-	ROS_INFO_STREAM("received cmd_vel=(x,y)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm])->" << fullspeed << ", " << newWalkingDirectionDeviation);
+	if (!engine->isListeningToMovements()) {
+		ROS_ERROR_STREAM_THROTTLE(10, "received cmd_vel(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm]), but engine is currently not listening to movements, call Engine::wakeUp first");
+
+	} else {
+		ROS_INFO_STREAM_THROTTLE(1, "received cmd_vel=(x,y)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm])-> (v,direction)=" << fullspeed << "[mm/s], " << degrees(newWalkingDirectionDeviation) << "[deg]");
+	}
 }
 
 

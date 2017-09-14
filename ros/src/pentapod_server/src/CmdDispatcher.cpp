@@ -233,7 +233,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	// check, if TransactionExecutor is called with orchestrated calls
+	// deliver the slam and costmaps map
 	if (hasPrefix(uri, "/map/")) {
 		string mapCommand = uri.substr(string("/map/").length());
 		// map/get
