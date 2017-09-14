@@ -48,16 +48,20 @@ bool Engine::setupSimulation() {
 }
 
 bool Engine::setupCommon() {
-
 	kinematics.setup(*this);
 	bodyKinematics.setup(*this);
 	gaitControl.setup(*this);
 
     frontLegPose.position = Point(280,1,80);
 
+    // assume that touches is on the ground
 	inputBodyPose.position.z = minBodyHeight;
 	moderatedBodyPose = inputBodyPose;
 	currentBodyPose = inputBodyPose;
+
+	// before walking, we need to lift to standard walking height
+	inputBodyPose.position.z = standardBodyHeigh;
+
 	fourWalkLegRatio = 0; // we start with 5 legs mode. 0 % of 4 legs mode
 	gaitControl.setTargetGaitMode(OneLegInTheAir);
 	targetGaitMode = OneLegInTheAir;
@@ -66,6 +70,9 @@ bool Engine::setupCommon() {
 	targetWalkingDirection = 0;
 	targetSpeed = 0;
 	targetAngularSpeed = 0;
+
+	lastFeetOnGround = {true,true,true,true,true};
+
 
 	// impose random foot points. Should be overwritten by first-time sensor read
 	PentaPointType footPoints;
@@ -85,7 +92,7 @@ bool Engine::setupCommon() {
 
 void Engine::wakeUp() {
 	ROS_DEBUG_STREAM("wake up");
-	if (generalMode != WalkingMode) {
+	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
 		generalMode = LiftBody;
 		bodyKinematics.startupPhase(true);
 	}
@@ -181,6 +188,8 @@ LegPose Engine::getFrontLegPoseWorld() {
 
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
+	wakeUpIfNecessary();
+
 
 	// dont take this if we actually wake up
 	if ((generalMode == WalkingMode) || (generalMode == TerrainMode) || (generalMode == LiftBody))
@@ -282,11 +291,25 @@ mmPerSecond& Engine::getTargetSpeed () {
 	return targetSpeed;
 };
 
+bool Engine::wakeUpIfNecessary() {
+	if (!isListeningToMovements()) {
+		if (!isTurnedOn())
+			turnOn();
+		if (generalMode == BeingAsleep)
+			wakeUp();
+	}
+
+	return ((generalMode == WalkingMode) || (generalMode == TerrainMode));
+}
+
 void Engine::setTargetSpeed (mmPerSecond newSpeed /* mm/s */) {
+	wakeUpIfNecessary();
 	targetSpeed = newSpeed;
 };
 
 void Engine::setTargetAngularSpeed(radPerSecond rotateZ) {
+	wakeUpIfNecessary();
+
 	rotateZ = constrain(rotateZ, -maxAngularSpeed, maxAngularSpeed);
 	targetAngularSpeed = rotateZ;
 };
@@ -296,6 +319,7 @@ radPerSecond& Engine::getTargetAngularSpeed() {
 };
 
 void Engine::setTargetWalkingDirection(angle_rad newWalkingDirection) {
+	wakeUpIfNecessary();
 	targetWalkingDirection = newWalkingDirection;
 };
 
@@ -381,18 +405,17 @@ void Engine::computeGaitMode() {
 	realnum dT = gaitModeSampler.dT();
 
 	int numberOfLegsOnTheGround = gaitControl.getFeetOnTheGround();
-	static FootOnGroundFlagType lastFeetOnGround = {true,true,true,true,true};
 	// turning the legs to FourLegGait-Position takes the time of moving one leg
 	realnum switchGaitDuration = 1.0/gaitControl.getGaitSpeed()/NumberOfLegs; // wait one and a half step
 
-	bool legWentDown [NumberOfLegs];
-	bool legWentUp [NumberOfLegs];
+	bool legJustWentDown [NumberOfLegs];
+	bool legJustWentUp [NumberOfLegs];
 
 	// find out which legs touch or leave the ground at this very moment
 	const FootOnGroundFlagType& legOnGround = gaitControl.getFeetOnGround();
 	for (int i = 0;i<NumberOfLegs;i++) {
-		legWentDown[i] = (lastFeetOnGround[i] == false) && (legOnGround[i] == true);
-		legWentUp[i]   = (lastFeetOnGround[i] == true)  && (legOnGround[i] == false);
+		legJustWentDown[i] = (lastFeetOnGround[i] == false) && (legOnGround[i] == true);
+		legJustWentUp[i]   = (lastFeetOnGround[i] == true)  && (legOnGround[i] == false);
 	}
 
 	// cout << "dn" << legWentDown[0] << "|" << legWentDown[1]<< "|" << legWentDown[2] << "|" << legWentDown[3] << "|" << legWentDown[4]
@@ -434,7 +457,7 @@ void Engine::computeGaitMode() {
 			// when finished, switch to FourLeg mode
 			if ((gaitControl.getTargetGaitMode() == OneLegInTheAir) &&
 				(numberOfLegsOnTheGround >=  NumberOfLegs - 1)) {
-				if (((fourWalkLegRatio < floatPrecision) && legWentUp[NumberOfLegs/2]) ||
+				if (((fourWalkLegRatio < floatPrecision) && legJustWentUp[NumberOfLegs/2]) ||
 					((fourWalkLegRatio > floatPrecision) && !legOnGround[NumberOfLegs/2]))	{
 					fourWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
 					gaitControl.setForceGait(true);
@@ -460,7 +483,7 @@ void Engine::computeGaitMode() {
 			}
 			if (gaitControl.getTargetGaitMode() == FourLegWalk) {
 				if ((gaitControl.getToePointsWorld()[NumberOfLegs/2].distanceSqr(gaitControl.getGaitRefPointsWorld()[NumberOfLegs/2]) < sqr(maxFootSpeed*dT)) &&
-					(legWentDown[0] || legWentDown[1] || legWentDown[3] || legWentDown[4] || (numberOfLegsOnTheGround == 4))) {
+					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
 					gaitControl.setForceGait(false); // switching done, do not force gait anymore
 					gaitControl.setIncludeFrontLeg(true);
@@ -477,7 +500,7 @@ void Engine::computeGaitMode() {
 			}
 			if (gaitControl.getTargetGaitMode() == FourLegWalk) {
 				if ((gaitControl.getToePointsWorld()[NumberOfLegs/2].distanceSqr(gaitControl.getGaitRefPointsWorld()[NumberOfLegs/2]) < sqr(maxFootSpeed*dT)) &&
-					(legWentDown[0] || legWentDown[1] || legWentDown[3] || legWentDown[4] || (numberOfLegsOnTheGround == 4))) {
+					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
 					gaitControl.setIncludeFrontLeg(true);
 					gaitControl.setForceGait(false); // switching done, do not force gait anymore
@@ -496,7 +519,7 @@ void Engine::computeBodySwing() {
 	realnum angle;
 
 	realnum gaitRatio = gaitControl.getGaitRatio();
-	realnum speed = getTargetSpeed();
+	realnum speed = targetSpeed;
 	GaitModeType gaitMode = gaitControl.getCurrentGaitMode();
 
 	if (NumberOfLegs % 2 == 0)
@@ -592,8 +615,6 @@ void Engine::computeGaitSpeed() {
 	realnum fastestFootSpeed = gaitControl.getFastestFootSpeed();
 
 	// moderated body is following the input body position, but limited by max speed
-	static Pose lastModeratedBodyPose = moderatedBodyPose;
-	static TimeSamplerStatic gaitSpeedSampler;
 	realnum bodySpeed = 0;
 	realnum dT = gaitSpeedSampler.dT();
 	if (dT > 0)
@@ -813,9 +834,9 @@ void Engine::getState(EngineState &data) {
 void Engine::computeMovement() {
 	realnum dT = movementSample.dT();
 
-	if ((generalMode == WalkingMode) || (generalMode == TerrainMode)) {
+	if (isListeningToMovements()) {
 		// accelerate to totalSpeed
-		if (abs(getCurrentSpeed() - getTargetSpeed()) > floatPrecision) {
+		if (abs(getCurrentSpeed() - targetSpeed) > floatPrecision) {
 			realnum speedDiff = getTargetSpeed()-getCurrentSpeed();
 			if (abs(speedDiff)> maxAcceleration*dT)
 				speedDiff = sgn(speedDiff)*maxAcceleration*dT;

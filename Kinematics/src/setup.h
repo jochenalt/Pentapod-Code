@@ -26,6 +26,7 @@ const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 // maximum and minimum body height
 const realnum maxBodyHeight = 290.0;
 const realnum minBodyHeight = 35.0;
+const realnum standardBodyHeigh = 70.0;
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 240.0;

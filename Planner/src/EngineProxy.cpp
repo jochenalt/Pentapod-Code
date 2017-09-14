@@ -174,6 +174,7 @@ void EngineProxy::loop() {
 		}
 
 	} else {
+		//
 		engine.ratedloop();
 
 		// fetch state data from server and put it in the client

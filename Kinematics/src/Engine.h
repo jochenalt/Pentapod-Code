@@ -127,6 +127,7 @@ public:
 
 private:
 
+	bool wakeUpIfNecessary();
 	bool setupCommon();
 
     // access internal structures
@@ -164,24 +165,25 @@ private:
 
 	radPerSecond targetAngularSpeed;
 	angle_rad targetWalkingDirection;
-	realnum targetSpeed;			// set speed in mm/s
+	realnum targetSpeed;				// set speed in mm/s
+	FootOnGroundFlagType lastFeetOnGround; // feet on the ground flag of last loop
 
 	Pose inputBodyPose;					// input pose, which is moderated afterwards and gets additional breathing
-	GaitModeType targetGaitMode;			// gait mode (5-leg, 4-leg,...)
+	GaitModeType targetGaitMode;		// gait mode (5-leg, 4-leg,...)
 	Pose moderatedBodyPose;				// pose after limiting acceleration
 	Pose currentBodyPose;				// current real pose including body swing
 	Pose bodySwing;						// add on to bodypose simulating sexy walk and breathing
 	realnum humpsCompensation;  		// if any humps are on the ground,  adapt the body height accordingly
 
 	Point targetFrontLeg;				// target position of the front leg
-	LegPose frontLegPose;					// current pose of the single front leg
+	LegPose frontLegPose;				// current pose of the single front leg
 
 	PentaPointType hipPoints;			// points of all hips in absolute world coordinates
 	PentaPointType groundPoints;		// projection of the toe to the ground in absolute world coordinates
 	LegAnglesType legAngles;			// current angles of all legs
 
 	ExclusiveMutex loopMutex;			// loop is running in an own thread. Mutex to synchronize that with commands
-
+	Pose lastModeratedBodyPose;
 	TimeSamplerStatic mainLoopTimeSample;
 	TimeSamplerStatic bodyPoseSampler;
 	TimeSamplerStatic gaitModeSampler;
@@ -189,6 +191,7 @@ private:
 	TimeSamplerStatic gaitSpeedSampler;
 	TimeSamplerStatic warpingCompensationSampler;
 	TimeSamplerStatic movementSample;
+
 
 	TimeSamplerStatic frontLegSampler;
 	TimeSamplerStatic humpCompensationFilterSampler;
