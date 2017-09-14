@@ -71,7 +71,9 @@ bool Engine::setupCommon() {
 	targetSpeed = 0;
 	targetAngularSpeed = 0;
 
-	lastFeetOnGround = {true,true,true,true,true};
+	// we start with assuming trhat all legs are on the ground
+	for (int i = 0;i<NumberOfLegs;i++)
+		lastFeetOnGround[i] = true;
 
 
 	// impose random foot points. Should be overwritten by first-time sensor read
