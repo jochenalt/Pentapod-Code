@@ -9,7 +9,7 @@
 #include "MemoryBase.h"
 #include "pins.h"
 
-#define EEMEM_MAGICNUMBER 1598 					// thats my birthday, used to check if eeprom has been initialized
+#define EEMEM_MAGICNUMBER 1599 					// thats my birthday, used to check if eeprom has been initialized
 void* magicMemoryNumberAddress = (void*)0;  	// my birthday is stored at this address
 void* memoryAddress = (void*)sizeof(int16_t);	// address of user-defined EEPROM area
 
@@ -28,15 +28,24 @@ boolean MemoryBase::setup() {
 		logger->println(F("EEPROM initialized."));
 #endif
 
+		logger->println("1");
 		// hopefully the defaults have been initialized in the constructor of the derived
 		save();
+		logger->println("2");
 		
 		// write magic number in the eeprom to indicate initialization
 		markEEPROMInitialized();
+		logger->println("3");
+
 		return true;
 		
-	} else
+	} else {
+		logger->println("4");
+
 		read();
+		logger->println("5");
+	}
+
 	return false;		
 }
 
