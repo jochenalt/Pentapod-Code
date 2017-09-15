@@ -128,7 +128,7 @@ void OdomPublisher::broadcastOdom() {
 	odom_trans.child_frame_id = "base_link";
 	odom_trans.transform.translation.x = engine->getOdomPose().position.x/1000.0;
 	odom_trans.transform.translation.y = engine->getOdomPose().position.y/1000.0;
-	odom_trans.transform.translation.z = engine->getOdomPose().position.z/1000.0 + CAD::LaserSensorHeight;
+	odom_trans.transform.translation.z = engine->getOdomPose().position.z/1000.0;
 	odom_trans.transform.rotation = odom_quat;
 	broadcaster.sendTransform(odom_trans);
 
@@ -148,7 +148,7 @@ void OdomPublisher::broadcastOdom() {
 	odom.twist.twist.linear.y = engine->getCurrentSpeedY()/1000.0;
 	odom.twist.twist.angular.z = engine->getCurrentAngularSpeed();
 	odom_pub.publish(odom);
-	}
+}
 
 void OdomPublisher::broadcastState() {
 	// publish serialized state via ROS
@@ -174,9 +174,9 @@ void OdomPublisher::breadcastTransformation() {
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::Quaternion(bodyPoseQ.x, bodyPoseQ.y, bodyPoseQ.z, bodyPoseQ.w),
-					      tf::Vector3(engine->getCurrentBodyPose().position.x*1000.0,
-					    		      engine->getCurrentBodyPose().position.y*1000.0,
-									  engine->getCurrentBodyPose().position.z*1000.0 + CAD::LaserSensorHeight)),
+					      tf::Vector3(engine->getCurrentBodyPose().position.x/1000.0,
+					    		      engine->getCurrentBodyPose().position.y/1000.0,
+									  engine->getCurrentBodyPose().position.z/1000.0 + CAD::LaserSensorHeight/1000.0)),
 			ros::Time::now(),"base_link", "base_laser"));
 
 

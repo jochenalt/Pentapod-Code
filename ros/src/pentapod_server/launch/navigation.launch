@@ -23,7 +23,6 @@
       <param name="webserver_port"     		type="int"    value="8000"/>
    </node>
 
-  
    <node name="map_server" pkg="map_server" type="map_server" args="$(find pentapod_server)/maps/mymap.yaml" output="screen" />
    
    <!-- start static transformation map->odom -->
@@ -39,4 +38,6 @@
        <rosparam file="$(find pentapod_server)/costmaps/global_costmap_params.yaml" command="load" /> 
        <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
    </node>
+   
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rplidar_ros)/rviz/rplidar.rviz" /> 
 </launch>
