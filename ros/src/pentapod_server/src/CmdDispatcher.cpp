@@ -76,10 +76,12 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
 
+	/*
     // wait for the action server to come up
 	while(!moveBaseClient->waitForServer(ros::Duration(5.0))){
 	    ROS_INFO_THROTTLE(1,"Waiting for the move_base action server to come up");
 	}
+	*/
 }
 
 
