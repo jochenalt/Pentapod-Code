@@ -10,6 +10,7 @@
 #include "Engine.h"
 
 Engine::Engine() {
+	isSetup = false;
 }
 
 
@@ -22,6 +23,8 @@ bool Engine::setupProduction(string i2cport, int i2cadr, string cortextSerialPor
 
 	// if cortex is up and running
 	if (ok) {
+		ROS_DEBUG_STREAM("fetch angles");
+
 		// fetch the angles via cortex to initialize the feet with it
 		ok = legController.fetchAngles(legAngles);
 		Rotation imuOrientation = legController.getIMUOrientation();
@@ -34,16 +37,23 @@ bool Engine::setupProduction(string i2cport, int i2cadr, string cortextSerialPor
 		setTargetBodyPose(bodyPose, true);
 
 		// impose the footpoint into state
+		ROS_DEBUG_STREAM("impose foot points");
 		imposeFootPointsWorld(footPoints);
 	}
 
+	ROS_DEBUG_STREAM("Engin::setupProduction done");
+	isSetup = true;
 	return ok;
 }
 
 bool Engine::setupSimulation() {
-	ROS_DEBUG_STREAM("Engin::setupSimulation");
+	ROS_DEBUG_STREAM("Engine::setupSimulation");
 
 	bool ok = setupCommon();
+	ROS_DEBUG_STREAM("Engine::setupSimulation done");
+
+	isSetup = true;
+
 	return ok;
 }
 
@@ -190,8 +200,6 @@ LegPose Engine::getFrontLegPoseWorld() {
 
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
-	wakeUpIfNecessary();
-
 
 	// dont take this if we actually wake up
 	if ((generalMode == WalkingMode) || (generalMode == TerrainMode) || (generalMode == LiftBody))
@@ -294,11 +302,19 @@ mmPerSecond& Engine::getTargetSpeed () {
 };
 
 bool Engine::wakeUpIfNecessary() {
+
+	if (!isSetup)
+		return false;
+
 	if (!isListeningToMovements()) {
-		if (!isTurnedOn())
+		if (!isTurnedOn()) {
+			ROS_DEBUG_STREAM("Engine::wakeUpIfNecessary:turnOn");
 			turnOn();
-		if (generalMode == BeingAsleep)
+		}
+		if (generalMode == BeingAsleep) {
+			ROS_DEBUG_STREAM("Engine::wakeUpIfNecessary:turnwakeUp");
 			wakeUp();
+		}
 	}
 
 	return ((generalMode == WalkingMode) || (generalMode == TerrainMode));

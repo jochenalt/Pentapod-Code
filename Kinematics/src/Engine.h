@@ -199,6 +199,7 @@ private:
 	GeneralEngineModeType generalMode;
 	SpatialPID imuPID;
 	bool turnedOn;
+	bool isSetup;
 
 };
 

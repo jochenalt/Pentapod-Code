@@ -59,7 +59,10 @@ int main(int argc, char * argv[]) {
 		cortexOk = engine.setupSimulation();
 	}
 
+	ROS_DEBUG_STREAM("cortex setup done " << cortexOk);
+
 	// initialize all topics
+        ROS_DEBUG_STREAM("initializaing publisher");
 	odomPublisher.setup(rosNode, engine);
 
 	// main loop spins at the rate the cortex wants calls (around 45Hz)
@@ -69,6 +72,7 @@ int main(int argc, char * argv[]) {
 	TimeSamplerStatic stateTimer;
 	const int publishEveryNthLoop = 3; // set to 3 to reach 10Hz transformation frequency
 	int loopCounter = 0;
+        ROS_DEBUG_STREAM("entering engine main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
 	while (rosNode.ok()) {
 		// pump callbacks of topics
 		ros::spinOnce();
