@@ -35,6 +35,12 @@
 // publishing transformations
 #include <tf/transform_broadcaster.h>
 
+// move base action client
+#include <actionlib/client/simple_action_client.h>
+#include <move_base_msgs/MoveBaseAction.h>
+
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
 using namespace std;
 
 class CommandDispatcher {
@@ -51,8 +57,10 @@ public:
 	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
 	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
 	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
-	void setTrajectory(const nav_msgs::Path::ConstPtr& path);
+	void listenToTrajectory(const nav_msgs::Path::ConstPtr& path);
 
+	void setNavigationGoal(const Pose& goalPose);
+	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
 private:
 
@@ -79,6 +87,8 @@ private:
 	ros::Subscriber odomSubscriber;
 	ros::Subscriber stateSubscriber;
 	ros::Subscriber pathSubscriber;
+
+	MoveBaseClient* moveBaseClient;
 };
 
 

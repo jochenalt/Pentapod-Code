@@ -8,6 +8,7 @@
 
 #include "Util.h"
 
+#include <move_base_msgs/MoveBaseAction.h>
 
 using namespace std;
 
@@ -47,7 +48,11 @@ CommandDispatcher::CommandDispatcher() {
 }
 
 
+
 void CommandDispatcher::setup(ros::NodeHandle& handle) {
+
+	//tell the action client that we want to spin a thread by default and wait until up and running
+	moveBaseClient = new MoveBaseClient("move_base", true);
 
 	// subscribe to the SLAM topic that deliveres the occupancyGrid
 	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
@@ -59,7 +64,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &CommandDispatcher::listenerSLAMout,  this);
 
 	// subscribe to the path
-	pathSubscriber = handle.subscribe("/trajectory", 1000, &CommandDispatcher::setTrajectory,  this);
+	pathSubscriber = handle.subscribe("/trajectory", 1000, &CommandDispatcher::listenToTrajectory,  this);
 
 	// subscribe to the bots odom (without being fused with SLAM)
 	odomSubscriber = handle.subscribe("odom", 1000, &CommandDispatcher::listenerOdometry, this);
@@ -70,7 +75,46 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
+
+    // wait for the action server to come up
+	while(!moveBaseClient->waitForServer(ros::Duration(5.0))){
+	    ROS_INFO_THROTTLE(1,"Waiting for the move_base action server to come up");
+	}
 }
+
+
+actionlib::SimpleClientGoalState CommandDispatcher::getNavigationGoalStatus() {
+	return moveBaseClient->getState();
+}
+
+void CommandDispatcher::setNavigationGoal(const Pose& goalPose) {
+
+	  move_base_msgs::MoveBaseGoal goal;
+
+	  //we'll send a goal to the robot to move 1 meter forward
+	  goal.target_pose.header.frame_id = "base_link";
+	  goal.target_pose.header.stamp = ros::Time::now();
+
+	  goal.target_pose.pose.position.x = goalPose.position.x;
+	  goal.target_pose.pose.position.y = goalPose.position.y;
+
+	  geometry_msgs::Quaternion goalPoseQuat  =
+			tf::createQuaternionMsgFromYaw(goalPose.orientation.z);
+
+	  goal.target_pose.pose.orientation = goalPoseQuat;
+
+	  moveBaseClient->sendGoal(goal);
+
+	  /*
+	  moveBaseClient->waitForResult();
+
+	  if(moveBaseClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+	    ROS_INFO("Hooray, the base moved 1 meter forward");
+	  else
+	    ROS_INFO("The base failed to move forward 1 meter for some reason");
+	   */
+}
+
 
 string getResponse(bool ok) {
 	std::ostringstream s;
@@ -289,6 +333,32 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
+	if (hasPrefix(uri, "/navigation/")) {
+		string command = uri.substr(string("/navigation/").length());
+		// map/get
+		if (hasPrefix(command, "goal/set")) {
+			string bodyPoseStr;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "bodypose", bodyPoseStr);
+			std::stringstream paramIn(bodyPoseStr);
+			string paramstr = parseString(paramIn, ok);
+			std::stringstream in(paramstr);
+			Pose goalPose;
+			goalPose.deserialize(in,ok);
+
+			setNavigationGoal(goalPose);
+			response = getResponse(true);
+			okOrNOk = true;
+			return true;
+		}
+		else if (hasPrefix(command,"goal")) {
+			std::ostringstream out;
+			out << (int)getNavigationGoalStatus().state_;
+			response = out.str() + "," + getResponse(true);
+			okOrNOk = true;
+		}
+		return okOrNOk;
+	}
+
 
 	okOrNOk = false;
 	return false;
@@ -364,7 +434,7 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 }
 
 // subscription to path
-void CommandDispatcher::setTrajectory(const nav_msgs::Path::ConstPtr& path) {
+void CommandDispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path) {
 	Trajectory trajectory;
 	trajectory.clear();
 	for (unsigned int i = 0;i<path->poses.size();i++) {

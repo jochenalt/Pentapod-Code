@@ -34,9 +34,9 @@ public:
 	void broadcastOdom();
 	void broadcastState();
 
-	void speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr& vel_msg);
-	void bodyPoseCommandSubscriber (const geometry_msgs::Twist::ConstPtr& bodypose_msg);
-	void modeCommandSubscriber (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg);
+	void listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& vel_msg);
+	void listenToBodyPose (const geometry_msgs::Twist::ConstPtr& bodypose_msg);
+	void listenToMoveMode (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg);
 
 
 private:

@@ -33,7 +33,7 @@ OdomPublisher::~OdomPublisher() {
 }
 
 
-void OdomPublisher::speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr& vel_msg) {
+void OdomPublisher::listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& vel_msg) {
 	// the x/y coord frame is relative to the walking direction
 	// this needs to be translated into the pentapod engine, that
 	// has a nose-direction where the x/y frame is located and a walking-direction that defines a
@@ -59,7 +59,7 @@ void OdomPublisher::speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr
 	if (!engine->isListeningToMovements()) {
 		// waking up the bot takes probably 10s
 		ROS_WARN_STREAM_THROTTLE(10,
-				"received cmd_vel, but engine is currently not yet listening to movements. Engine is woken up, please wait"):;
+				"received cmd_vel, but engine is currently not yet listening to movements. Engine is woken up, please wait");
 	} else {
 		ROS_INFO_STREAM_THROTTLE(1,
 				"cmd_vel=(x,y|z)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm],"
@@ -68,7 +68,7 @@ void OdomPublisher::speedCommandSubscriber (const geometry_msgs::Twist::ConstPtr
 }
 
 
-void OdomPublisher::bodyPoseCommandSubscriber (const geometry_msgs::Twist::ConstPtr& bodypose_msg) {
+void OdomPublisher::listenToBodyPose (const geometry_msgs::Twist::ConstPtr& bodypose_msg) {
 	Pose bodyPose;
 	bodyPose.position.x = bodypose_msg->linear.x*1000.0;
 	bodyPose.position.y = bodypose_msg->linear.y*1000.0;
@@ -81,7 +81,7 @@ void OdomPublisher::bodyPoseCommandSubscriber (const geometry_msgs::Twist::Const
 	engine->setTargetBodyPose(bodyPose);
 }
 
-void OdomPublisher::modeCommandSubscriber (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg) {
+void OdomPublisher::listenToMoveMode (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg) {
 	switch (mode_msg->command) {
 		case pentapod_engine::engine_command_mode::POWER_MODE_ON_CMD:
 			engine->turnOn();
@@ -238,7 +238,7 @@ void OdomPublisher::setup(ros::NodeHandle& pHandle, Engine& pEngine) {
 	// cmd_vel is commonly used topics, so no namespace
 	// cmd_vel is used by navigation stack and by pentapod_server
 	// engine
-	cmd_vel 		= handle->subscribe("cmd_vel" ,  10 , &OdomPublisher::speedCommandSubscriber, this);
+	cmd_vel 		= handle->subscribe("cmd_vel" ,  10 , &OdomPublisher::listenToSpeedCommand, this);
 
 	// odometry is coming directly from bot without being merged with SLAM
 
@@ -246,7 +246,7 @@ void OdomPublisher::setup(ros::NodeHandle& pHandle, Engine& pEngine) {
 
 	// these topcis are self_made and specific to the pentapod
 	// they are published by pentapod_server
-	cmd_body_pose 	= handle->subscribe("/engine/cmd_pose" , 10 , &OdomPublisher::bodyPoseCommandSubscriber, this);
-	cmd_mode 		= handle->subscribe("/engine/cmd_mode" , 10 , &OdomPublisher::modeCommandSubscriber, this);
+	cmd_body_pose 	= handle->subscribe("/engine/cmd_pose" , 10 , &OdomPublisher::listenToBodyPose, this);
+	cmd_mode 		= handle->subscribe("/engine/cmd_mode" , 10 , &OdomPublisher::listenToMoveMode, this);
 	state_pub 	    = handle->advertise<std_msgs::String>("/engine/get_state", 50);
 }

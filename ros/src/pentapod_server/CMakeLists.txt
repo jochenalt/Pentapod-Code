@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   pentapod_engine
   pentapod_library
+  actionlib
+  move_base_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
    LIBRARIES pentapod_library
-   CATKIN_DEPENDS geometry_msgs sensor_msgs roscpp std_msgs message_runtime pentapod_library
+   CATKIN_DEPENDS geometry_msgs sensor_msgs roscpp std_msgs message_runtime pentapod_library actionlib move_base_msgs
 #  DEPENDS system_lib
 )
 

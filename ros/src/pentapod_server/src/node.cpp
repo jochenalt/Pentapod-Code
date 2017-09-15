@@ -23,15 +23,13 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "sensor_msgs/LaserScan.h"
 
-
 #include "ros/ros.h"
 #include "mongoose.h" 
 
-static struct mg_serve_http_opts s_http_server_opts;
-
-CommandDispatcher cmdDispatcher;
-
 using namespace std;
+
+static struct mg_serve_http_opts s_http_server_opts;
+CommandDispatcher cmdDispatcher;
 
 
 // define an mongoose event handler function that is called whenever a request comes in
@@ -118,7 +116,6 @@ int main(int argc, char * argv[]) {
 
 	// setup all publishers and subscribers
 	cmdDispatcher.setup(rosNode);
-
 
 	// main loop that takes care of the webserver as well as ROS
 	while (rosNode.ok()) {

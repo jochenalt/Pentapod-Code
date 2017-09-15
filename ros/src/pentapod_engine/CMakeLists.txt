@@ -107,7 +107,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
    LIBRARIES pentapod_library
-   CATKIN_DEPENDS geometry_msgs sensor_msgs roscpp std_msgs message_runtime pentapod_library
+   CATKIN_DEPENDS geometry_msgs sensor_msgs roscpp std_msgs message_runtime pentapod_library 
 #  DEPENDS system_lib
 )
 
