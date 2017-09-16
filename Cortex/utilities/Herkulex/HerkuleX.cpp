@@ -65,18 +65,18 @@ void HerkulexClass::initialize()
 	
         conta=0;
 		lenghtString=0;
-		delay(20);
+		delay(50);
         clearError(BROADCAST_ID);	// clear error for all servos
 
-        delay(10);
+        delay(20);
 
         ACK(1);						// set ACK
 
-        delay(10);
+        delay(20);
 
         torqueON(BROADCAST_ID);		// torqueON for all servos
 
-        delay(10);		
+        delay(100);
 }
 
 

@@ -50,6 +50,7 @@ private:
 	uint8_t magCalibStatus;
 	sensors_event_t event;
 	bool setupOk;
+	bool useMagnetometer;
 };
 
 extern OrientationSensor orientationSensor;

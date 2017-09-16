@@ -63,8 +63,8 @@ void OrientationSensorData::setDefault () {
 	calib.accel_radius = 1000;
 	calib.mag_radius = 645;
 
-	nullX = -1.4;
-	nullY = -10.4;
+	nullX = +0.25;
+	nullY = -0.38;
 }
 
 void OrientationSensorData::clear () {
@@ -91,6 +91,7 @@ OrientationSensor::OrientationSensor() {
 	magCalibStatus = 0;
 	accelCalibStatus = 0;
 	setupOk = false;
+	useMagnetometer = false;
 }
 
 void OrientationSensor::reset() {
@@ -109,14 +110,16 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 
 
 	// Initialise the sensor
-	if(!bno->begin())
+	bool ok = useMagnetometer?bno->begin():bno->begin(Adafruit_BNO055::OPERATION_MODE_IMUPLUS);
+	if(!ok)
 	{
 		// There was a problem detecting the BNO055 ... check the connections
 		setError(ErrorCodeType::IMU_NOT_DETECTED);
-		logger->println("no IMU found!");
+		logger->println("IMU:no IMU found!");
 		setupOk = false;
 		return;
 	}
+
 	setupOk = true;
 
 	bno->setExtCrystalUse(true);
@@ -144,8 +147,8 @@ bool OrientationSensor::getData(float &newX, float &newY, float &newZ, uint8_t &
 	newMag = magCalibStatus;
 
 	// turn the data according to the position of the IMU
-	newX = normDegree(-event.orientation.y) + memory.persMem.imuCalib.nullX;
-	newY = normDegree(event.orientation.z-180.0) + memory.persMem.imuCalib.nullY;
+	newX = normDegree(event.orientation.y) - memory.persMem.imuCalib.nullX;
+	newY = normDegree(180.0-event.orientation.z) - memory.persMem.imuCalib.nullY;
 	newZ = normDegree(-event.orientation.x);
 
 	return (newSystem > 0) || (newGyro > 0) || (newMag > 0) || (newAcc > 0);
@@ -153,8 +156,8 @@ bool OrientationSensor::getData(float &newX, float &newY, float &newZ, uint8_t &
 }
 
 void OrientationSensor::nullify() {
-	memory.persMem.imuCalib.nullX = -normDegree(-event.orientation.y);
-	memory.persMem.imuCalib.nullY = -normDegree(event.orientation.z-180.0) ;
+	memory.persMem.imuCalib.nullX = normDegree(event.orientation.y);
+	memory.persMem.imuCalib.nullY = normDegree(180.0-event.orientation.z) ;
 }
 
 void OrientationSensor::updateCalibration()
@@ -166,8 +169,15 @@ void OrientationSensor::updateCalibration()
 
   /* The data should be ignored until the system calibration is > 0 */
 
+  // when not using NDOF mode, system and magnetometer calibration is always 0
+  // in order to not confuse the caller, set it to max
+  if (!useMagnetometer) {
+	  systemCalibStatus = 3;
+	  magCalibStatus = 3;
+  }
+
   if (!calibrationRead) {
-	  logger->println("update IMU calibration by eeprom");
+	  logger->println("IMU: update IMU calibration by eeprom");
 
 	  readCalibrationFromEprom();
 	  calibrationRead = true;
@@ -175,7 +185,7 @@ void OrientationSensor::updateCalibration()
 
   // if not yet in epprom but we are fully calibrated, store calibration
   if ((memory.persMem.imuCalib.sensorID != glbSensorID) && bno->isFullyCalibrated()) {
-	  logger->println("save IMU calibration to eeprom");
+	  logger->println("IMU: save calibration to eeprom");
 	  saveCalibration();
   }
 }
@@ -192,7 +202,7 @@ void OrientationSensor::saveCalibration() {
 	buffer.sensorID = glbSensorID;
 
 	if (ok) {
-		logger->println("save calibration");
+		logger->println("IMU: save calibration");
 		buffer.print();
 		logger->println();
 
@@ -210,17 +220,17 @@ void OrientationSensor::logSensorCalibration() {
 	OrientationSensorData buffer;
 	bool calibrated = bno->getSensorOffsets(buffer.calib);
 	if (calibrated) {
-		logger->println("actual IMU calibration");
+		logger->println("IMU: actual IMU calibration");
 		buffer.print();
 	}
-	logger->println("EEPROM calibration");
+	logger->println("IMU: EEPROM calibration");
 	memory.persMem.imuCalib.print();
 }
 
 void OrientationSensor::readCalibrationFromEprom() {
 	if (!calibrationRead && (memory.persMem.imuCalib.sensorID == glbSensorID)) {
 		if (memory.persMem.logServo) {
-			logger->println("read IMU calibration");
+			logger->println("IMU: read calibration");
 			memory.persMem.imuCalib.print();
 			logger->println();
 		}
@@ -230,7 +240,7 @@ void OrientationSensor::readCalibrationFromEprom() {
 		calibrationRead = true;
 	} else {
 		if (memory.persMem.logServo)
-			logger->println("IMU calibration not yet saved");
+			logger->println("IMU: calibration not yet saved");
 	}
 }
 
@@ -258,6 +268,32 @@ void OrientationSensor::loop(uint32_t now) {
 		event.orientation.z = 0;
 
 		bno->getEvent(&event);
+
+		/*
+		 *
+		logger->print("event =[");
+
+		logger->print(event.gyro.x);
+		logger->print(",");
+		logger->print(event.gyro.y);
+		logger->print(",");
+		logger->print(event.gyro.y);
+		logger->print("]");
+		logger->print("event =[");
+		logger->print(event.orientation.x);
+		logger->print(",");
+		logger->print(event.orientation.y);
+		logger->print(",");
+		logger->print(event.orientation.z);
+		logger->print("][");
+		logger->print(event.orientation.roll);
+		logger->print(",");
+		logger->print(event.orientation.pitch);
+		logger->print(",");
+		logger->print(event.orientation.heading);
+		logger->println("]");
+		*/
+
 	}
 }
 

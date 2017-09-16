@@ -26,9 +26,7 @@ void Leg::setup(int newId, uint8_t serialId) {
 
 	// initialize herkulex manager for this serial line
 	herkulexMgr.beginSerial(herkulexSerial,HERKULEX_BAUD_RATE_HIGH); // default baud rate of Herkulex.
-	delay(10);
 	herkulexMgr.initialize();
-	delay(50);
 
 	// check if all servos work with that baud rate by calling stat
 	bool allServosReact = true;

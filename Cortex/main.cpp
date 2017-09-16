@@ -152,6 +152,7 @@ void setSerialServoLinesTriState() {
 
 
 void headlessSetup() {
+	logger->println("SETUP: starting headless");
 	// switch servos off and on and wait in between. This pulls 2A, so do not to anything else at this time
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
@@ -168,6 +169,7 @@ void headlessSetup() {
 
 	// initialize I2C for IMU
 
+	logger->println("IMU: initializing");
 	uint32_t setupStart = millis();
 	pinMode(IMU_RESET_PIN, INPUT);
 	IMUWire = &Wire;
@@ -176,12 +178,24 @@ void headlessSetup() {
 	IMUWire->resetBus();
 	orientationSensor.setup(IMUWire); // this takes up to 1000ms, depending on IMU state!
 
+	// wait 2000ms to give servos time to switch really off
+	bool servoOK = true;
+	for (int i = 0;i<NumberOfLegs;i++)
+		for (int limb=0;limb<NumberOfLimbs;limb++)
+			servoOK = servoOK && (controller.getLeg(i).getStatus(limb) == SERVO_STAT_OK);
+	unsigned int waitWithServosTurnedOff = 2000;
+	if (!servoOK)
+		waitWithServosTurnedOff = 2000;
 
-	// wait at least 500ms to give servos time to switch really off
-	while (millis() - setupStart < 500)
+	logger->print("SETUP: waiting ");
+	logger->print(waitWithServosTurnedOff - (millis() - setupStart));
+	logger->println("ms more with servos turned off");
+
+	while (millis() - setupStart < waitWithServosTurnedOff)
 		delay(10);
 
 	// switch on servo power via relay
+	logger->println("SETUP: switching servos on");
 	digitalWrite(RELAY_PIN, HIGH);
 	uint32_t servoOnTime= millis();
 
@@ -202,12 +216,19 @@ void headlessSetup() {
 	// tell me the pins
 	logPinAssignment();
 
-	// wait at least 500ms to give servos time to switch really off
+	// wait at least 500ms to give servos time to switch really on
+	logger->print("SETUP: waiting ");
+	logger->print(500 - (millis() - servoOnTime));
+	logger->println(" ms more with servos turned on");
 	while (millis() - servoOnTime < 500)
-		delay(10);
+		delay(50);
 
 	// controller for all serial lines with the servos behind
-	controller.setup();
+	bool ok = controller.setup();
+	if (!ok) {
+		// one more chance to come up
+		ok = controller.setup();
+	}
 
 	// signal LED blinks
 	signalBlinker.set(DefaultPattern,sizeof(DefaultPattern));

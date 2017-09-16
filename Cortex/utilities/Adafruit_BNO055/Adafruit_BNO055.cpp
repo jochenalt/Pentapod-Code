@@ -67,10 +67,10 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
   // Make sure we have the right device
   // wait until chip address is ok. Wait at most 1000ms
   uint8_t id = read8(BNO055_CHIP_ID_ADDR);
-  int count = 20;
-  while ((id != BNO055_ID) && (count-- > 0))
+  int count = 50;
+  while ((id != BNO055_ID) && (count-- >= 0))
   {
-	  delay(50);
+	  delay(20);
 	  id = read8(BNO055_CHIP_ID_ADDR);
   }
   if (count <= 0)
@@ -81,10 +81,10 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
 
   /* Reset */
   write8(BNO055_SYS_TRIGGER_ADDR, 0x20);
-  count = 20;
-  while ((read8(BNO055_CHIP_ID_ADDR) != BNO055_ID) && (count-- > 0))
+  count = 50;
+  while ((read8(BNO055_CHIP_ID_ADDR) != BNO055_ID) && (count-- >= 0))
   {
-    delay(50);
+    delay(20);
   }
   if (count <= 0)
 	  return  false;
@@ -93,7 +93,7 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
 
   /* Set to normal power mode */
   write8(BNO055_PWR_MODE_ADDR, POWER_MODE_NORMAL);
-  delay(10);
+  delay(20);
 
   write8(BNO055_PAGE_ID_ADDR, 0);
 
@@ -116,12 +116,19 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
   */
 
   write8(BNO055_SYS_TRIGGER_ADDR, 0x0);
-  delay(10);
-
-  /* Set the requested operating mode (see section 3.3) */
-  setMode(mode);
   delay(20);
 
+  /* Set the requested operating mode (see section 3.3) */
+  setMode(OPERATION_MODE_NDOF);
+  delay(20);
+
+  if (mode != OPERATION_MODE_NDOF) {
+	  setMode(OPERATION_MODE_CONFIG);
+	  delay(20);
+
+	  setMode(mode);
+	  delay(20);
+  }
   return true;
 }
 
