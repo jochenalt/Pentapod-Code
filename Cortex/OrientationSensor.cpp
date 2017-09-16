@@ -94,7 +94,7 @@ OrientationSensor::OrientationSensor() {
 }
 
 void OrientationSensor::reset() {
-	// reset sensor
+	// reset IMU but putting LO/HI/LO on reset PIN
 	pinMode(IMU_RESET_PIN, OUTPUT);
 	digitalWrite(IMU_RESET_PIN, LOW);
 	delay(5);
@@ -167,12 +167,15 @@ void OrientationSensor::updateCalibration()
   /* The data should be ignored until the system calibration is > 0 */
 
   if (!calibrationRead) {
+	  logger->println("update IMU calibration by eeprom");
+
 	  readCalibrationFromEprom();
 	  calibrationRead = true;
   }
 
   // if not yet in epprom but we are fully calibrated, store calibration
   if ((memory.persMem.imuCalib.sensorID != glbSensorID) && bno->isFullyCalibrated()) {
+	  logger->println("save IMU calibration to eeprom");
 	  saveCalibration();
   }
 }
@@ -264,7 +267,6 @@ void OrientationSensor::printData() {
 	uint8_t newSystem, newGyro, newAcc, newMag;
 	orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc, newMag);
 	int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + newMag;
-
 
 	/* Display the floating point data */
 	logger->print("Orientation=(");

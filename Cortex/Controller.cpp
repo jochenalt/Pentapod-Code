@@ -28,9 +28,9 @@ void Controller::enable() {
 
 	for (int legsNo = 0;legsNo<NumberOfLegs;legsNo++) {
 		// do not overload power supply by switching on all servos simulatenously
-		delay(20);
 		for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
 			legs[legsNo].servos[limbNo].enable();
+			delay(10);
 		}
 	}
 	enabled = true;

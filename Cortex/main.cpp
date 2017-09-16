@@ -155,8 +155,6 @@ void headlessSetup() {
 	// switch servos off and on and wait in between. This pulls 2A, so do not to anything else at this time
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
-	delay(500); // time to really switch off the servos
-	digitalWrite(RELAY_PIN, HIGH);
 
 	pinMode(LED_PIN, OUTPUT);
 	digitalWrite(LED_PIN, HIGH);
@@ -164,21 +162,28 @@ void headlessSetup() {
 	pinMode(SIGNAL_LED_PIN, OUTPUT);
 	digitalWrite(SIGNAL_LED_PIN, LOW);
 
-	// switch on servo power via relay
-	pinMode(RELAY_PIN, OUTPUT);
-	digitalWrite(RELAY_PIN, HIGH);
-
-	// reset IMU but putting LO/HI/LO on reset PIN
-	pinMode(IMU_RESET_PIN, INPUT);
+	// RST Pin on IMU only used when ecplicitely reset
 	// orientationSensor.reset();
+	// pinMode(IMU_RESET_PIN, INPUT);
 
 	// initialize I2C for IMU
+
+	uint32_t setupStart = millis();
+	pinMode(IMU_RESET_PIN, INPUT);
 	IMUWire = &Wire;
 	IMUWire->begin(I2C_MASTER, 0, I2C_PINS_16_17, I2C_PULLUP_INT, I2C_RATE_800);
 	IMUWire->setDefaultTimeout(4000); // 4ms default timeout
 	IMUWire->resetBus();
+	orientationSensor.setup(IMUWire); // this takes up to 1000ms, depending on IMU state!
 
-	orientationSensor.setup(IMUWire); // this takes 1000ms !
+
+	// wait at least 500ms to give servos time to switch really off
+	while (millis() - setupStart < 500)
+		delay(10);
+
+	// switch on servo power via relay
+	digitalWrite(RELAY_PIN, HIGH);
+	uint32_t servoOnTime= millis();
 
 	// load config data from EEPROM
 	memory.setup();
@@ -196,6 +201,10 @@ void headlessSetup() {
 
 	// tell me the pins
 	logPinAssignment();
+
+	// wait at least 500ms to give servos time to switch really off
+	while (millis() - servoOnTime < 500)
+		delay(10);
 
 	// controller for all serial lines with the servos behind
 	controller.setup();
@@ -228,7 +237,7 @@ void setup() {
 	// ready for input
 	cmdSerial->print(F(">"));
 
-	delay(50);
+	delay(100);
 }
 
 

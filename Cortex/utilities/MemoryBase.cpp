@@ -28,22 +28,16 @@ boolean MemoryBase::setup() {
 		logger->println(F("EEPROM initialized."));
 #endif
 
-		logger->println("1");
 		// hopefully the defaults have been initialized in the constructor of the derived
 		save();
-		logger->println("2");
 		
 		// write magic number in the eeprom to indicate initialization
 		markEEPROMInitialized();
-		logger->println("3");
 
 		return true;
 		
 	} else {
-		logger->println("4");
-
 		read();
-		logger->println("5");
 	}
 
 	return false;		

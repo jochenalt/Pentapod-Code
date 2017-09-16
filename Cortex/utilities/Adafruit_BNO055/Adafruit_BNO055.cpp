@@ -28,7 +28,6 @@
 
 #include "Adafruit_BNO055.h"
 #include "i2c_t3-v9.1.h"
-#include "pins.h"
 
 /***************************************************************************
  CONSTRUCTOR
@@ -68,13 +67,13 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
   // Make sure we have the right device
   // wait until chip address is ok. Wait at most 1000ms
   uint8_t id = read8(BNO055_CHIP_ID_ADDR);
-  int count = 0;
-  while ((id != BNO055_ID) && (count++ < 20))
+  int count = 20;
+  while ((id != BNO055_ID) && (count-- > 0))
   {
 	  delay(50);
 	  id = read8(BNO055_CHIP_ID_ADDR);
   }
-  if (count >= 20)
+  if (count <= 0)
 	  return false;
 
   /* Switch to config mode (just in case since this is the default) */
@@ -82,12 +81,12 @@ bool Adafruit_BNO055::begin(adafruit_bno055_opmode_t mode)
 
   /* Reset */
   write8(BNO055_SYS_TRIGGER_ADDR, 0x20);
-  count = 0;
-  while ((read8(BNO055_CHIP_ID_ADDR) != BNO055_ID) && (count++ < 50))
+  count = 20;
+  while ((read8(BNO055_CHIP_ID_ADDR) != BNO055_ID) && (count-- > 0))
   {
-    delay(10);
+    delay(50);
   }
-  if (count >= 20)
+  if (count <= 0)
 	  return  false;
 
   delay(50);
