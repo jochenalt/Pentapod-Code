@@ -110,13 +110,13 @@ extern void cmdCONFIG();
 extern void cmdBIN();
 
 CortexCommandDefinitionType commDef[CortexCommandDefinitionType::NumberOfCommands] {
-	//cmd ID						Name, 		timeout,	function pointer
+	//cmd ID										Name, 		timeout,	function pointer
 	{ CortexCommandDefinitionType::ECHO_CMD,	    "ECHO", 	500, 		cmdECHO },
 	{ CortexCommandDefinitionType::HELP_CMD,	    "HELP", 	500, 		cmdHELP },
 	{ CortexCommandDefinitionType::CONSOLE_CMD,		"CONSOLE", 	500, 		cmdCONSOLE},
-	{ CortexCommandDefinitionType::ENABLE_CMD,		"ENABLE", 	2000, 		cmdENABLE},
+	{ CortexCommandDefinitionType::ENABLE_CMD,		"ENABLE", 	1000, 		cmdENABLE},
 	{ CortexCommandDefinitionType::DISABLE_CMD,		"DISABLE", 	200, 		cmdDISABLE },
-	{ CortexCommandDefinitionType::SETUP_CMD,		"SETUP", 	2000, 		cmdSETUP},
+	{ CortexCommandDefinitionType::SETUP_CMD,		"SETUP", 	3000, 		cmdSETUP},
 	{ CortexCommandDefinitionType::CHECKSUM_CMD,	"CHECKSUM", 200, 		cmdCHECKSUM},
 	{ CortexCommandDefinitionType::MEM_CMD,	        "MEM", 		200, 		cmdMEM},
 	{ CortexCommandDefinitionType::CONFIG_CMD,      "CONFIG", 	100, 		cmdCONFIG},

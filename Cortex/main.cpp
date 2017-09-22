@@ -133,21 +133,33 @@ void logPinAssignment() {
 	}
 }
 
-void setSerialServoLinesTriState() {
-	pinMode(PIN_RX6, INPUT);
-	pinMode(PIN_TX6, INPUT);
+// when the servos are in a weired state and need to be reset with the relay, in some cases, the current on the
+// serial lines is sufficient to keep them in a weired state. So set everything to low when servos are switched off.
+void setSetSerialServoLinesLow() {
+	pinMode(PIN_RX6, OUTPUT);
+	pinMode(PIN_TX6, OUTPUT);
+	pinMode(PIN_RX6, LOW);
+	pinMode(PIN_TX6, LOW);
 
-	pinMode(PIN_RX5, INPUT);
-	pinMode(PIN_TX5, INPUT);
+	pinMode(PIN_RX5, OUTPUT);
+	pinMode(PIN_TX5, OUTPUT);
+	pinMode(PIN_RX5, LOW);
+	pinMode(PIN_TX5, LOW);
 
-	pinMode(PIN_RX4, INPUT);
-	pinMode(PIN_TX4, INPUT);
+	pinMode(PIN_RX4, OUTPUT);
+	pinMode(PIN_TX4, OUTPUT);
+	pinMode(PIN_RX4, LOW);
+	pinMode(PIN_TX4, LOW);
 
-	pinMode(PIN_RX3, INPUT);
-	pinMode(PIN_TX3, INPUT);
+	pinMode(PIN_RX3, OUTPUT);
+	pinMode(PIN_TX3, OUTPUT);
+	pinMode(PIN_RX3, LOW);
+	pinMode(PIN_TX3, LOW);
 
-	pinMode(PIN_RX2, INPUT);
-	pinMode(PIN_TX2, INPUT);
+	pinMode(PIN_RX2, OUTPUT);
+	pinMode(PIN_TX2, OUTPUT);
+	pinMode(PIN_RX2, LOW);
+	pinMode(PIN_TX2, LOW);
 }
 
 
@@ -156,6 +168,7 @@ void headlessSetup() {
 	// switch servos off and on and wait in between. This pulls 2A, so do not to anything else at this time
 	pinMode(RELAY_PIN, OUTPUT);
 	digitalWrite(RELAY_PIN, LOW);
+	setSetSerialServoLinesLow();
 
 	pinMode(LED_PIN, OUTPUT);
 	digitalWrite(LED_PIN, HIGH);
@@ -168,7 +181,6 @@ void headlessSetup() {
 	// pinMode(IMU_RESET_PIN, INPUT);
 
 	// initialize I2C for IMU
-
 	logger->println("IMU: initializing");
 	uint32_t setupStart = millis();
 	pinMode(IMU_RESET_PIN, INPUT);
@@ -179,7 +191,7 @@ void headlessSetup() {
 	orientationSensor.setup(IMUWire); // this takes up to 1000ms, depending on IMU state!
 
 	// wait 2000ms to give servos time to switch really off
-	unsigned int waitWithServosTurnedOff = 2000;
+	unsigned int waitWithServosTurnedOff = 1000;
 	logger->print("SETUP: waiting ");
 	logger->print(waitWithServosTurnedOff - (millis() - setupStart));
 	logger->println("ms more with servos turned off");
@@ -252,8 +264,6 @@ void setup() {
 
 	// ready for input
 	cmdSerial->print(F(">"));
-
-	delay(100);
 }
 
 
