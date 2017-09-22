@@ -399,7 +399,7 @@ void Adafruit_BNO055::getSensor(sensor_t *sensor)
     @brief  Reads the sensor and returns the data as a sensors_event_t
 */
 /**************************************************************************/
-bool Adafruit_BNO055::getEvent(sensors_event_t *event)
+bool Adafruit_BNO055::getOrientationEvent(sensors_event_t *event)
 {
   /* Clear the event */
   memset(event, 0, sizeof(sensors_event_t));
@@ -414,6 +414,24 @@ bool Adafruit_BNO055::getEvent(sensors_event_t *event)
   event->orientation.x = euler.x();
   event->orientation.y = euler.y();
   event->orientation.z = euler.z();
+
+  return true;
+}
+
+bool Adafruit_BNO055::getAccelerationEvent(sensors_event_t *event)
+{
+  /* Clear the event */
+  memset(event, 0, sizeof(sensors_event_t));
+
+  event->version   = sizeof(sensors_event_t);
+  event->sensor_id = _sensorID;
+  event->type      = SENSOR_TYPE_ORIENTATION;
+  event->timestamp = millis();
+
+  imu::Vector<3> accel = getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+  event->acceleration.x = accel.x();
+  event->acceleration.y = accel.y();
+  event->acceleration.z = accel.z();
 
   return true;
 }

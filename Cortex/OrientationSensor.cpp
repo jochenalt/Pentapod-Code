@@ -11,6 +11,7 @@
 #include "pins.h"
 #include "core.h"
 #include "BotMemory.h"
+#include "utilities.h"
 
 OrientationSensor orientationSensor;
 const uint8_t glbSensorID = 55;
@@ -88,10 +89,8 @@ OrientationSensor::OrientationSensor() {
 	bno = NULL;
 	systemCalibStatus = 0;
 	gyroCalibStatus = 0;
-	magCalibStatus = 0;
 	accelCalibStatus = 0;
 	setupOk = false;
-	useMagnetometer = false;
 }
 
 void OrientationSensor::reset() {
@@ -110,7 +109,7 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 
 
 	// Initialise the sensor
-	bool ok = useMagnetometer?bno->begin():bno->begin(Adafruit_BNO055::OPERATION_MODE_IMUPLUS);
+	bool ok = bno->begin(Adafruit_BNO055::OPERATION_MODE_IMUPLUS);
 	if(!ok)
 	{
 		// There was a problem detecting the BNO055 ... check the connections
@@ -127,9 +126,13 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	setupTime = millis();
 	calibrationRead = false;
 
-	event.orientation.x = 0;
-	event.orientation.y = 0;
-	event.orientation.z = 0;
+	orientationEvent.orientation.x = 0;
+	orientationEvent.orientation.y = 0;
+	orientationEvent.orientation.z = 0;
+	accelerationEvent.orientation.x = 0;
+	accelerationEvent.orientation.y = 0;
+	accelerationEvent.orientation.z = 0;
+
 }
 
 
@@ -140,24 +143,23 @@ float  normDegree(float x) {
 		return normDegree(x+360.0);
 	return x;
 }
-bool OrientationSensor::getData(float &newX, float &newY, float &newZ, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc, uint8_t& newMag) {
+bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc) {
 	newSystem = systemCalibStatus;
 	newGyro = gyroCalibStatus;
 	newAcc = accelCalibStatus;
-	newMag = magCalibStatus;
 
 	// turn the data according to the position of the IMU
-	newX = normDegree(event.orientation.y) - memory.persMem.imuCalib.nullX;
-	newY = normDegree(180.0-event.orientation.z) - memory.persMem.imuCalib.nullY;
-	newZ = normDegree(-event.orientation.x);
+	newXAngle = normDegree(orientationEvent.orientation.y) 		 - memory.persMem.imuCalib.nullX;
+	newYAngle = normDegree(180.0-orientationEvent.orientation.z) - memory.persMem.imuCalib.nullY;
 
-	return (newSystem > 0) || (newGyro > 0) || (newMag > 0) || (newAcc > 0);
+	newZAccel = getZAccel();
+	return (newSystem > 0) || (newGyro > 0) || (newAcc > 0);
 
 }
 
 void OrientationSensor::nullify() {
-	memory.persMem.imuCalib.nullX = normDegree(event.orientation.y);
-	memory.persMem.imuCalib.nullY = normDegree(180.0-event.orientation.z) ;
+	memory.persMem.imuCalib.nullX = normDegree(orientationEvent.orientation.y);
+	memory.persMem.imuCalib.nullY = normDegree(180.0-orientationEvent.orientation.z) ;
 }
 
 void OrientationSensor::updateCalibration()
@@ -165,16 +167,15 @@ void OrientationSensor::updateCalibration()
   /* Get the four calibration values (0..3) */
   /* Any sensor data reporting 0 should be ignored, */
   /* 3 means 'fully calibrated" */
+
+  uint8_t magCalibStatus;
   bno->getCalibration(&systemCalibStatus, &gyroCalibStatus, &accelCalibStatus, &magCalibStatus);
 
   /* The data should be ignored until the system calibration is > 0 */
 
   // when not using NDOF mode, system and magnetometer calibration is always 0
   // in order to not confuse the caller, set it to max
-  if (!useMagnetometer) {
-	  systemCalibStatus = 3;
-	  magCalibStatus = 3;
-  }
+  systemCalibStatus = 3;
 
   if (!calibrationRead) {
 	  logger->println("IMU: update IMU calibration by eeprom");
@@ -245,11 +246,15 @@ void OrientationSensor::readCalibrationFromEprom() {
 }
 
 bool OrientationSensor::ok() {
-	return (systemCalibStatus > 0) || (gyroCalibStatus> 0) || (magCalibStatus> 0) || (accelCalibStatus> 0);
+	return (systemCalibStatus > 0) || (gyroCalibStatus> 0)  || (accelCalibStatus> 0);
 }
 
 bool OrientationSensor::isSetup() {
 	return setupOk && calibrationRead;
+}
+
+float OrientationSensor::getZAccel() {
+	return currZAcceleration;
 }
 
 void OrientationSensor::loop(uint32_t now) {
@@ -263,46 +268,65 @@ void OrientationSensor::loop(uint32_t now) {
 	static TimePassedBy sensorTimer;
 	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
 		/* Get a new sensor event */
-		event.orientation.x = 0;
-		event.orientation.y = 0;
-		event.orientation.z = 0;
+		orientationEvent.orientation.x = 0;
+		orientationEvent.orientation.y = 0;
+		orientationEvent.orientation.z = 0;
 
-		bno->getEvent(&event);
+		accelerationEvent.acceleration.x = 0;
+		accelerationEvent.acceleration.y = 0;
+		accelerationEvent.acceleration.z = 0;
+
+		bno->getOrientationEvent(&orientationEvent);
+		// bno->getAccelerationEvent(&accelerationEvent);
 
 		/*
-		 *
-		logger->print("event =[");
 
-		logger->print(event.gyro.x);
+		logger->print("event =[");
+		logger->print(normDegree(orientationEvent.orientation.y));
 		logger->print(",");
-		logger->print(event.gyro.y);
-		logger->print(",");
-		logger->print(event.gyro.y);
+		logger->print(normDegree(180.0-orientationEvent.orientation.z));
 		logger->print("]");
-		logger->print("event =[");
-		logger->print(event.orientation.x);
-		logger->print(",");
-		logger->print(event.orientation.y);
-		logger->print(",");
-		logger->print(event.orientation.z);
-		logger->print("][");
-		logger->print(event.orientation.roll);
-		logger->print(",");
-		logger->print(event.orientation.pitch);
-		logger->print(",");
-		logger->print(event.orientation.heading);
-		logger->println("]");
-		*/
+		// logger->println();
 
+		// low pass z-aceleration to remove the offset (which is gravity)
+		float accel = accelerationEvent.acceleration.x;
+
+		static LowPassFilter lowpass(0.5);
+		static TimePassedBy sampler;
+		float dT = sampler.dT();
+		float absVelocity = accel*dT;
+		float lp = lowpass.get();
+		float relVelocity = absVelocity - lp;
+
+
+		currZAcceleration +=  relVelocity; // integrate a*dT to get differential velocity without gravity
+		lowpass.set(absVelocity);
+
+
+		logger->print("accel=");
+		logger->print(accel,1);
+
+		logger->print("absvel=");
+		logger->print(absVelocity,3);
+		logger->print("relvel=");
+		logger->print(relVelocity,3);
+
+		logger->print("lowpasZ");
+		logger->print(lp,3);
+		logger->print(",curr=");
+		logger->print(currZAcceleration,3);
+		logger->println();
+
+		*/
 	}
 }
 
 void OrientationSensor::printData() {
 
 	float imuX,imuY,z;
-	uint8_t newSystem, newGyro, newAcc, newMag;
-	orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc, newMag);
-	int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + newMag;
+	uint8_t newSystem, newGyro, newAcc;
+	orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc);
+	int imuStatus = newSystem*100 + newGyro*10 + newAcc;
 
 	/* Display the floating point data */
 	logger->print("Orientation=(");
@@ -311,6 +335,6 @@ void OrientationSensor::printData() {
 	logger->print(imuY, 1);
 	logger->print(",");
 	logger->print(z, 1);
-	logger->print(") calib(Sys,Gyro,Acc,Mag)=(");
+	logger->print(") calib(Sys,Gyro,Acc)=(");
 	logger->print(imuStatus);
 }

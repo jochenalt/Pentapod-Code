@@ -374,9 +374,12 @@ const FootOnGroundFlagType& Engine::getFootOnGround() {
 	return gaitControl.getFeetOnGround();
 }
 
+void Engine::computeWarpCompensation() {
+}
+
 void Engine::computeBodyPose() {
 	// maximum speed the body moves its position or orientation
-	const realnum maxBodyPositionSpeed = 20.0; 	// [mm/s]
+	const realnum maxBodyPositionSpeed = 80.0; 	// [mm/s]
 	const realnum maxBodyOrientationSpeed = 0.4; 	// [RAD/s]
 
 	realnum dT = bodyPoseSampler.dT();
@@ -408,13 +411,11 @@ void Engine::computeBodyPose() {
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
 			imuCompensation.orientation = imuPID.getPID(error, .8, 2.0, 0.01, maxError);
-			// cout << " tobe=" << moderatedBodyPose.orientation << " comp=" << imuCompensation.orientation ;
-
+			ROS_DEBUG_STREAM("IMU=("<< degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
 		} else {
 			imuPID.reset();
 		}
 		currentBodyPose = toBePose  + imuCompensation;
-		// cout << " curr=" << currentBodyPose << endl;
 	}
 }
 

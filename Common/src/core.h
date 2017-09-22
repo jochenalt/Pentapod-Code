@@ -27,10 +27,10 @@ typedef double realnum;
 
 // CAD dimensions of the pentapod, measured within the CAD model
 namespace CAD {
-	constexpr static realnum HipNickAngle  = 25.8; 				// angle each hip goes down against the xy pane
-	constexpr static realnum HipCentreDistance  = 51.197;		// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
+	constexpr static realnum HipNickAngle  = 19.29; 			// angle each hip goes down against the xy pane
+	constexpr static realnum HipCentreDistance  = 52.601+0.3;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
 	constexpr static realnum HipLength= 37.328;					// distance between hip mounting point and hip joint axis
-	// constexpr static realnum HipLength= 35.528;					// distance between hip mounting point and hip joint axis (Hip040x)
+	// constexpr static realnum HipLength= 35.528;				// distance between hip mounting point and hip joint axis (Hip040x)
 
 	constexpr static realnum HipJointLength = 40.578;
 	constexpr static realnum ThighLength = 45.328;

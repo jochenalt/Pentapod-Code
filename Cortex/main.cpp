@@ -179,14 +179,7 @@ void headlessSetup() {
 	orientationSensor.setup(IMUWire); // this takes up to 1000ms, depending on IMU state!
 
 	// wait 2000ms to give servos time to switch really off
-	bool servoOK = true;
-	for (int i = 0;i<NumberOfLegs;i++)
-		for (int limb=0;limb<NumberOfLimbs;limb++)
-			servoOK = servoOK && (controller.getLeg(i).getStatus(limb) == SERVO_STAT_OK);
 	unsigned int waitWithServosTurnedOff = 2000;
-	if (!servoOK)
-		waitWithServosTurnedOff = 2000;
-
 	logger->print("SETUP: waiting ");
 	logger->print(waitWithServosTurnedOff - (millis() - setupStart));
 	logger->println("ms more with servos turned off");
@@ -217,6 +210,7 @@ void headlessSetup() {
 	logPinAssignment();
 
 	// wait at least 500ms to give servos time to switch really on
+	// before starting setup controller setup
 	logger->print("SETUP: waiting ");
 	logger->print(500 - (millis() - servoOnTime));
 	logger->println(" ms more with servos turned on");
@@ -227,13 +221,14 @@ void headlessSetup() {
 	bool ok = controller.setup();
 	if (!ok) {
 		// one more chance to come up
+		delay(500);
 		ok = controller.setup();
 	}
 
 	// signal LED blinks
 	signalBlinker.set(DefaultPattern,sizeof(DefaultPattern));
 
-	// now IMU had 1s time to settle, read calibration
+	// now IMU had enozugh time to settle, read calibration
 	orientationSensor.updateCalibration();
 }
 

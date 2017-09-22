@@ -152,10 +152,10 @@ void I2CSlave::executeRequest() {
 			}
 
 			// collect IMU data
-			float imuX,imuY,z;
-			uint8_t newSystem, newGyro, newAcc, newMag;
-			orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc, newMag);
-			int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + newMag;
+			float imuX,imuY,zAccel;
+			uint8_t newSystem, newGyro, newAcc;
+			orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
+			int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10;
 
 			// create response
 			ok = Cortex::ComPackage::createResponse(

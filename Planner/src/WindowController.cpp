@@ -389,7 +389,7 @@ void powerControlCallback(int controlNo) {
 			}
 
 			if ((wakeUpLiveVar == 1) && (powerLiveVar == 1)) {
-				inputBodyPose.position = Point(0,0,150);
+				inputBodyPose.position = Point(0,0,standardBodyHeigh);
 				inputBodyPose.orientation = Rotation(0,0,0);
 				EngineProxy::getInstance().wakeUp();
 				EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);

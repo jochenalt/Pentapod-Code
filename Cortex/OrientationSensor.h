@@ -10,6 +10,7 @@
 
 #include "Adafruit_BNO055.h"
 #include "i2c_t3-v9.1.h"
+#include "TimePassedBy.h"
 
 struct OrientationSensorData {
 	uint8_t sensorID;
@@ -36,10 +37,11 @@ public:
 	void logSensorCalibration();
 	bool isSetup();
 	bool isFullyCalibrated();
-	bool getData(float &x, float &y, float &z, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc, uint8_t& newMag);
+	bool getData(float &xAngle, float &yAngle, float &zAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
 	void printData();
 	bool ok();
 private:
+	float getZAccel();
 	uint32_t setupTime;
 	bool calibrationRead;
 
@@ -47,10 +49,13 @@ private:
 	uint8_t systemCalibStatus;
 	uint8_t gyroCalibStatus;
 	uint8_t accelCalibStatus;
-	uint8_t magCalibStatus;
-	sensors_event_t event;
+	float avrZAcceleration = 0;
+	float currZAcceleration = 0;
+	TimePassedBy accelSampler;
+	sensors_event_t orientationEvent;
+	sensors_event_t accelerationEvent;
+
 	bool setupOk;
-	bool useMagnetometer;
 };
 
 extern OrientationSensor orientationSensor;

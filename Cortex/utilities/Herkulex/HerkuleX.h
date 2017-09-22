@@ -51,7 +51,7 @@
 
 #define DATA_SIZE	 30		// buffer for input data
 #define DATA_MOVE  	 50		// max 10 servos <---- change this for more servos!
-#define TIME_OUT_MS  5   	//timeout serial communication
+#define TIME_OUT_MS  5   	// timeout serial communication
 
 // SERVO HERKULEX COMMAND - See Manual p40
 #define HEEPWRITE    0x01 	//Rom write
@@ -116,6 +116,8 @@ public:
   int   getPosition(int servoID);
   float getAngle(int servoID, bool &error);
   int   getPWM(int servoID);
+  float getVoltage(int servoID);
+  float getTemperature(int servoID);
   		
   void  reboot(int servoID);
   void  setLed(int servoID, int valueLed);

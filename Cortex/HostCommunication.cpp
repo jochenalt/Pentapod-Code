@@ -438,9 +438,9 @@ void cmdBIN() {
 
 		// collect IMU data
 		float imuX,imuY,z;
-		uint8_t newSystem, newGyro, newAcc, newMag;
-		orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc, newMag);
-		int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + newMag;
+		uint8_t newSystem, newGyro, newAcc;
+		orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc);
+		int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + 3;
 
 		// create response
 		ok = Cortex::ComPackage::createResponse(
@@ -493,8 +493,8 @@ void cmdGET() {
 				// return IMU's orientation
 				cmdSerial->print(" (");
 				float x,y,z;
-				uint8_t newSystem, newGyro, newAcc, newMag;
-				orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc, newMag);
+				uint8_t newSystem, newGyro, newAcc;
+				orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc);
 				cmdSerial->print(x, 1);
 				cmdSerial->print(' ');
 				cmdSerial->print(y, 1);
@@ -504,7 +504,7 @@ void cmdGET() {
 				cmdSerial->print(newSystem);
 				cmdSerial->print(newGyro);
 				cmdSerial->print(newAcc);
-				cmdSerial->print(newMag);
+				cmdSerial->print('3');
 
 				// return power voltage
 				cmdSerial->print(' ');
@@ -609,7 +609,7 @@ void cmdMOVE() {
 			// return IMU's orientation
 			float x,y,z;
 			uint8_t newSystem, newGyro, newAcc, newMag;
-			orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc, newMag);
+			orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc);
 			cmdSerial->print(' ');
 			cmdSerial->print(x, 1);
 			cmdSerial->print(' ');

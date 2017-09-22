@@ -26,9 +26,11 @@ class TimePassedBy {
 	TimePassedBy () {
 		mLastCall_ms = millis();
 		mRate = 0;
+		firstCalldT = true;
 	}
 	TimePassedBy(uint32_t rate) {
 		mRate = rate;
+		firstCalldT = true;
 	}
 
 	void setRate(uint32_t rate ) { mRate = rate; };
@@ -47,6 +49,18 @@ class TimePassedBy {
 		}
 		return false;
 	}
+
+	float dT() {
+		uint32_t now = millis();
+		float duration = (now - mLastCall_ms)/1000.0;
+		mLastCall_ms = now;
+		if (firstCalldT) {
+			firstCalldT = false;
+			return 0;
+		};
+		return duration;
+	};
+
 	bool isDue() {
 		uint16_t passed_ms;
 		return isDue_ms(mRate, passed_ms, millis());
@@ -71,7 +85,7 @@ class TimePassedBy {
 
 	uint32_t mLastCall_ms;	// last due time in milliseconds
 	uint32_t mRate;			// rate
-
+	bool firstCalldT = true;
 };
 
 

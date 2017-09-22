@@ -65,7 +65,7 @@ void HerkulexClass::initialize()
 	
         conta=0;
 		lenghtString=0;
-		delay(50);
+		delay(100);
         clearError(BROADCAST_ID);	// clear error for all servos
 
         delay(20);
@@ -76,7 +76,7 @@ void HerkulexClass::initialize()
 
         torqueON(BROADCAST_ID);		// torqueON for all servos
 
-        delay(100);
+        delay(20);
 }
 
 
@@ -89,7 +89,7 @@ byte HerkulexClass::stat(int servoID)
 	cmd      = HSTAT;			//5.CMD
 	
 	ck1=(pSize^pID^cmd)&0xFE;
-        ck2=(~(pSize^pID^cmd))&0xFE ; 
+    ck2=(~(pSize^pID^cmd))&0xFE ;
   
 	dataEx[0] = 0xFF;			// Packet Header
 	dataEx[1] = 0xFF;			// Packet Header	
@@ -614,7 +614,106 @@ int HerkulexClass::getPWM(int servoID) {
 
 }
 
+// get the speed for one servo - values between -1023 <--> 1023
+float HerkulexClass::getVoltage(int servoID) {
+  pSize = 0x09;               // 3.Packet size 7-58
+  pID   = servoID;     	   	  // 4. Servo ID
+  cmd   = HRAMREAD;           // 5. CMD
+  data[0]=54;                 // 8. Address
+  data[1]=0x02;               // 9. Lenght
 
+  lenghtString=2;             // lenghtData
+
+  ck1=checksum1(data,lenghtString);		//6. Checksum1
+  ck2=checksum2(ck1);					//7. Checksum2
+
+  dataEx[0] = 0xFF;			// Packet Header
+  dataEx[1] = 0xFF;			// Packet Header
+  dataEx[2] = pSize;		// Packet Size
+  dataEx[3] = pID;			// Servo ID
+  dataEx[4] = cmd;			// Command Ram Write
+  dataEx[5] = ck1;			// Checksum 1
+  dataEx[6] = ck2;			// Checksum 2
+  dataEx[7] = data[0]; 	    // Address
+  dataEx[8] = data[1]; 		// Length
+
+  sendData(dataEx, pSize);
+  waitTransmissionTime(13);
+  readData(13);
+
+
+  pSize = dataEx[2];           // 3.Packet size 7-58
+  pID   = dataEx[3];           // 4. Servo ID
+  cmd   = dataEx[4];           // 5. CMD
+  data[0]=dataEx[7];
+  data[1]=dataEx[8];
+  data[2]=dataEx[9];
+  data[3]=dataEx[10];
+  data[4]=dataEx[11];
+  data[5]=dataEx[12];
+  lenghtString=6;
+
+  ck1=checksum1(data,lenghtString);	//6. Checksum1
+  ck2=checksum2(ck1);				//7. Checksum2
+
+  if (ck1 != dataEx[5]) return -1;
+  if (ck2 != dataEx[6]) return -1;
+
+  float voltage = ((float)(((dataEx[10]&0xFF)<<8) | dataEx[9]))*0.1;
+  return voltage;
+
+}
+
+
+// get the speed for one servo - values between -1023 <--> 1023
+float HerkulexClass::getTemperature(int servoID) {
+  pSize = 0x09;               // 3.Packet size 7-58
+  pID   = servoID;     	   	  // 4. Servo ID
+  cmd   = HRAMREAD;           // 5. CMD
+  data[0]=55;                 // 8. Address
+  data[1]=0x02;               // 9. Lenght
+
+  lenghtString=2;             // lenghtData
+
+  ck1=checksum1(data,lenghtString);		//6. Checksum1
+  ck2=checksum2(ck1);					//7. Checksum2
+
+  dataEx[0] = 0xFF;			// Packet Header
+  dataEx[1] = 0xFF;			// Packet Header
+  dataEx[2] = pSize;		// Packet Size
+  dataEx[3] = pID;			// Servo ID
+  dataEx[4] = cmd;			// Command Ram Write
+  dataEx[5] = ck1;			// Checksum 1
+  dataEx[6] = ck2;			// Checksum 2
+  dataEx[7] = data[0]; 	    // Address
+  dataEx[8] = data[1]; 		// Length
+
+  sendData(dataEx, pSize);
+  waitTransmissionTime(13);
+  readData(13);
+
+
+  pSize = dataEx[2];           // 3.Packet size 7-58
+  pID   = dataEx[3];           // 4. Servo ID
+  cmd   = dataEx[4];           // 5. CMD
+  data[0]=dataEx[7];
+  data[1]=dataEx[8];
+  data[2]=dataEx[9];
+  data[3]=dataEx[10];
+  data[4]=dataEx[11];
+  data[5]=dataEx[12];
+  lenghtString=6;
+
+  ck1=checksum1(data,lenghtString);	//6. Checksum1
+  ck2=checksum2(ck1);				//7. Checksum2
+
+  if (ck1 != dataEx[5]) return -1;
+  if (ck2 != dataEx[6]) return -1;
+
+  float temperature = (((dataEx[10]&0xFF)<<8) | dataEx[9]);
+  return temperature;
+
+}
 // move one servo with continous rotation
 void HerkulexClass::moveSpeedOne(int servoID, int Goal, int pTime, int iLed)
 {

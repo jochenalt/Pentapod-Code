@@ -155,6 +155,7 @@ private:
 	void computeSensoredDistance();		// use distance sensor information to influence touch points
 	void computeWakeUpProcedure();		// start up bot by sorting legs first and going up
 	void computeMovement();				// compute acceleration, turning etc.
+	void computeWarpCompensation();		// compute compensation of warping legs
 
 	BodyKinematics bodyKinematics;		// compute kinematics of all legs and the body
 	GaitController gaitControl;			// generates the gait
@@ -180,6 +181,8 @@ private:
 
 	PentaPointType hipPoints;			// points of all hips in absolute world coordinates
 	PentaPointType groundPoints;		// projection of the toe to the ground in absolute world coordinates
+	PentaPointType warpCompensation;	// correction of all toe pointsprojection of the toe to the ground in absolute world coordinates
+
 	LegAnglesType legAngles;			// current angles of all legs
 
 	ExclusiveMutex loopMutex;			// loop is running in an own thread. Mutex to synchronize that with commands
