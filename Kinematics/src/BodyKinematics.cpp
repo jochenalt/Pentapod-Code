@@ -143,7 +143,7 @@ bool BodyKinematics::computeKinematics(
 			// during startup phase control that care that angle acceleration is not exceeded
 			// since we might be outside the area of angle0
 			realnum givenAngle0 = legAngles[legNo][0];
-			realnum toBeAngle0 = arctanApprox(toeHipCoord.position[Y] / toeHipCoord.position[X])*0.4;
+realnum toBeAngle0 = arctanApprox(toeHipCoord.position[Y] / toeHipCoord.position[X])*0.4;
 			if (legAngles[legNo].isNull()) {
 				givenAngle0 = toBeAngle0;
 			}
@@ -158,10 +158,11 @@ bool BodyKinematics::computeKinematics(
 			if (!ok) {
 				// ok, did not work, so try the original angle.
 				ok = kin.computeInverseKinematics(toeHipCoord, givenAngle0);
+				if (!ok) {
+					ROS_ERROR_STREAM("kinematics of leg " << legNo << " with " << toeHipCoord << " and " << givenAngle0 << " during startup could not be found");
+				}
 			}
-			if (!ok) {
-				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with " << toeHipCoord << " and " << givenAngle0 << " during startup could not be found");
-			}
+
 		}
 
 		// check

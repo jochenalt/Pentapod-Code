@@ -71,13 +71,12 @@ CortexClient::CortexClient() {
 	imuStatusSys = 0;
 	imuStatusAcc = 0;
 	imuStatusGyro = 0;
-	imuStatusMag = 0;
 	timeOfLastIMUValue = 0;
 }
 
 
 bool CortexClient::isIMUValueValid(int sinceMeasurement) {
-	return ((millis()-timeOfLastIMUValue) < (unsigned)sinceMeasurement) && (imuStatusSys >= 1) && (imuStatusAcc >= 1) && (imuStatusGyro >= 1) && (imuStatusMag >= 1);
+	return ((millis()-timeOfLastIMUValue) < (unsigned)sinceMeasurement) && (imuStatusSys >= 1) && (imuStatusAcc >= 1) && (imuStatusGyro >= 1);
 }
 
 const Rotation& CortexClient::getIMUOrientation() {
@@ -107,153 +106,23 @@ bool CortexClient::cmdCHECKSUM(bool onOff) {
 	return ok;
 }
 
-bool CortexClient::cmdCONSOLE(bool onOff) {
-	string cmd = "";
-	CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::CONSOLE_CMD);
-
-	bool ok = false;
-	do {
-		cmd.append(comm->name);
-		if (onOff)
-			cmd.append(" on");
-		else
-			cmd.append(" off");
-
-		string responseStr;
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-		if (ok)
-			withChecksum = onOff;
-	} while (retry(ok));
-
-	return ok;
-}
 bool CortexClient::cmdSETUP() {
 	return cmdBinaryCommand(Cortex::Command::SETUP);
-
-	bool ok = false;
-	string cmd = "";
-	do {
-		cmd = "";
-		CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::SETUP_CMD);
-
-		cmd.append(comm->name);
-		string responseStr;
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-	} while (retry(ok));
-
-	if (!ok)
-		ROS_ERROR_STREAM("cmdSETUP(" << cmd << ") failed with " << getLastError() << " " << getLastErrorMessage());
-	return ok;
 }
 
 
 bool CortexClient::cmdDISABLE() {
 	return cmdBinaryCommand(Cortex::Command::DISABLE);
-
-
-	bool ok = false;
-	do {
-		string cmd = "";
-		CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::DISABLE_CMD);
-
-		cmd.append(comm->name);
-		string responseStr;
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-		enabled = false;
-	} while (retry(ok));
-
-	if (!ok)
-		ROS_ERROR_STREAM("cmdDISABLE failed with " << getLastError() << " " << getLastErrorMessage());
-
-	return ok;
 }
 
 bool CortexClient::cmdENABLE() {
 	return cmdBinaryCommand(Cortex::Command::ENABLE);
-
-	bool ok = false;
-	string cmd = "";
-	do {
-		CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::ENABLE_CMD);
-
-		cmd.append(comm->name);
-		string responseStr;
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-		enabled = ok;
-	} while (retry(ok));
-
-	if (!ok)
-		ROS_ERROR_STREAM("cmdENABLE failed with " << getLastError() << " " << getLastErrorMessage());
-
-	return ok;
 }
 
 
 bool CortexClient::cmdMOVE(const LegAnglesType& legAngles, int duration_ms) {
 
 	return cmdBinaryMOVE(legAngles, duration_ms);
-
-	string responseStr;
-	string cmd ;
-
-	bool ok = false;
-	do {
-		cmd = "";
-		CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::MOVE_CMD);
-
-		cmd.append(comm->name);
-		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
-			for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-				cmd.append(" ");
-				realnum angle_deg = degrees(legAngles[legNo][limbNo]);
-				string angleStr = stringFormat("%.2f",angle_deg);
-				cmd.append(angleStr);
-			}
-		}
-		cmd.append(" ");
-		cmd.append(std::to_string(duration_ms));
-
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-	} while (retry(ok));
-	if (!ok) {
-		ROS_ERROR_STREAM("cmdMOVE(" << cmd << ") failed with " << getLastError() << " " << getLastErrorMessage());
-	}
-	else {
-		int imuStatus = 0;
-		char statusStr[25] = "25 arbitrary characters";
-		realnum imuDegreeX, imuDegreeY, imuDegreeZ;
-		// reponse is (25x status byte)(5x distance of sensors)(imu orientation x,y,z imu-status)(voltage looptime)
-		int noOfItems = sscanf(responseStr.c_str(),"%s %i %i %i %i %i %lf %lf %lf %i %lf %i",
-						statusStr,
-						&measuredDistance[0],&measuredDistance[1],&measuredDistance[2],&measuredDistance[3],&measuredDistance[4],
-						&imuDegreeX, &imuDegreeY, &imuDegreeZ, &imuStatus,
-						&measuredVoltage, &cortexWallClockLooptime);
-		if (noOfItems != 12) {
-			setError(CORTEX_RESPONSE_NOT_PARSED);
-			ROS_ERROR_STREAM("cmdMOVE response" << responseStr << "could not parsed(" << noOfItems << ")" << getLastError() << " " << getLastErrorMessage());
-		}
-
-		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
-			for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-				char statusChr = statusStr[legNo*NumberOfLimbs + limbNo];
-				legStatus[legNo][limbNo] = (ServoStatusType)(int)(statusChr-'0');
-			}
-		}
-
-		// check distances for errors, take only valid values
-		for (int i = 0;i<NumberOfLegs;i++) {
-			if ((measuredDistance[i] < 0) && (measuredDistance[i] >= 200))
-				measuredDistance[i] = -1;
-		}
-
-		imuStatusSys  = imuStatus/1000;
-		imuStatusGyro = (imuStatus/100) % 10;
-		imuStatusAcc  = (imuStatus/10)  % 10;
-		imuStatusMag  = (imuStatus) % 10;
-		timeOfLastIMUValue = millis();
-		measuredOrientation = Rotation(radians(imuDegreeX), radians(imuDegreeY), radians(imuDegreeZ));
-	}
-	return ok;
 }
 
 bool CortexClient::retry(bool replyOk) {
@@ -335,10 +204,9 @@ bool CortexClient::cmdGETall() {
 				lastLegAngles[legNo][j] = radians(angles[legNo][j]);
 		}
 
-		imuStatusSys  = imuStatus/1000;
-		imuStatusGyro = (imuStatus/100) % 10;
-		imuStatusAcc  = (imuStatus/10)  % 10;
-		imuStatusMag  = (imuStatus) % 10;
+		imuStatusSys  = imuStatus/100;
+		imuStatusGyro = (imuStatus/10) % 10;
+		imuStatusAcc  = imuStatus  % 10;
 		measuredOrientation = Rotation(radians(imuDegreeX),radians(imuDegreeY),radians(imuDegreeZ));
 		timeOfLastIMUValue = millis();
 		// check distances for errors, take only valid values
@@ -378,10 +246,9 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 		}
 
 		// read IMU status and data
-		imuStatusSys  = imuStatus/1000;
-		imuStatusGyro = (imuStatus/100) % 10;
-		imuStatusAcc  = (imuStatus/10)  % 10;
-		imuStatusMag  = (imuStatus) % 10;
+		imuStatusSys  = imuStatus/100;
+		imuStatusGyro = (imuStatus/10) % 10;
+		imuStatusAcc  = imuStatus  % 10;
 		timeOfLastIMUValue = millis(); // used to check if last IMU value is recent enough
 		measuredOrientation = Rotation(radians(imuDegreeX),radians(imuDegreeY),0);
 
@@ -397,7 +264,7 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 		ROS_DEBUG_STREAM("cortex-response"
 				<< std::fixed << std::setprecision(1)
 				<< " imu=(" << degrees(measuredOrientation.x) << "," << degrees(measuredOrientation.y) << "|"
-				<< imuStatusSys << imuStatusGyro << imuStatusAcc << imuStatusMag << ")"
+				<< imuStatusSys << imuStatusGyro << imuStatusAcc << ")"
 				<< " U=" << std::fixed << std::setprecision(1) << measuredVoltage << "V"
 				<< " t(loop)=" << looptime << "ms"
 				<< " distance=(" << measuredDistance[0] << "," << measuredDistance[1] << "," << measuredDistance[2] << "," << measuredDistance[3] << "," << measuredDistance[4] << ")"
@@ -815,7 +682,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		requestStream << (int)request[i] << ' ';
 	}
 
-	ROS_DEBUG_STREAM("binaryCallMicroController(" << requestStream.str() << ")");
+	// ROS_DEBUG_STREAM("binaryCallMicroController(" << requestStream.str() << ")");
 
 	i2cPort.sendArray(request,requestSize);
 	uint32_t sendDuration = millis() - start;
@@ -829,7 +696,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		responseStream << (int)response[i] << ' ';
 	}
 
-	ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> {" << responseStream.str() << "}" << " t=" << sendDuration + receiveDuration << " (" << getLastError() << ")");
+	// ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> {" << responseStream.str() << "}" << " t=" << sendDuration + receiveDuration << " (" << getLastError() << ")");
 	return ok;
 }
 

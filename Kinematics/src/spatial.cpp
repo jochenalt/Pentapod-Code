@@ -31,13 +31,13 @@ std::istream& LimbAngles::deserialize(std::istream &in, bool &ok) {
 
 ostream& operator<<(ostream& os, const LegPose& p)
 {
-	os << std::setprecision(2) << "( angles=" << p.angles << ", pos=" << p.position << ",ori=" << p.orientation << ")";
+	os << std::setprecision(3) << "( angles=" << p.angles << ", pos=" << p.position << ",ori=" << p.orientation << ")";
 	return os;
 }
 
 ostream& operator<<(ostream& os, const Pose& p)
 {
-	os << std::setprecision(2) << "( pos=" << p.position << ",ori=" << p.orientation << ")";
+	os << std::setprecision(3) << "( pos=" << p.position << ",ori=" << p.orientation << ")";
 	return os;
 }
 
@@ -208,7 +208,7 @@ realnum distance(const Vector& a, const Vector& b) {
 
 ostream& operator<<(ostream& os, const LimbAngles& p)
 {
-	os << std::setprecision(2) << "LimbAngles(" << p[0] << "," << p[1] << "," << p[2] << "," << p[3]<< ")";
+	os << std::setprecision(3) << "LimbAngles(" << p[0] << "," << p[1] << "," << p[2] << "," << p[3]<< ")";
     return os;
 }
 

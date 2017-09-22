@@ -94,7 +94,6 @@ private:
 	void sendString(string str);
 
 	bool cmdCHECKSUM(bool onOff);
-	bool cmdCONSOLE(bool onOff);
 	bool cmdECHO(string s);
 	bool cmdSETUP();
 	bool cmdDISABLE();
@@ -149,7 +148,6 @@ private:
 	int imuStatusSys;
 	int imuStatusAcc;
 	int imuStatusGyro;
-	int imuStatusMag;
 
 	// voltage of cortex (for servos, not the uC). Should be around 10V
 	realnum measuredVoltage;

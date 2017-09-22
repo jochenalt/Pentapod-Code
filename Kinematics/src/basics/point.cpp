@@ -8,7 +8,7 @@
 
 ostream& operator<<(ostream& os, const Point& p)
 {
-	os << std::fixed << std::setprecision(0) << "P(" << p.x << "," << p.y << "," << p.z << ")";
+	os << std::fixed << std::setprecision(1) << "P(" << p.x << "," << p.y << "," << p.z << ")";
     return os;
 }
 
