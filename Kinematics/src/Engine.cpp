@@ -202,7 +202,7 @@ LegPose Engine::getFrontLegPoseWorld() {
 
 
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
-	ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
+	// ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
 
 	// dont take this if we actually wake up
 	if ((generalMode == WalkingMode) || (generalMode == TerrainMode) || (generalMode == LiftBody))
@@ -414,7 +414,7 @@ void Engine::computeBodyPose() {
 			// small PID controller
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, .9, 2.0, 0.01, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, .9, 3.0, 0.05, maxError);
 			ROS_DEBUG_STREAM("IMU=("<< degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
 		} else {
 			imuPID.reset();
