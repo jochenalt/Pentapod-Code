@@ -47,7 +47,7 @@ public:
 	void computeForwardKinematics(const LegAnglesType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose);
 
 	// compute the kinematics of all legs and return poses of hips, angles, and ground points
-	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld);
+	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld);
 
 	void setBodyPose(const Pose& bellyPose);
 

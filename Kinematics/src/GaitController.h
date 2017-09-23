@@ -81,6 +81,8 @@ public:
 		return sum/NumberOfLegs;
 	}
 
+	PentaPointType getCurrentWalkingTouchPoints() { return currentWalkingTouchPoints; };
+
 	PentaPointType getGaitRefPointsWorld() ;
 	Point getGaitRefPointsWorld(int legNo) ;
 
@@ -142,6 +144,7 @@ private:
 	PentaPointType currentGaitRefPoints;
 	PentaPointType targetGaitRefPoints;
 	PentaPointType toePoints;
+	PentaPointType currentWalkingTouchPoints; // the position where a leg touches the ground
 
 	Point currPosWorld;
 

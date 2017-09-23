@@ -111,6 +111,7 @@ void BodyKinematics::setBodyPose(const Pose& bellyPose) {
 // kinematics out of body pose and toe points
 bool BodyKinematics::computeKinematics(
 		const Pose& bellyPose, const PentaPointType& toeWorld, // in params
+		const PentaPointType& walkingTouchPoint,
 		PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld) {
 
 	setBodyPose(bellyPose);
@@ -127,23 +128,17 @@ bool BodyKinematics::computeKinematics(
 		LegPose toeHipCoord;
 		toeHipCoord.position = kin.convertWorldToHipCoord(toePointWorld);
 		toeHipCoord.angles = legAngles[legNo];
-
+		Point walkingTouchPointHipCoord = kin.convertWorldToHipCoord(walkingTouchPoint[legNo]);
 
 		// compute inverse kinematics per leg
 		bool ok;
 
-		if (!duringStartup) {
-			// kinematics is not yet able to compute a leg which foot is pointing in the other direction than the hip
-			ok = kin.computeInverseKinematics(toeHipCoord);
-			if (!ok) {
-				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with toe " << toeHipCoord << " could not be found");
-			}
-		}
-		else {
+		// compute angle 0
+		if (duringStartup) {
 			// during startup phase control that care that angle acceleration is not exceeded
 			// since we might be outside the area of angle0
 			realnum givenAngle0 = legAngles[legNo][0];
-realnum toBeAngle0 = arctanApprox(toeHipCoord.position[Y] / toeHipCoord.position[X])*0.4;
+			realnum toBeAngle0 = atan(toeHipCoord.position[Y] / toeHipCoord.position[X])*0.4;
 			if (legAngles[legNo].isNull()) {
 				givenAngle0 = toBeAngle0;
 			}
@@ -162,7 +157,20 @@ realnum toBeAngle0 = arctanApprox(toeHipCoord.position[Y] / toeHipCoord.position
 					ROS_ERROR_STREAM("kinematics of leg " << legNo << " with " << toeHipCoord << " and " << givenAngle0 << " during startup could not be found");
 				}
 			}
+		} else {
+			// during normal walking the knee should be in a position such that
+			// when the leg goes down it touchs the ground as perpendicular as possible
+			// in order to have less walking by unstiff motor and legs
 
+			// walkingTouchPointHipCoord is the position right above the point
+			// where the leg will touch the ground. Compute the to-be knee position
+			// that is the middle point of the toePoint and this point
+			Point knee = (walkingTouchPointHipCoord + toeHipCoord.position)*0.5;
+			realnum toBeAngle0 = atan((knee.y) / (knee.x));
+			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
+			if (!ok) {
+				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with toe " << toeHipCoord << " could not be found");
+			}
 		}
 
 		// check

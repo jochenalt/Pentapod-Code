@@ -155,6 +155,7 @@ void Engine::turnOn() {
 			ok = bodyKinematics.computeKinematics(
 										bodyPose,
 										gaitControl.getToePoints(),
+										gaitControl.getCurrentWalkingTouchPoints(),
 										tmpHipPoints,
 										allLegAngles,
 										groundPoints);
@@ -285,6 +286,7 @@ void Engine::loop() {
 	bool ok = bodyKinematics.computeKinematics(
 										currentBodyPose,
 										gaitControl.getToePoints(),
+										gaitControl.getCurrentWalkingTouchPoints(),
 										tmpHipPoints,
 										allLegAngles,
 										groundPoints);
@@ -806,12 +808,14 @@ void Engine::imposeFootPointsWorld(const PentaPointType& footPointsWorld) {
 	// pass to gait control first to get the foot points in local coord systems
 	gaitControl.imposeFootPointsWorld(footPointsWorld);
 	PentaPointType footPoints = gaitControl.getToePoints();
+	PentaPointType walkingTouchPoints = gaitControl.getCurrentWalkingTouchPoints();
 
 	// compute kinematics to get the angle of all feet
 	PentaPointType tmpHipPoints;
 	bool ok = bodyKinematics.computeKinematics(
 									currentBodyPose,
 									footPoints,
+									walkingTouchPoints,
 									tmpHipPoints,
 									legAngles,
 									groundPoints);

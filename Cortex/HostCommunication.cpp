@@ -158,6 +158,9 @@ void cmdINFO() {
 				first = false;
 			}
 		}
+		// in case the sensor is active, this confused it for sure. Reset sensor
+		IMUWire->resetBus();
+		orientationSensor.setup(IMUWire);
 		cmdSerial->print(") ");
 		cmdSerial->print(voltage.getVoltage(),1);
 		cmdSerial->print("V) Legs(");
@@ -504,7 +507,6 @@ void cmdGET() {
 				cmdSerial->print(newSystem);
 				cmdSerial->print(newGyro);
 				cmdSerial->print(newAcc);
-				cmdSerial->print('3');
 
 				// return power voltage
 				cmdSerial->print(' ');

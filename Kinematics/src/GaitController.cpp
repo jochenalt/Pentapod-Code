@@ -37,8 +37,11 @@ void GaitController::setup(Engine& pMainController) {
 
 	setTargetGaitRefPointsRadius(gaitRefPointRadius); // happens in addition to ctor to make setup idempotent when changing basic parameters
 	toePoints = currentGaitRefPoints;
-	for (int i = 0;i<NumberOfLegs;i++)
+	for (int i = 0;i<NumberOfLegs;i++) {
 		lastPhasePositions[i] = toePoints[i];
+	}
+
+	currentWalkingTouchPoints = targetGaitRefPoints;
 
 	// during setup, ignore the moderated movement towards the target foot ref points
 	currentGaitRefPoints = targetGaitRefPoints;
@@ -431,34 +434,48 @@ void GaitController::loop() {
 		globalGaitBeat += dT*gaitSpeed;
 
 		// now move each foot
-		for (int i = 0;i<NumberOfLegs;i++) {
+		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 			// leave out the front leg if we are in four-leg more, or
 			// if we just switch to four leg mode
-			bool omitThisLeg = ((getCurrentGaitMode() == FourLegWalk) && (i > 1) && (i < NumberOfLegs-2)) ||
-								((i == NumberOfLegs/2) && !includeFrontLeg);
+			bool omitThisLeg = ((getCurrentGaitMode() == FourLegWalk) && (legNo > 1) && (legNo < NumberOfLegs-2)) ||
+								((legNo == NumberOfLegs/2) && !includeFrontLeg);
+
 			// define gait pattern
 			Point newFootPosition;
 
 			if (!omitThisLeg) {
-				realnum legSequenceNo = getLegAddOn(globalGaitBeat, fastestFootSpeed, i);
+				realnum legSequenceNo = getLegAddOn(globalGaitBeat, fastestFootSpeed, legNo);
 				realnum legGaitBeat = globalGaitBeat+legSequenceNo/float(numberOfActiveLegs);
-				millimeter fullGaitStepLength  = ((gaitDuration * footOntheGroundPercentage)/dT) * loopFootDistance[i];
-				newFootPosition = interpolateLegMotion(i,  toePoints[i], loopFootMoveVector[i], loopFootDistance[i], currentGaitRefPoints[i],
+				millimeter fullGaitStepLength  = ((gaitDuration * footOntheGroundPercentage)/dT) * loopFootDistance[legNo];
+				newFootPosition = interpolateLegMotion(legNo,  toePoints[legNo], loopFootMoveVector[legNo], loopFootDistance[legNo], currentGaitRefPoints[legNo],
 													  fullGaitStepLength,footOntheGroundPercentage, legGaitBeat, dT);
+
 			}
 			else {
 				// special position for the omitted leg. Take passed position.
 				newFootPosition = frontLegPosition;
-				feetOnGround[i] = (toePoints[i].distanceSqr(currentGaitRefPoints[i]) < floatPrecision);
-				if (feetOnGround[i]){
-					lastPhase[i] = LegOnGround;
+				feetOnGround[legNo] = (toePoints[legNo].distanceSqr(currentGaitRefPoints[legNo]) < floatPrecision);
+				if (feetOnGround[legNo]){
+					lastPhase[legNo] = LegOnGround;
 				}
-				targetGaitRefPoints[i] = newFootPosition;
+				targetGaitRefPoints[legNo] = newFootPosition;
 			}
-			toePoints[i] = newFootPosition;
+			toePoints[legNo] = newFootPosition;
 
 			// move target foot point
-			currentGaitRefPoints[i].moveTo(targetGaitRefPoints[i], dT, maxGaitRefPointSpeed);
+			currentGaitRefPoints[legNo].moveTo(targetGaitRefPoints[legNo], dT, maxGaitRefPointSpeed);
+
+			// compute point where foot will touch the ground
+			// target = currentGaitrefPoint - diffToePoint*(fullStepLength_mm*0.5/dDistance);
+			// target = currentGaitrefPoint - loopFootMoveVector[legNo]*(((gaitDuration * footOntheGroundPercentage)/dT) *0.5);
+
+			currentWalkingTouchPoints[legNo] = currentGaitRefPoints[legNo] - loopFootMoveVector[legNo] * gaitDuration * footOntheGroundPercentage/dT *0.5;
+
+			/*
+			 if (legNo == 0) {
+				cout << "curr" << currentGaitRefPoints[0] << "vector=" << loopFootMoveVector[0] << " walk=" << currentWalkingTouchPoints[0] << endl;
+			}
+			 */
 		}
 
 		// adapt speed vector accordingly

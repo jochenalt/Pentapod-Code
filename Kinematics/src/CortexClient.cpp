@@ -688,7 +688,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 	uint32_t sendDuration = millis() - start;
 
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - sendDuration);
-	uint32_t receiveDuration = millis() - start - sendDuration;
+	// uint32_t receiveDuration = millis() - start - sendDuration;
 	bool ok = (bytesRead  == responseSize);
 
     stringstream responseStream;

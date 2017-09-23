@@ -155,7 +155,7 @@ void I2CSlave::executeRequest() {
 			float imuX,imuY,zAccel;
 			uint8_t newSystem, newGyro, newAcc;
 			orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
-			int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10;
+			int imuStatus = newSystem*100 + newGyro*10 + newAcc;
 
 			// create response
 			ok = Cortex::ComPackage::createResponse(
