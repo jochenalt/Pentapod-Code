@@ -420,7 +420,7 @@ void Engine::computeBodyPose() {
 			// small PID controller
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, .9, 3.0, 0.05, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, .8, 2.0, 0.02, maxError);
 			ROS_DEBUG_STREAM("IMU=("<< degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
 		} else {
 			imuPID.reset();
