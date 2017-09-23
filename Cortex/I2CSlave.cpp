@@ -126,6 +126,23 @@ void I2CSlave::executeRequest() {
 					leg.setAngles(legAngles, duration_ms);
 				}
 				cmdSerial->println();
+
+				static TimePassedBy timer(1000);
+				if (timer.isDue()) {
+					for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
+						Leg& leg = controller.getLeg(legNo);
+						cmdSerial->print("(");
+						for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
+							float voltage = leg.servos[limbNo].getVoltage();
+							if (limbNo > 0)
+								cmdSerial->print(' ');
+							cmdSerial->print(voltage );
+						}
+						cmdSerial->print(")");
+					}
+					cmdSerial->println();
+				}
+
 				break;
 			}
 			case Cortex::GET:

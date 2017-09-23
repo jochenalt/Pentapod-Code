@@ -146,7 +146,6 @@ enum ServoStatusType { 	SERVO_STAT_OK,				// no error
 
 std::string getServoStatusTypeName(ServoStatusType stat);
 
-
 // every [ms] the motors get a new position. 11.2ms is the unit
 // Herkulex servos are working with, sample rate should be a multiple of that
 // With 22.4ms, we run at 45Hz

@@ -490,6 +490,15 @@ void cmdGET() {
 						cmdSerial->print(" ");
 					}
 					cmdSerial->print(leg.getDistance());
+
+					cmdSerial->print(" V(");
+
+					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
+						float voltage = leg.servos[limbNo].getVoltage();
+						if (limbNo > 0)
+							cmdSerial->print(',');
+						cmdSerial->print(voltage,1);
+					}
 					cmdSerial->print(")");
 				}
 

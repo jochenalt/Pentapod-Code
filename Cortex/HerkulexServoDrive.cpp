@@ -7,6 +7,8 @@
 #include "HerkulexServoDrive.h"
 
 void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* newHerkulexMgr) {
+	// voltage is measured within low-prio loop
+	voltage = 0;
 
 	configData = newConfigData;
 	herkulexMgr = newHerkulexMgr;
@@ -188,6 +190,9 @@ void HerkulexServoDrive::readStatus() {
 	else {
 		// check if stat is ok
 		status = herkulexMgr->stat(configData->herkulexMotorId);
+
+		// check if stat is ok
+		voltage = herkulexMgr->getVoltage(configData->herkulexMotorId);
 	}
 }
 
@@ -204,8 +209,8 @@ ServoStatusType HerkulexServoDrive::stat() {
 		case H_ERROR_EEPREG_DISTORT: return SERVO_STAT_EEPREG_DISTORT;
 		default:
 			return SERVO_STAT_NO_COMM;
-		};
-	}
+	};
+}
 
 
 float HerkulexServoDrive::getCurrentAngle() {
@@ -231,7 +236,7 @@ void HerkulexServoDrive::loop(uint32_t now) {
 		float toBeAngle = movement.getCurrentAngle(now+(int)CORTEX_SAMPLE_RATE);
 
 		currentUserAngle = toBeAngle;
-		moveToAngle(toBeAngle, 2*CORTEX_SAMPLE_RATE);
+		moveToAngle(toBeAngle, CORTEX_SAMPLE_RATE+HERKULEX_MIN_SAMPLE);
 	} else {
 		currentUserAngle = readCurrentAngle();
 	}
