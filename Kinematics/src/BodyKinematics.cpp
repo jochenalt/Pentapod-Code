@@ -165,7 +165,7 @@ bool BodyKinematics::computeKinematics(
 			// walkingTouchPointHipCoord is the position right above the point
 			// where the leg will touch the ground. Compute the to-be knee position
 			// that is the middle point of the toePoint and this point
-			Point knee = (walkingTouchPointHipCoord + toeHipCoord.position)*0.5;
+			Point knee = (walkingTouchPointHipCoord + toeHipCoord.position*2.0)/3.0;
 			realnum toBeAngle0 = atan((knee.y) / (knee.x));
 			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
 			if (!ok) {

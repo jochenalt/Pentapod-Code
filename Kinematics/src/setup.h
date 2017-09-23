@@ -24,14 +24,14 @@ enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, ThreeLegsInTheAir, SexyWalk
 const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 
 // maximum and minimum body height
-const realnum maxBodyHeight = 250.0;
+const realnum maxBodyHeight = 220.0;
 const realnum minBodyHeight = 43.0;
 const realnum standardBodyHeigh = 150.0;
 
 // min/max radius of ground touch points
-const realnum minFootTouchPointRadius = 215.0;
+const realnum minFootTouchPointRadius = 240.0;
 const realnum maxFootTouchPointRadius = 280.0;
-const realnum sleepingFootTouchPointRadius = 290;
+const realnum sleepingFootTouchPointRadius = 280;
 
 // possible acceleration of angualar speed
 const realnum maxAngularSpeedAcceleration = 0.1; //  [rad/s^2]

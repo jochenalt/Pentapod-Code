@@ -383,7 +383,9 @@ void Engine::computeWarpCompensation() {
 
 void Engine::computeBodyPose() {
 	// maximum speed the body moves its position or orientation
-	const realnum maxBodyPositionSpeed = 80.0; 	// [mm/s]
+	const realnum maxLiftBodyPositionSpeed = 80.0; 	// [mm/s]
+	const realnum maxBodyPositionSpeed = 40.0; 	// [mm/s]
+
 	const realnum maxBodyOrientationSpeed = 0.4; 	// [RAD/s]
 
 	realnum dT = bodyPoseSampler.dT();
@@ -400,8 +402,12 @@ void Engine::computeBodyPose() {
 		// move towards the target body pose
 		// but: if we are in lift mode, wait until all legs are on the ground
 		if ((generalMode != LiftBody)
-			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 5.0)))
-			moderatedBodyPose.moveTo(inputBodyPose, dT, maxBodyPositionSpeed, maxBodyOrientationSpeed);
+			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 5.0))) {
+			realnum bodySpeed = maxBodyPositionSpeed;
+			if (generalMode == LiftBody)
+				bodySpeed = maxLiftBodyPositionSpeed;
+			moderatedBodyPose.moveTo(inputBodyPose, dT, bodySpeed, maxBodyOrientationSpeed);
+		}
 
 		// add the swing and IMU correction
 		Pose toBePose = moderatedBodyPose + bodySwing;
@@ -696,7 +702,7 @@ void Engine::computeGaitHeight() {
 
 	realnum gaitHeight = 65 + 30 * moderate( (maxBodyHeight - currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
-	gaitControl.setGaitHeight(gaitHeight, 40);
+	gaitControl.setGaitHeight(gaitHeight, 50);
 }
 
 void Engine::computeFrontLeg() {

@@ -219,7 +219,7 @@ Point GaitController::interpolateLegMotion(
 	bool doMove =  (moveLength > floatPrecision)
 				   || !feetOnGround[legNo]
  				   || (forceGait)
-                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(5));
+                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(20));
 
 	/*
 	LOG(DEBUG) << "[" << legNo << "] move=" << doMove << " ml=" << moveLength << "|" << (moveLength > floatPrecision) << " fog" << !feetOnGround[legNo]
