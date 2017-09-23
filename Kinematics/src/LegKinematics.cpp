@@ -208,7 +208,7 @@ bool LegKinematics::isInBoundaries(const LimbAngles& angles, int& actuatorOutOfB
 bool LegKinematics::computeInverseKinematics(LegPose& pose) {
 	// arbitrary definition of bisectional angle to foot touch point
 	realnum angle0;
-	angle0 = arctanApprox(pose.position[Y] / pose.position[X])*0.4 + hipOffset;
+	angle0 = arctanApprox(pose.position[Y] / pose.position[X])*0.3 + hipOffset;
 	return computeInverseKinematics(pose, angle0);
 }
 
