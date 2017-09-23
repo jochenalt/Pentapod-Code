@@ -97,7 +97,10 @@ bool Engine::setupCommon() {
 	imposeFootPointsWorld(footPoints);
 
 	generalMode = BeingAsleep;
+	shutdownMode = NoShutDownActive;
 	turnedOn = false;
+
+	imuPID.reset();
 
 	return true;
 }
@@ -130,6 +133,7 @@ void Engine::turnOn() {
 	ROS_DEBUG_STREAM("turnON()");
 
 	setupCommon();
+
 	if (legController.isCortexCommunicationOk()) {
 
 		CriticalBlock block(loopMutex);
@@ -194,7 +198,6 @@ void Engine::setTargetFrontLegPose(const Point& newFrontLegPoseWorld) {
 }
 
 LegPose Engine::getFrontLegPoseWorld() {
-
 	LegPose pose = frontLegPose;
 	pose.position.getRotatedAroundZ(getCurrentNoseOrientation());
 	return pose;
@@ -202,6 +205,9 @@ LegPose Engine::getFrontLegPoseWorld() {
 
 
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
+	// do not accept any more commands when in danger
+	if (legController.betterShutMeDown())
+		return;
 	// ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
 
 	// dont take this if we actually wake up
@@ -299,6 +305,32 @@ void Engine::loop() {
 			legController.setMovement (allLegAngles, CORTEX_SAMPLE_RATE);
 		}
 	}
+
+	// did a fatal error occur? Then shutdown
+	if (legController.betterShutMeDown()) {
+		switch (shutdownMode) {
+			case NoShutDownActive: {
+				ROS_ERROR_STREAM("better shut me down due to fatal error");
+				shutdownMode = Initiate;
+				targetSpeed = 0;
+				targetAngularSpeed = 0;
+				inputBodyPose = Pose(Point(0,0,standardBodyHeigh), Rotation(0,0,0));
+			}
+			case Initiate: {
+				if ((currentBodyPose.position.z - standardBodyHeigh < floatPrecision)
+					 && (getCurrentSpeed() < floatPrecision)) {
+					fallAsleep();
+					shutdownMode = FallAsleep;
+				}
+			}
+			case FallAsleep: {
+				if (generalMode == BeingAsleep) {
+					turnOff();
+					shutdownMode = Done;
+				}
+			}
+		}
+	}
 }
 
 mmPerSecond& Engine::getTargetSpeed () {
@@ -325,11 +357,19 @@ bool Engine::wakeUpIfNecessary() {
 }
 
 void Engine::setTargetSpeed (mmPerSecond newSpeed /* mm/s */) {
+	// do not accept any more commands when in danger
+	if (legController.betterShutMeDown())
+		return;
+
 	wakeUpIfNecessary();
 	targetSpeed = newSpeed;
 };
 
 void Engine::setTargetAngularSpeed(radPerSecond rotateZ) {
+	// do not accept any more commands when in danger
+	if (legController.betterShutMeDown())
+		return;
+
 	wakeUpIfNecessary();
 
 	rotateZ = constrain(rotateZ, -maxAngularSpeed, maxAngularSpeed);
@@ -341,6 +381,10 @@ radPerSecond& Engine::getTargetAngularSpeed() {
 };
 
 void Engine::setTargetWalkingDirection(angle_rad newWalkingDirection) {
+	// do not accept any more commands when in danger
+	if (legController.betterShutMeDown())
+		return;
+
 	wakeUpIfNecessary();
 	targetWalkingDirection = newWalkingDirection;
 };
@@ -420,7 +464,7 @@ void Engine::computeBodyPose() {
 			// small PID controller
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, .9, 3.0, 0.05, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 0.9, 5.0, 0.02, maxError);
 			ROS_DEBUG_STREAM("IMU=("<< degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
 		} else {
 			imuPID.reset();

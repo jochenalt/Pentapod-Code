@@ -72,6 +72,7 @@ CortexClient::CortexClient() {
 	imuStatusAcc = 0;
 	imuStatusGyro = 0;
 	timeOfLastIMUValue = 0;
+	betterShutdown = false;
 }
 
 
@@ -107,6 +108,7 @@ bool CortexClient::cmdCHECKSUM(bool onOff) {
 }
 
 bool CortexClient::cmdSETUP() {
+	betterShutdown = false;
 	return cmdBinaryCommand(Cortex::Command::SETUP);
 }
 
@@ -259,6 +261,17 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 				measuredDistance[i] = -1;
 		};
 
+		// check if one of a servo has a status error
+		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
+			for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
+				ServoStatusType stat = (ServoStatusType)servoStatus[NumberOfLimbs*legNo + limbNo];
+				if (stat != SERVO_STAT_OK) {
+					ok = false;
+					ROS_ERROR_STREAM("leg " << legNo << " servo " << limbNo << " failed with error " << getServoStatusTypeName(stat) << "(" << stat << ")");
+				}
+			}
+		}
+
 		// store general status (enabled, disabled)
 		enabled = (status == Cortex::Status::ENABLED);
 		ROS_DEBUG_STREAM("cortex-response"
@@ -269,11 +282,11 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 				<< " t(loop)=" << looptime << "ms"
 				<< " distance=(" << measuredDistance[0] << "," << measuredDistance[1] << "," << measuredDistance[2] << "," << measuredDistance[3] << "," << measuredDistance[4] << ")"
 				<< std::fixed << std::setprecision(1)
-				<< " leg0=(" << degrees(lastLegAngles[0][0]) << ","<< degrees(lastLegAngles[0][1]) << "," << degrees(lastLegAngles[0][2]) << ","<< degrees(lastLegAngles[0][3]) << ")"
-				<< " leg1=(" << degrees(lastLegAngles[1][0]) << ","<< degrees(lastLegAngles[1][1]) << "," << degrees(lastLegAngles[1][2]) << ","<< degrees(lastLegAngles[1][3]) << ")"
-				<< " leg2=(" << degrees(lastLegAngles[2][0]) << ","<< degrees(lastLegAngles[2][1]) << "," << degrees(lastLegAngles[2][2]) << ","<< degrees(lastLegAngles[2][3]) << ")"
-				<< " leg3=(" << degrees(lastLegAngles[3][0]) << ","<< degrees(lastLegAngles[3][1]) << "," << degrees(lastLegAngles[3][2]) << ","<< degrees(lastLegAngles[3][3]) << ")"
-				<< " leg4=(" << degrees(lastLegAngles[4][0]) << ","<< degrees(lastLegAngles[4][1]) << "," << degrees(lastLegAngles[4][2]) << ","<< degrees(lastLegAngles[4][3]) << ")");
+				<< " legs=(" << degrees(lastLegAngles[0][0]) << ","<< degrees(lastLegAngles[0][1]) << "," << degrees(lastLegAngles[0][2]) << ","<< degrees(lastLegAngles[0][3]) << ")"
+				<< "(" << degrees(lastLegAngles[1][0]) << ","<< degrees(lastLegAngles[1][1]) << "," << degrees(lastLegAngles[1][2]) << ","<< degrees(lastLegAngles[1][3]) << ")"
+				<< "(" << degrees(lastLegAngles[2][0]) << ","<< degrees(lastLegAngles[2][1]) << "," << degrees(lastLegAngles[2][2]) << ","<< degrees(lastLegAngles[2][3]) << ")"
+				<< "(" << degrees(lastLegAngles[3][0]) << ","<< degrees(lastLegAngles[3][1]) << "," << degrees(lastLegAngles[3][2]) << ","<< degrees(lastLegAngles[3][3]) << ")"
+				<< "(" << degrees(lastLegAngles[4][0]) << ","<< degrees(lastLegAngles[4][1]) << "," << degrees(lastLegAngles[4][2]) << ","<< degrees(lastLegAngles[4][3]) << ")");
 	}
 	return ok;
 }

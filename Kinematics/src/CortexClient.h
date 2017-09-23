@@ -82,6 +82,7 @@ public:
 	// true, if enable() has been called
 	bool isEnabled() { return enabled; };
 
+	bool betterShutMeDown() { return betterShutdown; };
 private:
 	bool retry(bool replyOk);
 
@@ -157,6 +158,9 @@ private:
 
 	// last time of an IMU value, used in isIMUValueValid to check if the value can still be used
 	milliseconds timeOfLastIMUValue;
+
+	// true, if a error occurs that requires a controlled shutdown of the bot
+	bool betterShutdown;
 };
 
 #endif /* MICROCONTROLLERINTERFACE_H_ */

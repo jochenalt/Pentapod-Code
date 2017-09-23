@@ -24,9 +24,6 @@ public:
 	Engine();
 	virtual ~Engine() {};
 
-
-	bool initializeLegsPositions();
-
 	// call this upfront before calling loop. Returns true if everyhing ok
 	bool setupProduction(string i2cport, int i2cadr,string cortextSerialPort, int cortexSerialBaudRate);
 
@@ -129,6 +126,7 @@ public:
 	void getState(EngineState &data);
 
 private:
+
 	bool wakeUpIfNecessary();
 	bool setupCommon();
 
@@ -202,6 +200,7 @@ private:
 	TimeSamplerStatic humpCompensationFilterSampler;
 
 	GeneralEngineModeType generalMode;
+	ShutDownModeType shutdownMode;
 	SpatialPID imuPID;
 	bool turnedOn;
 	bool isSetup;
