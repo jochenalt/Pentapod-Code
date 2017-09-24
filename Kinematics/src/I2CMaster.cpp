@@ -10,6 +10,7 @@
 #include <chrono>
 #include <thread>
 
+#include "core.h"
 #include "I2CMaster.h"
 #include "basics/logger.h"
 #include "CortexComPackage.h"
