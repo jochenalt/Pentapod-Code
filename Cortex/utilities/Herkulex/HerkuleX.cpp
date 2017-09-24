@@ -821,7 +821,7 @@ void HerkulexClass::moveOne(int servoID, int Goal, int pTime, int iLed)
   data[2]=SetValue;                         // 10. Mode=0;
   data[3]=servoID;                    		// 11. ServoID
 
-    pID=servoID^playTime;
+  pID=servoID^playTime;
 
   lenghtString=4;             				// lenghtData
 

@@ -78,6 +78,7 @@ private:
 	HerkulexClass* herkulexMgr;
 	uint8_t status;
 	TimePassedBy statusReadTimer;
+	int readStatusCounter;
 }; //MotorDriver
 
 #endif //__MOTORDRIVER_HERKULEX_IMPL_H__

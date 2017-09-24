@@ -188,11 +188,14 @@ void HerkulexServoDrive::readStatus() {
 	if (!connected)
 		status = SERVO_STAT_NO_COMM;
 	else {
-		// check if stat is ok
-		status = herkulexMgr->stat(configData->herkulexMotorId);
-
-		// check if stat is ok
-		voltage = herkulexMgr->getVoltage(configData->herkulexMotorId);
+		if (readStatusCounter++ % 2 == 0) {
+			// check if stat is ok
+			status = herkulexMgr->stat(configData->herkulexMotorId);
+		}
+		else {
+			// check if stat is ok
+			voltage = herkulexMgr->getVoltage(configData->herkulexMotorId);
+		}
 	}
 }
 

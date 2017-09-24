@@ -93,6 +93,12 @@ void I2CSlave::executeRequest() {
 		for (unsigned int i = 0;i<receiveBufferLen;i++)
 			request.data[i] = receiveBuffer[i];
 
+		// collect IMU data
+		float imuX,imuY,zAccel;
+		uint8_t newSystem, newGyro, newAcc;
+		orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
+		int imuStatus = newSystem*100 + newGyro*10 + newAcc;
+
 		Cortex::Command cmd;
 		float angles[NumberOfLimbs*NumberOfLegs];
 		int duration_ms;
@@ -114,33 +120,46 @@ void I2CSlave::executeRequest() {
 				cmdSerial->print("MOVE ");
 				for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 					Leg& leg = controller.getLeg(legNo);
-					cmdSerial->print("(");
+					cmdSerial->print('(');
 					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
 						float angle = angles[limbNo + legNo*NumberOfLimbs];
 						legAngles[limbNo] = angle;
 						if (limbNo > 0)
 							cmdSerial->print(' ');
-						cmdSerial->print(angle);
+						cmdSerial->print((int)angle);
 					}
+					cmdSerial->print(' ');
+					cmdSerial->print(leg.getDistance());
+					cmdSerial->print("mm");
 					cmdSerial->print(")");
+
 					leg.setAngles(legAngles, duration_ms);
 				}
-				cmdSerial->println();
+				cmdSerial->print("IMU(");
+				cmdSerial->print(imuX,1);
+				cmdSerial->print(',');
+				cmdSerial->print(imuY,1);
+				cmdSerial->print(',');
+				cmdSerial->print(imuStatus);
+				cmdSerial->println(')');
 
 				static TimePassedBy timer(1000);
 				if (timer.isDue()) {
+					cmdSerial->print("STATUS(");
 					for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
+						cmdSerial->print('(');
 						Leg& leg = controller.getLeg(legNo);
-						cmdSerial->print("(");
-						for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-							float voltage = leg.servos[limbNo].getVoltage();
-							if (limbNo > 0)
-								cmdSerial->print(' ');
-							cmdSerial->print(voltage );
-						}
-						cmdSerial->print(")");
+						float voltage = leg.servos[FOOT].getVoltage();
+						cmdSerial->print(voltage,1);
+						cmdSerial->print("V ");
+
+						cmdSerial->print((int)leg.servos[0].stat());
+						cmdSerial->print((int)leg.servos[1].stat());
+						cmdSerial->print((int)leg.servos[2].stat());
+						cmdSerial->print((int)leg.servos[3].stat());
+						cmdSerial->print(')');
 					}
-					cmdSerial->println();
+					cmdSerial->println(')');
 				}
 
 				break;
@@ -168,11 +187,7 @@ void I2CSlave::executeRequest() {
 				}
 			}
 
-			// collect IMU data
-			float imuX,imuY,zAccel;
-			uint8_t newSystem, newGyro, newAcc;
-			orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
-			int imuStatus = newSystem*100 + newGyro*10 + newAcc;
+
 
 			// create response
 			ok = Cortex::ComPackage::createResponse(

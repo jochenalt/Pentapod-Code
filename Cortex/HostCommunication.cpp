@@ -491,15 +491,11 @@ void cmdGET() {
 					}
 					cmdSerial->print(leg.getDistance());
 
-					cmdSerial->print(" V(");
+					cmdSerial->print("mm ");
 
-					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-						float voltage = leg.servos[limbNo].getVoltage();
-						if (limbNo > 0)
-							cmdSerial->print(',');
-						cmdSerial->print(voltage,1);
-					}
-					cmdSerial->print(")");
+					float voltage = leg.servos[FOOT].getVoltage();
+					cmdSerial->print(voltage,1);
+					cmdSerial->print("V)");
 				}
 
 				// return IMU's orientation

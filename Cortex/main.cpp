@@ -269,13 +269,17 @@ void setup() {
 
 void loop() {
 	watchdogReset();
+
+	// high priority jobs
 	uint32_t now = millis();
 	controller.loop(now);		// run the actuators
 	hostComm.loop();			// wait for commands via serial interface
 	orientationSensor.loop(now);// check orientation with same ratio like servos
+	i2cSlave.loop();
+
+	// low priority jobs
 	voltage.loop(now);			// check the voltage with 1Hz
 	memory.loop(now);			// check if something has to be written to EEPROM
 	ledBlinker.loop(now);    	// LED on Teensy board and LED on power switch
 	signalBlinker.loop(now);
-	i2cSlave.loop();
 }

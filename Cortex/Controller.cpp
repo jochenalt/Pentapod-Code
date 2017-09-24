@@ -105,12 +105,11 @@ void Controller::loop(uint32_t now) {
 	if (servoLoopTimer.isDue_ms(CORTEX_SAMPLE_RATE,now))
 	{
 
-		// static uint32_t lastCall = 0;
-
 		uint32_t start = millis();
 		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
 			legs[leg].fetchDistance();
 		}
+		uint32_t middle = millis();
 
 		// important: iterate over all legs limb-wise, such
 		// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
@@ -124,17 +123,21 @@ void Controller::loop(uint32_t now) {
 			}
 		}
 
-		uint32_t end = millis();
-		loopTime_ms = (end - start);
+		static uint32_t distanceTime = 0;
+		static uint32_t loopTime = 0;
+		static TimePassedBy logTimer(5000);
 
-		/*
-		cmdSerial->print("t=(");
-		cmdSerial->print(loopTime_ms);
-		cmdSerial->print(",");
-		cmdSerial->print(start - lastCall);
-		cmdSerial->println(")");
-		lastCall = start;
-*/
+		uint32_t end = millis();
+		distanceTime = (middle - start + distanceTime)/2;
+		loopTime = ((end - start) + loopTime)/2;
+
+		if (logTimer.isDue()) {
+			cmdSerial->print("TIME(");
+			cmdSerial->print(loopTime);
+			cmdSerial->print("(");
+			cmdSerial->print(distanceTime);
+			cmdSerial->println(")ms");
+		}
 	}
 }
 
