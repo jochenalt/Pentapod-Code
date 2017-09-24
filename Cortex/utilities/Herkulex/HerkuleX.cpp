@@ -659,9 +659,9 @@ float HerkulexClass::getVoltage(int servoID) {
   if (ck1 != dataEx[5]) return -1;
   if (ck2 != dataEx[6]) return -1;
 
-  float voltage = ((float)(((dataEx[10]&0xFF)<<8) | dataEx[9]))*0.1;
-  return voltage;
+  float voltage = ((float)(dataEx[9]))*0.074;
 
+  return voltage;
 }
 
 

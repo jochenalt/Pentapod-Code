@@ -21,6 +21,22 @@ bool isError() {
 	return glbError != ErrorCodeType::ABSOLUTELY_NO_ERROR;
 }
 
+std::string getServoStatusTypeName(ServoStatusType stat) {
+	switch (stat) {
+		case SERVO_STAT_OK: return "ok";
+		case SERVO_STAT_VOLTAGE: return "voltage out of bounds";
+		case SERVO_STAT_LIMIT: return "limit exceeeded";
+		case SERVO_STAT_TEMP: return "temperature exceeed";
+		case SERVO_STAT_INV_PKT: return "invalid packet";
+		case SERVO_STAT_OVERLOAD: return "servo overload";
+		case SERVO_STAT_DRIVER_FAULT: return "driver fault";
+		case SERVO_STAT_EEPREG_DISTORT: return "eepreg distortion";
+		case SERVO_STAT_NO_COMM: return "communication failure";
+		default:
+			return "";
+	};
+}
+
 
 std::string getServoStatusTypeName(ServoStatusType stat) {
 	switch (stat) {

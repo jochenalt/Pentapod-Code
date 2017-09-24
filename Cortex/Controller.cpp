@@ -134,9 +134,7 @@ void Controller::loop(uint32_t now) {
 		cmdSerial->print(start - lastCall);
 		cmdSerial->println(")");
 		lastCall = start;
-
 */
-
 	}
 }
 

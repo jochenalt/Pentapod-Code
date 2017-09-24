@@ -278,9 +278,4 @@ void loop() {
 	ledBlinker.loop(now);    	// LED on Teensy board and LED on power switch
 	signalBlinker.loop(now);
 	i2cSlave.loop();
-	/*
-	if (controller.isSetup()) {
-		resetI2CWhenNecessary(0);	// check if I2c bus is fine. Restart if not.
-	}
-	*/
 }
