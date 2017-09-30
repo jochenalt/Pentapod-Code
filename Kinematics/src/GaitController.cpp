@@ -234,7 +234,10 @@ Point GaitController::interpolateLegMotion(
 				// next touch point is gait ref point + half a step forward
 				Point nextTouchPoint (gaitRefPoint);
 				if (abs(dDistance) > floatPrecision)
-					nextTouchPoint -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
+					// formally we take the fullsteplength, but this does not yet calculate the
+					// last mm when the toes goes with the ground already. For that, slightly increase the
+					// step length (precisely following the computed step length this is not THAT important)
+					nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
 
 				Point prevTouchPoint = lastPhasePosition;
 
@@ -273,9 +276,18 @@ Point GaitController::interpolateLegMotion(
 					Point touchPointDifference = target-bezierTouchPoint;
 					result = (touchPointDifference*localPhaseBeat) + bezierPoint;
 
-					// check if the toe touches the gound (used elsewhere)
+					// check if the toe touches the ground (used elsewhere)
 					if (result.z < floatPrecision + gaitRefPoint.z)
 						feetOnGround[legNo] = false;
+
+					// if toe is close to the ground move leg with the ground already when doing the last mm's
+					if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
+						Point nextToe = getNextToePoint(currentToePoint, dT);
+						result.x = nextToe.x;
+						result.y = nextToe.y;
+						// don't overwrite z-coordinate
+					}
+
 				}
 				break;
 			}

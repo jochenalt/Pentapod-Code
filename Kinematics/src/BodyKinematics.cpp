@@ -138,7 +138,7 @@ bool BodyKinematics::computeKinematics(
 			// during startup phase control that care that angle acceleration is not exceeded
 			// since we might be outside the area of angle0
 			realnum givenAngle0 = legAngles[legNo][0];
-			realnum toBeAngle0 = atan(toeHipCoord.position[Y] / toeHipCoord.position[X])*0.4;
+			realnum toBeAngle0 = atan2(toeHipCoord.position[Y], toeHipCoord.position[X])*0.4;
 			if (legAngles[legNo].isNull()) {
 				givenAngle0 = toBeAngle0;
 			}
@@ -160,13 +160,13 @@ bool BodyKinematics::computeKinematics(
 		} else {
 			// during normal walking the knee should be in a position such that
 			// when the leg goes down it touchs the ground as perpendicular as possible
-			// in order to have less walking by unstiff motor and legs
+			// in order to have less walking by unstiff motor and legs3
 
 			// walkingTouchPointHipCoord is the position right above the point
 			// where the leg will touch the ground. Compute the to-be knee position
 			// that is the middle point of the toePoint and this point
-			Point knee = (walkingTouchPointHipCoord + toeHipCoord.position*2.0)/3.0;
-			realnum toBeAngle0 = atan((knee.y) / (knee.x));
+			Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
+			realnum toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
 			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
 			if (!ok) {
 				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with toe " << toeHipCoord << " could not be found");

@@ -67,11 +67,11 @@ void LegConfigType::setDefaults() {
 	// each legs gets one serial line.
 	// Teensy has 6 uarts. Serial0 is USB, Serial1 is used as CLI interface2.
 	// The following is from the schematics
-	memory.persMem.legs[0].serialId = 5; // leg 0 uses Serial5
-	memory.persMem.legs[1].serialId = 3; // leg 1 uses Serial3
-	memory.persMem.legs[2].serialId = 2; // leg 2 uses Serial2
-	memory.persMem.legs[3].serialId = 4; // leg 3 uses Serial4
-	memory.persMem.legs[4].serialId = 6; // leg 4 uses Serial6
+	memory.persMem.legs[0].serialId = 6; // leg 0 uses Serial6
+	memory.persMem.legs[1].serialId = 1; // leg 1 uses Serial1
+	memory.persMem.legs[2].serialId = 4; // leg 2 uses Serial4
+	memory.persMem.legs[3].serialId = 3; // leg 3 uses Serial3
+	memory.persMem.legs[4].serialId = 2; // leg 4 uses Serial1
 
 	// null values of the distance sensors
 	memory.persMem.legs[0].nullDistance = 18;

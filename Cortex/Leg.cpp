@@ -21,8 +21,20 @@ void Leg::setup(int newId, uint8_t serialId) {
 
 	// initialize one serial line per leg
 	legId = newId;
-	HardwareSerial* servoSerials[NUMBER_OF_LEGS] = { &Serial2, &Serial3, &Serial4,&Serial5,&Serial6};
-	herkulexSerial = servoSerials[serialId-2]; // the array above contains Serila2..Serial6.
+	herkulexSerial = &Serial1;
+	switch (serialId) {
+		case 1: herkulexSerial = &Serial1;break;
+		case 2: herkulexSerial = &Serial2;break;
+		case 3: herkulexSerial = &Serial3;break;
+		case 4: herkulexSerial = &Serial4;break;
+		case 5: herkulexSerial = &Serial5;break;
+		case 6: herkulexSerial = &Serial6;break;
+		default:
+			logger->print("leg ");
+			logger->print(legId);
+			logger->print(" has invalid Serial");
+			logger->println(serialId);
+	}
 
 	// initialize herkulex manager for this serial line
 	herkulexMgr.beginSerial(herkulexSerial,HERKULEX_BAUD_RATE_HIGH); // default baud rate of Herkulex.

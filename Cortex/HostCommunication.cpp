@@ -162,8 +162,11 @@ void cmdINFO() {
 		IMUWire->resetBus();
 		orientationSensor.setup(IMUWire);
 		cmdSerial->print(") ");
-		cmdSerial->print(voltage.getVoltage(),1);
-		cmdSerial->print("V) Legs(");
+		cmdSerial->print(voltage.get10Voltage(),1);
+		cmdSerial->print("(");
+		cmdSerial->print(voltage.get14Voltage(),1);
+		cmdSerial->print(")V) Legs(");
+
 
 		for (int i = 0;i<NumberOfLegs;i++) {
 			if (i>0)
@@ -449,7 +452,7 @@ void cmdBIN() {
 		ok = Cortex::ComPackage::createResponse(
 				status, angles, distance, servoStatus,
 				imuX, imuY, imuStatus,
-				voltage.getVoltage(),
+				voltage.get14Voltage(),
 				controller.looptime(),
 				response);
 
@@ -515,7 +518,9 @@ void cmdGET() {
 
 				// return power voltage
 				cmdSerial->print(' ');
-				cmdSerial->print(voltage.getVoltage(),1);
+				cmdSerial->print(voltage.get14Voltage(),1);
+				cmdSerial->print(' ');
+				cmdSerial->print(voltage.get10Voltage(),1);
 
 				// return loop time
 				cmdSerial->print(' ');
@@ -615,7 +620,7 @@ void cmdMOVE() {
 
 			// return IMU's orientation
 			float x,y,z;
-			uint8_t newSystem, newGyro, newAcc, newMag;
+			uint8_t newSystem, newGyro, newAcc;
 			orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc);
 			cmdSerial->print(' ');
 			cmdSerial->print(x, 1);
@@ -627,11 +632,12 @@ void cmdMOVE() {
 			cmdSerial->print(newSystem);
 			cmdSerial->print(newGyro);
 			cmdSerial->print(newAcc);
-			cmdSerial->print(newMag);
 
 			// return power voltage
 			cmdSerial->print(' ');
-			cmdSerial->print(voltage.getVoltage(),1);
+			cmdSerial->print(voltage.get10Voltage(),1);
+			cmdSerial->print(' ');
+			cmdSerial->print(voltage.get14Voltage(),1);
 
 			// return loop time
 			cmdSerial->print(' ');

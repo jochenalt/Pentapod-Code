@@ -33,6 +33,8 @@ namespace CAD {
 	// constexpr static realnum HipLength= 35.528;				// distance between hip mounting point and hip joint axis (Hip040x)
 
 	constexpr static realnum HipJointLength = 40.578;
+	// constexpr static realnum HipJointLength = 44.991;
+
 	constexpr static realnum ThighLength = 45.328;
 	constexpr static realnum ThighKneeGapLength = 0.5;
 	constexpr static realnum KneeJointLength = 95.711;

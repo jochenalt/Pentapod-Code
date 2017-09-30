@@ -16,10 +16,13 @@ public:
 	void setup();
 	void loop(uint32_t now);
 	void print();
-	float getVoltage();
+	float get14Voltage();
+	float get10Voltage();
 
 private:
-	float measuredVoltage;
+	float measured10Voltage;
+	float measured14Voltage;
+
 };
 
 extern PowerVoltage voltage;

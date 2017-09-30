@@ -306,7 +306,7 @@ void Engine::loop() {
 		}
 	}
 
-	// did a fatal error occur? Then shutdown
+	// did a fatal error occur? Then fall asleep and shutdown
 	if (legController.betterShutMeDown()) {
 		switch (shutdownMode) {
 			case NoShutDownActive: {
@@ -329,6 +329,9 @@ void Engine::loop() {
 					shutdownMode = Done;
 				}
 			}
+			case Done:
+				break;
+
 		}
 	}
 }
