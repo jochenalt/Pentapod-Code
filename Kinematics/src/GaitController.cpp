@@ -83,7 +83,6 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius) {
 		startAngle = 360.0/NumberOfLegs*(float(NumberOfLegs/2));
 
 	realnum angleAdaption = 0;
-	// foot touch points are not a circle but an elipse to give side legs more freedom
 
 	for (int i = 0;i< NumberOfLegs;i++) {
 		angleAdaption = 0;
@@ -101,18 +100,18 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius) {
 		realnum angle = startAngle + fourLegsModeRatio*angleAdaption;
 		realnum currentRadius = gaitRefPointRadius;
 
-		realnum zCoordGround = perpendicularGroundHeight[i];
-		zCoordGround += mainController->getBodyKinematics().getFatFootCorrectionHeight(i);
+		realnum zCoordOverGround = perpendicularGroundHeight[i];
+		zCoordOverGround += mainController->getBodyKinematics().getFatFootCorrectionHeight(i);
 
 		// limit z-coord
-		zCoordGround = constrain(zCoordGround,
+		zCoordOverGround = constrain(zCoordOverGround,
 				mainController->getBodyKinematics().getCurrentBellyPose().position.z - maxBodyHeight,
 				mainController->getBodyKinematics().getCurrentBellyPose().position.z - minBodyHeight);
 
 		// add small amount to avoid singularity at 0,0
 		Point newGaitRefPoint = Point(	0.1 + currentRadius*cos(radians(angle)),
 										0.1 + currentRadius*sin(radians(angle)),
-										zCoordGround);
+										zCoordOverGround);
 
 		targetGaitRefPoints[i] = newGaitRefPoint;
 

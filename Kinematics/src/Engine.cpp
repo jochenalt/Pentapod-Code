@@ -874,11 +874,6 @@ void Engine::imposeFootPointsWorld(const PentaPointType& footPointsWorld) {
 									groundPoints);
 
 	if (ok) {
-		// use the foot angles to correct the kinematics
-		PentaPointType fpw (footPointsWorld);
-		for (int i = 0;i<NumberOfLegs;i++)
-			fpw[i].z += bodyKinematics.getFatFootCorrectionHeight(i);
-
 		gaitControl.imposeFootPointsWorld(fpw);
 	}
 };
