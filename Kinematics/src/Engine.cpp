@@ -874,7 +874,7 @@ void Engine::imposeFootPointsWorld(const PentaPointType& footPointsWorld) {
 									groundPoints);
 
 	if (ok) {
-		gaitControl.imposeFootPointsWorld(fpw);
+		gaitControl.imposeFootPointsWorld(footPointsWorld);
 	}
 };
 
