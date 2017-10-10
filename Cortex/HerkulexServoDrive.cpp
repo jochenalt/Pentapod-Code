@@ -6,6 +6,23 @@
 #include "pins.h"
 #include "HerkulexServoDrive.h"
 
+// the herkulex id has been set upfront with the Herkulex Manager. The convention is as follows
+// Hip  (drs 0101) = legId*10 + 1 = [01,   11,  12,  13,  14 ]
+// Thigh(drs 0401) = legId + 100  = [100, 101, 102, 103, 104 ]
+// Knee (drs 0101) = legId*10 + 3 = [03,   13,  23,  33,  43 ]
+// Foot (drs 0201) = legId*10 + 4 = [04,   14,  24,  34,  44 ]
+
+int HerkulexServoDrive::getHerkulexId(int legId, int limbId) {
+	switch (limbId) {
+		case HIP: return legId*10 + 1;
+		case THIGH: return 100 + legId;
+		case KNEE: return legId*10 + 3;
+		case FOOT: return legId*10 + 4;
+	}
+	return -1;
+};
+
+
 void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* newHerkulexMgr) {
 	// voltage is measured within low-prio loop
 	voltage = 0;
@@ -31,7 +48,7 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 
 		// fetch current angle of servo
 		bool error;
-		float rawHerkulexAngle = herkulexMgr->getAngle(configData->herkulexMotorId, error);
+		float rawHerkulexAngle = herkulexMgr->getAngle(configData->type, configData->herkulexMotorId, error);
 		currentUserAngle = convertHerkulexAngle2UserAngle(rawHerkulexAngle);
 
 		if (memory.persMem.logSetup) {
@@ -43,7 +60,7 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 			logger->print(error);
 		}
 
-		// switch on torque
+		// switch off torque
 		herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
 		if (memory.persMem.logSetup) {
@@ -124,7 +141,7 @@ void HerkulexServoDrive::setUserAngle(float pUserAngle,uint32_t pAngleTargetDura
 	// limit angle
 	pUserAngle = constrain(pUserAngle, configData->minAngle,configData->maxAngle);
 
-	if (abs(lastAngle-pUserAngle)> 0.1) {
+	if (abs(lastAngle-pUserAngle) > 0.1) {
 		if (memory.persMem.logServo) {		
 			logger->print(F("Herkulex.setAngle("));
 			logger->print(pUserAngle);
@@ -179,7 +196,7 @@ void HerkulexServoDrive::moveToAngle(float pUserAngle, uint16_t pDuration_ms) {
 		float herkulexAngle = convertUserAngle2HerkulexAngle(pUserAngle);
 
 		// add one sample slot to the time, otherwise the servo does not run smooth but in steps
-		herkulexMgr->moveOneAngle(configData->herkulexMotorId,herkulexAngle, pDuration_ms, LED_GREEN);
+		herkulexMgr->moveOneAngle(configData->type, configData->herkulexMotorId,herkulexAngle, pDuration_ms, LED_GREEN);
 	}
 }
 
@@ -194,7 +211,7 @@ void HerkulexServoDrive::readStatus() {
 		}
 		else {
 			// check if stat is ok
-			voltage = herkulexMgr->getVoltage(configData->herkulexMotorId);
+			voltage = herkulexMgr->getVoltage(configData->type, configData->herkulexMotorId);
 		}
 	}
 }
@@ -225,7 +242,7 @@ float HerkulexServoDrive::readCurrentAngle() {
 	int count = 0;
 	float herkulexAngle;
 	do {
-		herkulexAngle = herkulexMgr->getAngle(configData->herkulexMotorId, error);
+		herkulexAngle = herkulexMgr->getAngle(configData->type, configData->herkulexMotorId, error);
 	}
 	while ((error == true) && (count++ < 3));
 

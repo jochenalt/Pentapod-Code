@@ -507,10 +507,15 @@ void HerkulexClass::actionAll(int pTime)
     return Position;
 }
 
-float HerkulexClass::getAngle(int servoID, bool& error) {
-	int pos = (int)getPosition(servoID);
+float HerkulexClass::getAngle(ServoType type, int servoID, bool& error) {
+	int pos = getPosition(servoID);
 	error = (pos==-1);
-	return (pos-512) * 0.325;
+
+	// different servo types have a different resolution on
+	if (type == HERKULEX_DRS_0401)
+		return (pos-1024) * 0.163; // resolution of 2^11 bits (2048)
+	else
+		return (pos-512) * 0.325; // resolution of 2^10 bits (1024)
 }
 
 // reboot single servo - pay attention 253 - all servos doesn't work!
@@ -615,7 +620,7 @@ int HerkulexClass::getPWM(int servoID) {
 }
 
 // get the speed for one servo - values between -1023 <--> 1023
-float HerkulexClass::getVoltage(int servoID) {
+float HerkulexClass::getVoltage(ServoType type, int servoID) {
   pSize = 0x09;               // 3.Packet size 7-58
   pID   = servoID;     	   	  // 4. Servo ID
   cmd   = HRAMREAD;           // 5. CMD
@@ -659,7 +664,14 @@ float HerkulexClass::getVoltage(int servoID) {
   if (ck1 != dataEx[5]) return -1;
   if (ck2 != dataEx[6]) return -1;
 
-  float voltage = ((float)(dataEx[9]))*0.074;
+  float voltage = (float)(dataEx[9]);
+
+  // depending on the servo type there are different factors
+  // to get real voltage out of return value
+  if (type == HERKULEX_DRS_0401)
+	  voltage *= 0.1;
+  else
+	  voltage *= 0.074;
 
   return voltage;
 }
@@ -787,7 +799,7 @@ void HerkulexClass::moveSpeedOne(int servoID, int Goal, int pTime, int iLed)
 // move one servo at goal position 0 - 1024
 void HerkulexClass::moveOne(int servoID, int Goal, int pTime, int iLed)
 {
-  if (Goal > 1023 || Goal < 0) return;              // speed (goal) non correct
+  if (Goal > 2047 || Goal < 0) return;              // speed (goal) non correct
   if ((pTime <0) || (pTime > 2856)) return;
 
   // Position definition
@@ -848,9 +860,13 @@ void HerkulexClass::moveOne(int servoID, int Goal, int pTime, int iLed)
 }
 
 // move one servo to an angle between -160 and 160
-void HerkulexClass::moveOneAngle(int servoID, float angle, int pTime, int iLed) {
+void HerkulexClass::moveOneAngle(ServoType type, int servoID, float angle, int pTime, int iLed) {
 	if (angle > 160.0|| angle < -160.0) return;	
-	int position = (int)(angle/0.325) + 512;
+	int position;
+	if (type == HERKULEX_DRS_0401) {
+		position = (int)(angle/0.163) + 1024;
+	} else
+		position = (int)(angle/0.325) + 512;
 	moveOne(servoID, position, pTime, iLed);
 }
 
@@ -948,7 +964,6 @@ void HerkulexClass::addData(int GoalLSB, int GoalMSB, int set, int servoID)
   moveData[conta++]=set;
   moveData[conta++]=servoID;
 }
-
 
 
 // Sending the buffer long lenght to Serial port

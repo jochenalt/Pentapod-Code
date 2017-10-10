@@ -86,6 +86,8 @@
 // HERKULEX Broadcast Servo ID
 const byte BROADCAST_ID = 0xFE;
 
+enum ServoType {HERKULEX_DRS_0101=0, HERKULEX_DRS_0201=1, HERKULEX_DRS_0401=3};
+
 class HerkulexClass {
 public:
   void  beginSerial(HardwareSerial* serial,long baud);
@@ -111,12 +113,12 @@ public:
   
   void  moveSpeedOne(int servoID, int Goal, int pTime, int iLed);
   void  moveOne(int servoID, int Goal, int pTime, int iLed);
-  void  moveOneAngle(int servoID, float angle, int pTime, int iLed);
+  void  moveOneAngle(ServoType type, int servoID, float angle, int pTime, int iLed);
   
   int   getPosition(int servoID);
-  float getAngle(int servoID, bool &error);
+  float getAngle(ServoType type, int servoID, bool &error);
   int   getPWM(int servoID);
-  float getVoltage(int servoID);
+  float getVoltage(ServoType type, int servoID);
   float getTemperature(int servoID);
   		
   void  reboot(int servoID);
@@ -143,9 +145,9 @@ private:
   int lenghtString;
   int ck1;
   int ck2;
-  
+
   int conta;
-  
+
   int XOR;
   int playTime;
     

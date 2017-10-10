@@ -12,6 +12,7 @@
 
 #include "Arduino.h"
 #include "core.h"
+#include "HerkuleX.h"
 
 #define NUMBER_OF_LEGS  5					// total number of legs
 
@@ -35,6 +36,7 @@ class LimbConfigType {
 public:
 	LimbIdentifier id;
 	uint8_t herkulexMotorId;
+	ServoType type;
 
 	bool   clockwise;
 	float  nullAngle;	// [°]
@@ -45,9 +47,10 @@ public:
 	void print();
 	void println();
 
-	void set(LimbIdentifier limbId, int newHerkulexId, bool newClockwise, float newNullAngle, float newMinAngle, float newMaxAngle, float newGearRatio ) {
+	void set(LimbIdentifier limbId, ServoType newType, int newHerkulexId, bool newClockwise, float newNullAngle, float newMinAngle, float newMaxAngle, float newGearRatio ) {
 		id = limbId;
 		herkulexMotorId = newHerkulexId;
+		type = newType;
 		clockwise = newClockwise;
 		nullAngle = newNullAngle;
 		maxAngle = newMaxAngle;

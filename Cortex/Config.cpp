@@ -15,17 +15,20 @@ void LegConfigType::setDefaults() {
 
 		// the stops are given by the construction
 		//                  limb-id 		herkulex-id 	clkwse null min max
-		leg.limbs[HIP].set(HIP,
-									HerkulexServoDrive::getHerkulexId(legId,HIP), false, 0,
+		leg.limbs[HIP].set(HIP, HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, HIP),
+									false, 0,
 									degrees(actuatorConfigType[HIP].minAngle),
 									degrees(actuatorConfigType[HIP].maxAngle), 1.0);
-		leg.limbs[THIGH].set(THIGH, HerkulexServoDrive::getHerkulexId(legId,THIGH), 	false, 0,
+		leg.limbs[THIGH].set(THIGH, HERKULEX_DRS_0401, HerkulexServoDrive::getHerkulexId(legId, THIGH),
+				                    false, 0,
 									degrees(actuatorConfigType[THIGH].minAngle),
 									degrees(actuatorConfigType[THIGH].maxAngle), 1.0);
-		leg.limbs[KNEE].set(KNEE, 	HerkulexServoDrive::getHerkulexId(legId,KNEE), 	false, 0,
+		leg.limbs[KNEE].set(KNEE, 	HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, KNEE),
+								    false, 0,
 									degrees(actuatorConfigType[KNEE].minAngle),
 									degrees(actuatorConfigType[KNEE].maxAngle), 26.0/25.0);
-		leg.limbs[FOOT].set(FOOT, 	HerkulexServoDrive::getHerkulexId(legId,FOOT), 	false, 0,
+		leg.limbs[FOOT].set(FOOT, 	HERKULEX_DRS_0201, HerkulexServoDrive::getHerkulexId(legId, FOOT),
+									false, 0,
 									degrees(actuatorConfigType[FOOT].minAngle),
 									degrees(actuatorConfigType[FOOT].maxAngle), 1.0);
 
@@ -67,11 +70,11 @@ void LegConfigType::setDefaults() {
 	// each legs gets one serial line.
 	// Teensy has 6 uarts. Serial0 is USB, Serial1 is used as CLI interface2.
 	// The following is from the schematics
-	memory.persMem.legs[0].serialId = 6; // leg 0 uses Serial6
-	memory.persMem.legs[1].serialId = 1; // leg 1 uses Serial1
+	memory.persMem.legs[0].serialId = 2; // leg 0 uses Serial2
+	memory.persMem.legs[1].serialId = 3; // leg 1 uses Serial3
 	memory.persMem.legs[2].serialId = 4; // leg 2 uses Serial4
-	memory.persMem.legs[3].serialId = 3; // leg 3 uses Serial3
-	memory.persMem.legs[4].serialId = 2; // leg 4 uses Serial1
+	memory.persMem.legs[3].serialId = 1; // leg 3 uses Serial1
+	memory.persMem.legs[4].serialId = 6; // leg 4 uses Serial6
 
 	// null values of the distance sensors
 	memory.persMem.legs[0].nullDistance = 18;

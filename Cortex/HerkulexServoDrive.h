@@ -54,7 +54,7 @@ public:
 	bool statusOK() { return status == H_STATUS_OK; };
 
 	float getVoltage() { return voltage; };
-	static int getHerkulexId(int legId, int limbId) { return legId*10 + limbId + 1; };
+	static int getHerkulexId(int legId, int limbId);
 
 	void syncStatusTimer();
 private:	

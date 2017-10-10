@@ -19,11 +19,7 @@ HostCommunication hostComm;
 extern Controller controller;
 extern BotMemory botMemory;
 
-extern void setCortexBoardLED(bool onOff);
-extern void setLEDPattern();
-
-// rotary encoders are connected via I2C
-extern i2c_t3* Wires[5];
+// IMU is connected via I2C
 extern i2c_t3* IMUWire;
 
 void printHex(uint8_t i) {

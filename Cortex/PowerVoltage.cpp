@@ -32,15 +32,17 @@ void PowerVoltage::setup() {
 }
 
 void PowerVoltage::loop(uint32_t now) {
-	// do a voltage measurement with 1Hz
+	// do a voltage measurement every second
 	static TimePassedBy timer;
 	if (timer.isDue_ms(LOW_PRIO_LOOP_RATE_MS, now)) {
-		// voltage divider of 10K/150K, maximum reference voltage is 1.2V
+		const float TeensyReferenceVoltage = 1.2;
 
-		// small correction due to inprecise resistors has been measured manually
-		measured10Voltage = (float)analogRead(POWER_VOLTAGE_10V_PIN) / 1024.0 * 1.2 / ( 10.0/(10.0+150.0)) * 1.02;
-		measured14Voltage = (float)analogRead(POWER_VOLTAGE_14V_PIN) / 1024.0 * 1.2 / ( 10.0/(10.0+150.0)) * 1.03;
+		// voltage divider of 10K/150K
+		const float voltageDivider = 10.0/(10.0+150.0);
 
+		// small correction factors due to inaccurate resistors has been measured manually
+		measured10Voltage = (float)analogRead(POWER_VOLTAGE_10V_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.02;
+		measured14Voltage = (float)analogRead(POWER_VOLTAGE_14V_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.04;
 	}
 }
 

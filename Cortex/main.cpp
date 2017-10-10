@@ -174,6 +174,8 @@ void headlessSetup() {
 
 	pinMode(LED_PIN, OUTPUT);
 	digitalWrite(LED_PIN, HIGH);
+	delay(50);
+	digitalWrite(LED_PIN, LOW);
 
 
 	// RST Pin on IMU only used when ecplicitely reset

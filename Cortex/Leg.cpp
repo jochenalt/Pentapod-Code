@@ -42,10 +42,12 @@ void Leg::setup(int newId, uint8_t serialId) {
 
 	// check if all servos work with that baud rate by calling stat
 	bool allServosReact = true;
-	for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-		int status = herkulexMgr.stat(HerkulexServoDrive::getHerkulexId(legId,limbNo));
-		if (status!= H_STATUS_OK)
-			allServosReact = false;
+	if (HERKULEX_BAUD_RATE_HIGH != HERKULEX_BAUD_RATE_DEFAULT) {
+		for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
+			int status = herkulexMgr.stat(HerkulexServoDrive::getHerkulexId(legId,limbNo));
+			if (status!= H_STATUS_OK)
+				allServosReact = false;
+		}
 	}
 
 	// if not all servos react, this could be a wrong baud rate setting.
