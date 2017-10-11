@@ -28,20 +28,20 @@ typedef double realnum;
 // CAD dimensions of the pentapod, measured within the CAD model
 namespace CAD {
 	constexpr static realnum HipNickAngle  = 19.29; 			// angle each hip goes down against the xy pane
-	constexpr static realnum HipCentreDistance  = 52.601+0.3;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
-	constexpr static realnum HipLength= 37.328;					// distance between hip mounting point and hip joint axis
-	// constexpr static realnum HipLength= 35.528;				// distance between hip mounting point and hip joint axis (Hip040x)
+	constexpr static realnum HipCentreDistance  = 52.601+0.1;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
+	// constexpr static realnum HipLength= 37.328;					// distance between hip mounting point and hip joint axis
+	constexpr static realnum HipLength= 35.527;				// distance between hip mounting point and hip joint axis (Hip040x)
 
-	constexpr static realnum HipJointLength = 40.578;
-	// constexpr static realnum HipJointLength = 44.991;
+	// constexpr static realnum HipJointLength = 40.578;
+	constexpr static realnum HipJointLength = 45.249;
 
-	constexpr static realnum ThighLength = 45.328;
+	constexpr static realnum ThighLength = 53.500;
 	constexpr static realnum ThighKneeGapLength = 0.5;
-	constexpr static realnum KneeJointLength = 95.711;
-	constexpr static realnum FootLength = 137.149;
-	constexpr static realnum DampenerLength = 5.0;				// length of the silicone dampener
-	constexpr static realnum BodyHipHeight = 39.789;
-	constexpr static realnum FootDampenerDiameter = 27.0;		// diameter of the rubber at the leg's end
+	constexpr static realnum KneeJointLength = 81.018;
+	constexpr static realnum FootLength = 135.828;
+	constexpr static realnum DampenerLength = 13.0;				// length of the silicone dampener
+	constexpr static realnum BodyHipHeight = 14.478;
+	constexpr static realnum FootDampenerDiameter = 28.0;		// diameter of the rubber at the leg's end
 	constexpr static realnum LaserSensorHeight = 75.8;			// height of the lasers measurement plane above the xy-plane
 
 };

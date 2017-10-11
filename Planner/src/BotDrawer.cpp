@@ -36,7 +36,7 @@ void BotDrawer::displayBot( angle_rad noseOrientation, const Pose& bodyPose, con
 	glRotatef(degrees(bodyPose.orientation.x), 1.0,0.0,0.0);
 
 	glPushMatrix();
-	glTranslatef(0,0,CAD::BodyHipHeight + CAD::HipLength*sin(radians(CAD::HipNickAngle)));
+	glTranslatef(0,0,CAD::BodyHipHeight + (CAD::HipCentreDistance + CAD::HipLength)*sin(radians(CAD::HipNickAngle)));
 	body.display(glBotBodyColor,glBotBodyColor);
 	glPopMatrix();
 
