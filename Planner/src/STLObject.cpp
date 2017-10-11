@@ -209,14 +209,14 @@ STLObject::Coordinate STLObject::computeFaceNormal(const STLObject::Coordinate& 
 void STLObject::display(const GLfloat* color,const GLfloat* accentColor) {
 
 	glPushAttrib(GL_CURRENT_BIT);
+   	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
+	glColor4fv(color);
+
 
 	for(unsigned int i=0; i<triangles.size(); i++)
 	{
 		Triangle t = triangles[i];
 		glBegin(GL_TRIANGLES);
-           	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
-        	glColor4fv(color);
-
         	Coordinate* fnormal = &t.normal;
         	Coordinate* fvertex1 = &t.vertex1;
         	Coordinate* fvertex12 = &t.vertex2;

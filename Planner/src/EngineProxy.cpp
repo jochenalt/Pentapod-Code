@@ -175,14 +175,16 @@ void EngineProxy::loop() {
 
 	} else {
 		//
-		engine.ratedloop();
+		bool didIt = engine.ratedloop();
 
 		// fetch state data from server and put it in the client
-		engine.getState(data);
+		if (didIt) {
+			engine.getState(data);
 
-		newBotDataAvailable  = (data != lastData);
-		newMapPoseDataAvailable =  (data.currentFusedPose != lastData.currentFusedPose);
-		lastData = data;
+			newBotDataAvailable  = (data != lastData);
+			newMapPoseDataAvailable =  (data.currentFusedPose != lastData.currentFusedPose);
+			lastData = data;
+		}
 	}
 }
 

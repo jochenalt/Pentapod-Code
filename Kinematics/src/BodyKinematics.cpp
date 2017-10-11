@@ -164,9 +164,16 @@ bool BodyKinematics::computeKinematics(
 
 			// walkingTouchPointHipCoord is the position right above the point
 			// where the leg will touch the ground. Compute the to-be knee position
+
+			realnum toBeAngle0;
 			// that is the middle point of the toePoint and this point
-			Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
-			realnum toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
+			if (crawCreepy) {
+				Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
+				toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
+			} else {
+				toBeAngle0 = atan2(toeHipCoord.position.y, toeHipCoord.position.x);
+			}
+
 			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
 			if (!ok) {
 				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with toe " << toeHipCoord << " could not be found");

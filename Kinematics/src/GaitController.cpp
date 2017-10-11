@@ -232,11 +232,15 @@ Point GaitController::interpolateLegMotion(
 			case LegMovesUp: {
 				// next touch point is gait ref point + half a step forward
 				Point nextTouchPoint (gaitRefPoint);
-				if (abs(dDistance) > floatPrecision)
+				if (abs(dDistance) > floatPrecision) {
 					// formally we take the fullsteplength, but this does not yet calculate the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
 					// step length (precisely following the computed step length this is not THAT important)
-					nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
+					if (crawCreepy)
+						nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
+					else
+						nextTouchPoint -= diffToePoint*(fullStepLength_mm);
+				}
 
 				Point prevTouchPoint = lastPhasePosition;
 
@@ -247,7 +251,11 @@ Point GaitController::interpolateLegMotion(
 					Point corner2 = nextTouchPoint;
 					corner2.z = gaitHeight + gaitRefPoint.z;
 
-					bezier[legNo].set(prevTouchPoint, (corner1+corner2)*0.5, nextTouchPoint, corner2);
+					if (crawCreepy)
+						bezier[legNo].set(prevTouchPoint, (corner1+corner2)*0.5, nextTouchPoint, corner2);
+					else
+						bezier[legNo].set(prevTouchPoint, corner1, nextTouchPoint, corner2);
+
 				}
 				result = bezier[legNo].getCurrent(localPhaseBeat/2.0);
 				// LOG(DEBUG) << "leg[" << legNo << "] up:" << result  << " curr=" << currentPoint << " grp" << gaitRefPoint << " lpp" << lastPhasePosition << "gp=" << gaitProgress << " lpb=" << localPhaseBeat << " cgp=" << currGroundPercentage << endl;
@@ -270,7 +278,12 @@ Point GaitController::interpolateLegMotion(
 					if (abs(dDistance) > floatPrecision)
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
-					Point bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
+					Point bezierPoint;
+					if (crawCreepy)
+						bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
+					else
+						bezierPoint = bezier[legNo].getCurrent(localPhaseBeat*0.5+0.5);
+
 					Point bezierTouchPoint = bezier[legNo].getEnd();
 					Point touchPointDifference = target-bezierTouchPoint;
 					result = (touchPointDifference*localPhaseBeat) + bezierPoint;
@@ -280,7 +293,7 @@ Point GaitController::interpolateLegMotion(
 						feetOnGround[legNo] = false;
 
 					// if toe is close to the ground move leg with the ground already when doing the last mm's
-					if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
+					if (result.z < gaitRefPoint.z + (crawCreepy?moveWithGroundBelowThisGroundDistance:0)) {
 						Point nextToe = getNextToePoint(currentToePoint, dT);
 						result.x = nextToe.x;
 						result.y = nextToe.y;

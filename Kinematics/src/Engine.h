@@ -34,7 +34,7 @@ public:
 	bool cortexCommunicationOk() { return legController.isCortexCommunicationOk(); };
 
 	// call this as often as possible
-	void ratedloop();
+	bool ratedloop();
 
 	// actually runs a call to cortex
 	void loop();
