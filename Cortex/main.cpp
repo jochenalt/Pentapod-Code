@@ -234,11 +234,13 @@ void headlessSetup() {
 
 	// controller for all serial lines with the servos behind
 	bool ok = controller.setup();
+	/*
 	if (!ok) {
 		// one more chance to come up
 		delay(500);
 		ok = controller.setup();
 	}
+	*/
 
 
 	// now IMU had enozugh time to settle, read calibration

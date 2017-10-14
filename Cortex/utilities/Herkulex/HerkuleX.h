@@ -115,7 +115,7 @@ public:
   void  moveOne(int servoID, int Goal, int pTime, int iLed);
   void  moveOneAngle(ServoType type, int servoID, float angle, int pTime, int iLed);
   
-  int   getPosition(int servoID);
+  int   getPosition(ServoType type, int servoID);
   float getAngle(ServoType type, int servoID, bool &error);
   int   getPWM(int servoID);
   float getVoltage(ServoType type, int servoID);

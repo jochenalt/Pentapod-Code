@@ -20,13 +20,13 @@ void LegConfigType::setDefaults() {
 									degrees(actuatorConfigType[HIP].minAngle),
 									degrees(actuatorConfigType[HIP].maxAngle), 1.0);
 		leg.limbs[THIGH].set(THIGH, HERKULEX_DRS_0401, HerkulexServoDrive::getHerkulexId(legId, THIGH),
-				                    false, 0,
+				                    true, 0,
 									degrees(actuatorConfigType[THIGH].minAngle),
 									degrees(actuatorConfigType[THIGH].maxAngle), 1.0);
 		leg.limbs[KNEE].set(KNEE, 	HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, KNEE),
 								    false, 0,
 									degrees(actuatorConfigType[KNEE].minAngle),
-									degrees(actuatorConfigType[KNEE].maxAngle), 26.0/25.0);
+									degrees(actuatorConfigType[KNEE].maxAngle), 34.0/21.0);
 		leg.limbs[FOOT].set(FOOT, 	HERKULEX_DRS_0201, HerkulexServoDrive::getHerkulexId(legId, FOOT),
 									false, 0,
 									degrees(actuatorConfigType[FOOT].minAngle),
@@ -42,39 +42,39 @@ void LegConfigType::setDefaults() {
 	// thigh: stretch one leg, set it to null, then bend all thighs to its stop and align all legs
 	// knee: there's a line on top of the knee where the null position can be seen
 	// foot: put it flat on the ground
-	memory.persMem.legs[0].limbs[HIP].nullAngle		= 1.0;
-	memory.persMem.legs[0].limbs[THIGH].nullAngle	=-5.5;
-	memory.persMem.legs[0].limbs[KNEE].nullAngle	= -2.5;
-	memory.persMem.legs[0].limbs[FOOT].nullAngle	= 0.3;
+	memory.persMem.legs[0].limbs[HIP].nullAngle		= 2.6;
+	memory.persMem.legs[0].limbs[THIGH].nullAngle	= 2.6;
+	memory.persMem.legs[0].limbs[KNEE].nullAngle	= 2.0;
+	memory.persMem.legs[0].limbs[FOOT].nullAngle	= -3.9;
 
-	memory.persMem.legs[1].limbs[HIP].nullAngle		=-3.2;
-	memory.persMem.legs[1].limbs[THIGH].nullAngle	=-12.4;
-	memory.persMem.legs[1].limbs[KNEE].nullAngle	= 3.1;
-	memory.persMem.legs[1].limbs[FOOT].nullAngle	=-4.5;
+	memory.persMem.legs[1].limbs[HIP].nullAngle		=1.0;
+	memory.persMem.legs[1].limbs[THIGH].nullAngle	=2.3;
+	memory.persMem.legs[1].limbs[KNEE].nullAngle	=10.4;
+	memory.persMem.legs[1].limbs[FOOT].nullAngle	=-13.3;
 
-	memory.persMem.legs[2].limbs[HIP].nullAngle		=-0.9;
-	memory.persMem.legs[2].limbs[THIGH].nullAngle	= 5.2;
-	memory.persMem.legs[2].limbs[KNEE].nullAngle	=-16.8;
-	memory.persMem.legs[2].limbs[FOOT].nullAngle	= 11.7;
+	memory.persMem.legs[2].limbs[HIP].nullAngle		=4.2;
+	memory.persMem.legs[2].limbs[THIGH].nullAngle	= 6.0;
+	memory.persMem.legs[2].limbs[KNEE].nullAngle	=-4.8;
+	memory.persMem.legs[2].limbs[FOOT].nullAngle	= 4.8;
 
-	memory.persMem.legs[3].limbs[HIP].nullAngle		= 3.0;
-	memory.persMem.legs[3].limbs[THIGH].nullAngle	= 6.2;
-	memory.persMem.legs[3].limbs[KNEE].nullAngle	=-11.5;
-	memory.persMem.legs[3].limbs[FOOT].nullAngle	= 5.60;
+	memory.persMem.legs[3].limbs[HIP].nullAngle		= -1.3;
+	memory.persMem.legs[3].limbs[THIGH].nullAngle	= -28.2;
+	memory.persMem.legs[3].limbs[KNEE].nullAngle	= -4.2;
+	memory.persMem.legs[3].limbs[FOOT].nullAngle	= 4.9;
 
-	memory.persMem.legs[4].limbs[HIP].nullAngle		=-15.2;
-	memory.persMem.legs[4].limbs[THIGH].nullAngle	=-2.9;
-	memory.persMem.legs[4].limbs[KNEE].nullAngle	= 9.0;
-	memory.persMem.legs[4].limbs[FOOT].nullAngle	= 0.4;
+	memory.persMem.legs[4].limbs[HIP].nullAngle		= -11.0;
+	memory.persMem.legs[4].limbs[THIGH].nullAngle	= 4.1;
+	memory.persMem.legs[4].limbs[KNEE].nullAngle	=1.2;
+	memory.persMem.legs[4].limbs[FOOT].nullAngle	=0.0;
 
 	// each legs gets one serial line.
 	// Teensy has 6 uarts. Serial0 is USB, Serial1 is used as CLI interface2.
 	// The following is from the schematics
-	memory.persMem.legs[0].serialId = 2; // leg 0 uses Serial2
-	memory.persMem.legs[1].serialId = 3; // leg 1 uses Serial3
+	memory.persMem.legs[0].serialId = 6; // leg 0 uses Serial2
+	memory.persMem.legs[1].serialId = 1; // leg 1 uses Serial3
 	memory.persMem.legs[2].serialId = 4; // leg 2 uses Serial4
-	memory.persMem.legs[3].serialId = 1; // leg 3 uses Serial1
-	memory.persMem.legs[4].serialId = 6; // leg 4 uses Serial6
+	memory.persMem.legs[3].serialId = 3; // leg 3 uses Serial1
+	memory.persMem.legs[4].serialId = 2; // leg 4 uses Serial6
 
 	// null values of the distance sensors
 	memory.persMem.legs[0].nullDistance = 18;

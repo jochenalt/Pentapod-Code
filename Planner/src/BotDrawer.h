@@ -36,6 +36,7 @@ private:
 
 
 	STLObject body;
+	STLObject lidar;
 
 	STLObject hip;
 	STLObject hipJoint;

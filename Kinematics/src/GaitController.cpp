@@ -293,13 +293,14 @@ Point GaitController::interpolateLegMotion(
 						feetOnGround[legNo] = false;
 
 					// if toe is close to the ground move leg with the ground already when doing the last mm's
-					if (result.z < gaitRefPoint.z + (crawCreepy?moveWithGroundBelowThisGroundDistance:0)) {
-						Point nextToe = getNextToePoint(currentToePoint, dT);
-						result.x = nextToe.x;
-						result.y = nextToe.y;
-						// don't overwrite z-coordinate
+					if (crawCreepy) {
+						if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
+							Point nextToe = getNextToePoint(currentToePoint, dT);
+							result.x = nextToe.x;
+							result.y = nextToe.y;
+							// don't overwrite z-coordinate
+						}
 					}
-
 				}
 				break;
 			}
@@ -330,14 +331,10 @@ GaitModeType GaitController::getActualGaitMode(realnum footSpeed) {
 			return OneLegInTheAir;
 		if (footSpeed < 20.0)
 			return TwoLegsInTheAir;
-		if ((footSpeed < 30.0) && (NumberOfLegs > 5))
-			return ThreeLegsInTheAir;
 		if (footSpeed < 60.0)
 			return SexyWalk;
-		if (NumberOfLegs > 5.0)
-			return Tripod;
 		else
-			return ThreeLegsInTheAir;
+			return TwoLegsInTheAir;
 	}
 	return targetGaitType;
 }
@@ -359,7 +356,7 @@ realnum GaitController::getLegAddOn(realnum globalGaitRatio, realnum footSpeed,i
 			}
 		case OneLegInTheAir:
 		case TwoLegsInTheAir:
-		case ThreeLegsInTheAir: {
+		{
 			if (NumberOfLegs == 5) {
 				realnum legSequence[5] = { 0,3,1,4,2 };
 				return legSequence[leg];
@@ -381,12 +378,7 @@ realnum GaitController::getLegAddOn(realnum globalGaitRatio, realnum footSpeed,i
 			else
 				return leg;
 		}
-		case Tripod: {
-			if (leg %2 == 0)
-				return 0;
-			else
-				return float(NumberOfLegs)/2.0;
-		}
+
 		case Auto:
 		case None:
 			return getLegAddOn(globalGaitRatio, footSpeed, leg, getActualGaitMode(footSpeed));
@@ -399,14 +391,8 @@ realnum GaitController::getFootOnTheGroundRatio(realnum footSpeed, GaitModeType 
 		case FourLegWalk: return 3.0/4.0;
 		case OneLegInTheAir: return float(NumberOfLegs-1)/float(NumberOfLegs);
 		case TwoLegsInTheAir: return float(NumberOfLegs-2)/float(NumberOfLegs);
-		case ThreeLegsInTheAir:
-			if (NumberOfLegs == 5)
-				return float(NumberOfLegs-2)/float(NumberOfLegs);
-			else
-				return float(NumberOfLegs-3)/float(NumberOfLegs);
 		case SexyWalk:
 			return float(NumberOfLegs-2)/float(NumberOfLegs);
-		case Tripod: return float(NumberOfLegs-3)/float(NumberOfLegs); // one foot in the air
 		case None:
 		case Auto:
 			return getFootOnTheGroundRatio(footSpeed, getActualGaitMode(footSpeed));
@@ -478,7 +464,7 @@ void GaitController::loop() {
 			else {
 				// special position for the omitted leg. Take passed position.
 				newFootPosition = frontLegPosition;
-				feetOnGround[legNo] = (toePoints[legNo].distanceSqr(currentGaitRefPoints[legNo]) < floatPrecision);
+				feetOnGround[legNo] = false; // 				(newFootPosition.position.z == distanceSqr(currentGaitRefPoints[legNo]) < floatPrecision);
 				if (feetOnGround[legNo]){
 					lastPhase[legNo] = LegOnGround;
 				}

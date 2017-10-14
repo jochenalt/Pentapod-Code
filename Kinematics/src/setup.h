@@ -17,7 +17,7 @@
 
 enum GeneralEngineModeType { BeingAsleep, LiftBody, WalkingMode, TerrainMode, FallASleep};
 enum LegGaitPhase { LegMovesUp = 0, LegMovesDown = 1, LegOnGround = 2};
-enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, ThreeLegsInTheAir, SexyWalk, Tripod, Auto, FourLegWalk, None };
+enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, SexyWalk, Auto, FourLegWalk, None };
 
 enum ShutDownModeType { NoShutDownActive, Initiate, FallAsleep, Done };
 

@@ -38,6 +38,8 @@ void BotDrawer::displayBot( angle_rad noseOrientation, const Pose& bodyPose, con
 	glPushMatrix();
 	glTranslatef(0,0,CAD::BodyHipHeight + (CAD::HipCentreDistance + CAD::HipLength)*sin(radians(CAD::HipNickAngle)));
 	body.display(glBotBodyColor,glBotBodyColor);
+	lidar.display(glLidarColor,glLidarColor);
+
 	glPopMatrix();
 
 	for (int i = 0;i<NumberOfLegs;i++) {
@@ -130,6 +132,8 @@ void BotDrawer::readSTLFiles(string path) {
 	thigh.loadFile(path + "/thigh.stl");
 	kneeJoint.loadFile(path + "/knee.stl");
 	lowerLeg.loadFile(path + "/foot.stl");
+	lidar.loadFile(path + "/Lidar.stl");
+
 }
 
 void BotDrawer::setup() {

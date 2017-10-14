@@ -126,7 +126,7 @@ void LegKinematics::computeForwardKinematics(LegPose& pose, HomMatrix& current) 
 }
 
 
-angle_deg LegKinematics::computeFootAngle(LegPose& pose, Point &measuredPoint ) {
+angle_deg LegKinematics::computeFootAngle(const LegPose& pose, Point &measuredPoint ) {
 
 	realnum measuredGroundDistance = 100.0;
 	realnum angle[NumberOfLimbs] = {
@@ -517,4 +517,5 @@ bool LegKinematics::selftest() {
 	}
 	return true;
 }
+
 

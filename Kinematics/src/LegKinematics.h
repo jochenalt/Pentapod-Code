@@ -61,7 +61,7 @@ public:
 	// compute the distance to the ground depending on the measurement of the distance sensor in the foot.
 	// Compensate the orientation of the foot
 	// realnum computeRealGroundDistance(Pose& pose, realnum measuredGroundDistance,  Point &measuredPoint );
-	realnum computeFootAngle(LegPose& pose, Point &measuredPoint );
+	realnum computeFootAngle(const LegPose& pose, Point &measuredPoint );
 
 	// check if inverse kinematics is withing boundaries
 	bool isInBoundaries(const LimbAngles& angles, int& actuatorOutOfBounds);
@@ -88,6 +88,12 @@ private:
 	Point getHipPoseWorld();
 
 	void computeInverseTransformationMatrix(HomMatrix m, HomMatrix& inv);
+
+	// the foot is not a point but has dampener with diameter of 20mm. When the foot
+	// touches the ground at a certain angle, we need to virtually adapt the ground height
+	// in order to compensate this.
+	realnum getFatFootCorrectionHeight(const LegPose &ftp) ;
+
 
 	DenavitHardenbergParams origin2Hip;					// DH from origin to Hip
 	HomMatrix origin2HipTransformation;					// transformation from body to Hip

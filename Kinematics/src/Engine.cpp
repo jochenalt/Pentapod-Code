@@ -610,11 +610,6 @@ void Engine::computeBodySwing() {
 		newBodySwing.orientation.x = radians(5.0)*sin(angle+M_PI*0.5);
 	}
 
-	if (gaitMode == Tripod) {
-		realnum angle = fmod(gaitRatio * (M_PI*2.0) + 1.5*M_PI, M_PI*2.0 );
-		newBodySwing.position.y = 10.0*sin(angle);
-	}
-
 	if ((gaitMode == FourLegWalk) || (targetGaitMode == FourLegWalk)) {
 		realnum angle = fmod(gaitRatio * (M_PI*2.0) + 0*.5*M_PI, M_PI*2.0 );
 		newBodySwing.position.y = 30.0*sin(angle);

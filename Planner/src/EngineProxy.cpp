@@ -175,10 +175,10 @@ void EngineProxy::loop() {
 
 	} else {
 		//
-		bool didIt = engine.ratedloop();
+		bool actuallyLooped = engine.ratedloop();
 
 		// fetch state data from server and put it in the client
-		if (didIt) {
+		if (actuallyLooped) {
 			engine.getState(data);
 
 			newBotDataAvailable  = (data != lastData);

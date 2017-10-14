@@ -457,7 +457,7 @@ void HerkulexClass::actionAll(int pTime)
 }
 
 // get Position
- int HerkulexClass::getPosition(int servoID) {
+ int HerkulexClass::getPosition(ServoType type, int servoID) {
 	int Position  = 0;
 
     pSize = 0x09;               // 3.Packet size 7-58
@@ -503,17 +503,25 @@ void HerkulexClass::actionAll(int pTime)
     if (ck1 != dataEx[5]) return -1;
 	if (ck2 != dataEx[6]) return -1;
 
-	Position = ((dataEx[10]&0x03)<<8) | dataEx[9];
-    return Position;
+	if (type == HERKULEX_DRS_0401)
+		Position = ((dataEx[10]&0x07)<<8) | dataEx[9];
+	else
+		Position = ((dataEx[10]&0x03)<<8) | dataEx[9];
+
+	return Position;
 }
 
 float HerkulexClass::getAngle(ServoType type, int servoID, bool& error) {
-	int pos = getPosition(servoID);
+	int pos = getPosition(type, servoID);
 	error = (pos==-1);
 
 	// different servo types have a different resolution on
-	if (type == HERKULEX_DRS_0401)
+	if (type == HERKULEX_DRS_0401) {
+		// logger->print("pos=");
+		// logger->print(pos);
+
 		return (pos-1024) * 0.163; // resolution of 2^11 bits (2048)
+	}
 	else
 		return (pos-512) * 0.325; // resolution of 2^10 bits (1024)
 }

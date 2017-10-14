@@ -171,8 +171,12 @@ bool BodyKinematics::computeKinematics(
 				Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
 				toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
 			} else {
-				toBeAngle0 = atan2(toeHipCoord.position.y, toeHipCoord.position.x);
+				toBeAngle0 = atan2(toeHipCoord.position.y, toeHipCoord.position.x)*1.4;
 			}
+
+			// take the dampener into account which is not a point but a fat toe with a significant diameter
+			// @TODO check if this is working with terrain mode
+			// toeHipCoord.position.z += getFatFootCorrectionHeight(legNo);
 
 			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
 			if (!ok) {

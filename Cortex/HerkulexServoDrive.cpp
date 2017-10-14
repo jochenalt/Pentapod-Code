@@ -14,10 +14,10 @@
 
 int HerkulexServoDrive::getHerkulexId(int legId, int limbId) {
 	switch (limbId) {
-		case HIP: return legId*10 + 1;
+		case HIP:   return legId*10 + 1;
 		case THIGH: return 100 + legId;
-		case KNEE: return legId*10 + 3;
-		case FOOT: return legId*10 + 4;
+		case KNEE:  return legId*10 + 4;
+		case FOOT:  return legId*10 + 2;
 	}
 	return -1;
 };
@@ -52,6 +52,8 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 		currentUserAngle = convertHerkulexAngle2UserAngle(rawHerkulexAngle);
 
 		if (memory.persMem.logSetup) {
+			logger->print(" type=");
+			logger->print(configData->type);
 			logger->print(" herkAngle=");
 			logger->print(rawHerkulexAngle,1);
 			logger->print(" userAngle=");
