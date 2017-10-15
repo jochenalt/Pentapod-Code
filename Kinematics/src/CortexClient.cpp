@@ -64,7 +64,7 @@ CortexClient::CortexClient() {
 	enabled = false;
 	cortexWallClockLooptime = 0;
 	movementDuration = 0;
-	measuredVoltage = 0;
+	measuredBatteryVoltage = 0;
 	for (int i = 0;i<NumberOfLegs;i++)
 		measuredDistance[i] = 0;
 	measuredOrientation.isNull();
@@ -197,7 +197,7 @@ bool CortexClient::cmdGETall() {
 				&angles[2][0],&angles[2][1],&angles[2][2],&angles[2][3],&measuredDistance[2],
 				&angles[3][0],&angles[3][1],&angles[3][2],&angles[3][3],&measuredDistance[3],
 				&angles[4][0],&angles[4][1],&angles[4][2],&angles[4][3],&measuredDistance[4],
-				&imuDegreeX, &imuDegreeY, &imuDegreeZ, &imuStatus, &measuredVoltage, &cortexLooptime);
+				&imuDegreeX, &imuDegreeY, &imuDegreeZ, &imuStatus, &measuredBatteryVoltage, &cortexLooptime);
 	if (noOfItems != 5*5 + 6)
 		setError(CORTEX_RESPONSE_NOT_PARSED);
 	else {
@@ -240,7 +240,7 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 
 	bool ok = Cortex::ComPackage::readResponse(response, status, angles, distance, servoStatus, imuDegreeX, imuDegreeY, imuStatus, voltage,looptime);
 	if (ok) {
-		measuredVoltage = voltage;
+		measuredBatteryVoltage = voltage;
 		cortexWallClockLooptime = looptime;
 		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 			for (int j = 0;j<NumberOfLimbs;j++)
@@ -278,7 +278,7 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 				<< std::fixed << std::setprecision(1)
 				<< " imu=(" << degrees(measuredOrientation.x) << "," << degrees(measuredOrientation.y) << "|"
 				<< imuStatusSys << imuStatusGyro << imuStatusAcc << ")"
-				<< " U=" << std::fixed << std::setprecision(1) << measuredVoltage << "V"
+				<< " U=" << std::fixed << std::setprecision(1) << measuredBatteryVoltage << "V"
 				<< " t(loop)=" << looptime << "ms"
 				<< " distance=(" << measuredDistance[0] << "," << measuredDistance[1] << "," << measuredDistance[2] << "," << measuredDistance[3] << "," << measuredDistance[4] << ")"
 				<< std::fixed << std::setprecision(1)
@@ -669,7 +669,7 @@ void CortexClient::getDistanceSensor(realnum distance[NumberOfLegs]) {
 
 // retrieve values of distance sensors
 realnum CortexClient::getCortexVoltage() {
-	return measuredVoltage;
+	return measuredBatteryVoltage;
 }
 
 

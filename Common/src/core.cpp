@@ -99,7 +99,7 @@ LegConfiguration actuatorConfigType =  {
 	// actuator						null-offset		min angle		max angle		 reducer ratio
 	{ LimbConfiguration::HIP,		0.0,			radians(-80.0f)	,radians(80.0f), 1.0		},
 	{ LimbConfiguration::THIGH,  	0.0,			radians(-95.0f)	,radians(95.0f), 1.0		},
-	{ LimbConfiguration::KNEE,   	0.0,			radians(-65.0f)	,radians(65.0f), 26.0/25.0 	},
+	{ LimbConfiguration::KNEE,   	0.0,			radians(-65.0f)	,radians(65.0f), 34.0/21.0 	},
 	{ LimbConfiguration::LOWERLEG,	radians(90.0),	radians(-65.0f)	,radians(147.0f), 1.0		}
 };
 

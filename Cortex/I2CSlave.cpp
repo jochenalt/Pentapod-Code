@@ -149,8 +149,11 @@ void I2CSlave::executeRequest() {
 					for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 						cmdSerial->print('(');
 						Leg& leg = controller.getLeg(legNo);
-						float voltage = leg.servos[FOOT].getVoltage();
-						cmdSerial->print(voltage,1);
+						float highVoltage = leg.servos[THIGH].getVoltage();
+						float lowVoltage = leg.servos[FOOT].getVoltage();
+						cmdSerial->print(highVoltage,1);
+						cmdSerial->print("/");
+						cmdSerial->print(lowVoltage,1);
 						cmdSerial->print("V ");
 
 						cmdSerial->print((int)leg.servos[0].stat());

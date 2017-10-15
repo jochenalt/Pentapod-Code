@@ -151,7 +151,8 @@ private:
 	int imuStatusGyro;
 
 	// voltage of cortex (for servos, not the uC). Should be around 10V
-	realnum measuredVoltage;
+	realnum measuredBatteryVoltage;
+
 
 	// wall clock time of a cortex loop. Should be smaller than actual loop rate = CORTEX_LOOP_TIME
 	int cortexWallClockLooptime;

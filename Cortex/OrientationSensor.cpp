@@ -148,11 +148,17 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 	newGyro = gyroCalibStatus;
 	newAcc = accelCalibStatus;
 
-	// turn the data according to the position of the IMU
-	newXAngle = normDegree(orientationEvent.orientation.y) 		 - memory.persMem.imuCalib.nullX;
-	newYAngle = normDegree(180.0-orientationEvent.orientation.z) - memory.persMem.imuCalib.nullY;
-
-	newZAccel = getZAccel();
+	if (setupOk) {
+		// turn the data according to the position of the IMU
+		newXAngle = normDegree(orientationEvent.orientation.y) 		 - memory.persMem.imuCalib.nullX;
+		newYAngle = normDegree(180.0-orientationEvent.orientation.z) - memory.persMem.imuCalib.nullY;
+		newZAccel = getZAccel();
+	} else {
+		// if IMU is not working, return 0
+		newXAngle = 0;
+		newYAngle = 0;
+		newZAccel = 0;
+	}
 	return (newSystem > 0) || (newGyro > 0) || (newAcc > 0);
 
 }
