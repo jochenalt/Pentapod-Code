@@ -681,7 +681,7 @@ void Engine::computeGaitSpeed() {
 	// gait speed is computed by defining a gait length, i.e. the length
 	// one leg is on the ground and compute the gait speed in terms of gaits
 	// per second accordingly
-	realnum gaitStepLength = 140.0  - 70.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight) - 50.0*gaitControl.getCurrentAngularSpeed()/maxAngularSpeed;
+	realnum gaitStepLength = 100.0  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight) - 50.0*gaitControl.getCurrentAngularSpeed()/maxAngularSpeed;
 	const realnum gaitSpeedPerBodySpeed = 1.0/80; // [gaits/(mm/s)] one gait per 80mm/s speed of body
 
 	// compute foot speed and body speed
@@ -743,8 +743,8 @@ void Engine::computeGaitHeight() {
 	realnum currentHeight = moderatedBodyPose.position.z;
 
 	// above a constant height, moderate the gait height depending on body height
-
-	realnum gaitHeight = 65 + 30 * moderate( (maxBodyHeight - currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
+	// realnum gaitHeight = 65 + 30 * moderate( (maxBodyHeight - currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
+	realnum gaitHeight = 60 + 30 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
 	gaitControl.setGaitHeight(gaitHeight, 50);
 }

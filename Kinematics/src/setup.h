@@ -26,14 +26,14 @@ enum ShutDownModeType { NoShutDownActive, Initiate, FallAsleep, Done };
 const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 
 // maximum and minimum body height
-const realnum maxBodyHeight = 220.0;
-const realnum minBodyHeight = 43.0;
+const realnum maxBodyHeight = 280.0;
+const realnum minBodyHeight = 50.0;
 const realnum standardBodyHeigh = 110.0;
 
 // min/max radius of ground touch points
-const realnum minFootTouchPointRadius = 240.0;
-const realnum maxFootTouchPointRadius = 280.0;
-const realnum sleepingFootTouchPointRadius = 280;
+const realnum minFootTouchPointRadius = 220.0;
+const realnum maxFootTouchPointRadius = 340.0;
+const realnum sleepingFootTouchPointRadius = 300;
 
 // possible acceleration of angualar speed
 const realnum maxAngularSpeedAcceleration = 0.1; //  [rad/s^2]

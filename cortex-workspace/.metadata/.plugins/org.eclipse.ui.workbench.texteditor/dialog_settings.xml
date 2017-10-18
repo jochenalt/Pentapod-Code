@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="cmdHELP" key="selection"/>
+		<item value="&quot;MOVE" key="selection"/>
 		<item value="true" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="&quot;MOVE"/>
+			<item value="&quot;MOVE&quot;"/>
+			<item value="STATUS"/>
+			<item value="21"/>
+			<item value="34"/>
+			<item value="cmdCONFIG"/>
 			<item value="cmdHELP"/>
-			<item value="cmHELP"/>
-			<item value="RELAY"/>
-			<item value="delay"/>
-			<item value="newId"/>
-			<item value="servoSerials"/>
-			<item value="serialId"/>
-			<item value="Serial5"/>
+			<item value="null"/>
 		</list>
 		<list key="replacehistory">
 		</list>
