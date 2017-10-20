@@ -301,7 +301,7 @@ void SpatialPID::reset() {
 	pidSampler.reset();
 }
 
-Rotation SpatialPID::getPID(Rotation error, realnum p, realnum i, realnum d, const Rotation &outMax) {
+Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFactor, realnum derivativeFactor, const Rotation &outMax) {
 		Rotation outMin = outMax * -1.0;
 		realnum dT = pidSampler.dT();
 		Rotation imuCompensation ;
@@ -311,7 +311,7 @@ Rotation SpatialPID::getPID(Rotation error, realnum p, realnum i, realnum d, con
 			Rotation deriv = (error-lastError)/dT;
 
 			// cout << std::setprecision(4) << "pid=(" << prop << "," << integ << "," << deriv << ")->(" << prop*p << "," << integ*i << "," << deriv*d << ") dT=" << dT;
-			imuCompensation = prop*p + integ * i + deriv*d;
+			imuCompensation = prop*propFactor + integ * IntegFactor + deriv*derivativeFactor;
 			imuCompensation.limit(outMin, outMax);
 			// cout << "imucomp" << imuCompensation << endl;
 			lastError = error;

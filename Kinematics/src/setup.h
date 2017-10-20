@@ -21,7 +21,6 @@ enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, SexyWalk, Auto, FourLegWalk
 
 enum ShutDownModeType { NoShutDownActive, Initiate, FallAsleep, Done };
 
-
 // maximum speed a leg uses to settle down when no movement happens
 const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 

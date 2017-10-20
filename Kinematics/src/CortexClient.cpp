@@ -267,6 +267,7 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 				ServoStatusType stat = (ServoStatusType)servoStatus[NumberOfLimbs*legNo + limbNo];
 				if (stat != SERVO_STAT_OK) {
 					ok = false;
+					betterShutdown = true;
 					ROS_ERROR_STREAM("leg " << legNo << " servo " << limbNo << " failed with error " << getServoStatusTypeName(stat) << "(" << stat << ")");
 				}
 			}

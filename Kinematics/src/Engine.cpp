@@ -287,7 +287,7 @@ void Engine::loop() {
 		computeGaitMode();
 		computeFrontLeg();
 		computeWakeUpProcedure();
-		computeMovement();
+		computeAcceleration();
 		gaitControl.loop();
 	}
 
@@ -312,7 +312,7 @@ void Engine::loop() {
 	if (legController.betterShutMeDown()) {
 		switch (shutdownMode) {
 			case NoShutDownActive: {
-				ROS_ERROR_STREAM("better shut me down due to fatal error");
+				ROS_ERROR_STREAM("Better shut me down due to fatal error. Go down and stop moving.");
 				shutdownMode = Initiate;
 				targetSpeed = 0;
 				targetAngularSpeed = 0;
@@ -321,12 +321,15 @@ void Engine::loop() {
 			case Initiate: {
 				if ((currentBodyPose.position.z - standardBodyHeigh < floatPrecision)
 					 && (getCurrentSpeed() < floatPrecision)) {
+					ROS_ERROR_STREAM("Better shut me down due to fatal error. Fall asleep.");
 					fallAsleep();
 					shutdownMode = FallAsleep;
 				}
 			}
 			case FallAsleep: {
 				if (generalMode == BeingAsleep) {
+					ROS_ERROR_STREAM("Better shut me down due to fatal error. Turn off.");
+
 					turnOff();
 					shutdownMode = Done;
 				}
@@ -466,12 +469,13 @@ void Engine::computeBodyPose() {
 		imu.z = 0; // z coordnate is not used
 		Pose imuCompensation;
 		if (legController.isIMUValueValid() && (generalMode == WalkingMode)) {
-			// small PID controller
+			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
 			imuCompensation.orientation = imuPID.getPID(error, 1.0, 2.0, 0.00, maxError);
 			ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
 		} else {
+			// in any other mode than walking keep the IMU in a reset state
 			imuPID.reset();
 		}
 		currentBodyPose = toBePose  + imuCompensation;
@@ -743,8 +747,8 @@ void Engine::computeGaitHeight() {
 	realnum currentHeight = moderatedBodyPose.position.z;
 
 	// above a constant height, moderate the gait height depending on body height
-	// realnum gaitHeight = 65 + 30 * moderate( (maxBodyHeight - currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
-	realnum gaitHeight = 60 + 30 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
+	// At minHeight, gaitHeight is 60, at max height, gaitheight is 90mm
+	realnum gaitHeight = 60 + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
 	gaitControl.setGaitHeight(gaitHeight, 50);
 }
@@ -782,7 +786,7 @@ void Engine::imposeDistanceSensors(realnum distance[NumberOfLegs]) {
 
 void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 
-	if (generalMode  == TerrainMode) {
+	if (generalMode == TerrainMode) {
 		realnum groundHeight[NumberOfLegs];
 		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 			if ((distance[legNo] >= 0) && (distance[legNo] < 200)) {
@@ -901,7 +905,7 @@ void Engine::getState(EngineState &data) {
 }
 
 
-void Engine::computeMovement() {
+void Engine::computeAcceleration() {
 	realnum dT = movementSample.dT();
 
 	if (isListeningToMovements()) {

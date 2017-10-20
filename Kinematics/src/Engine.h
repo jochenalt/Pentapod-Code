@@ -154,7 +154,7 @@ private:
 	void computeFrontLeg();				// in 4 leg walk, the front leg is treated specially
 	void computeSensoredDistance();		// use distance sensor information to influence touch points
 	void computeWakeUpProcedure();		// start up bot by sorting legs first and going up
-	void computeMovement();				// compute acceleration, turning etc.
+	void computeAcceleration();				// compute acceleration, turning etc.
 	void computeWarpCompensation();		// compute compensation of warping legs
 
 	BodyKinematics bodyKinematics;		// compute kinematics of all legs and the body
