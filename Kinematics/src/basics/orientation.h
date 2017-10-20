@@ -107,9 +107,9 @@ class Rotation {
 		void moveTo(const Rotation& b, realnum dT, realnum maxAngularSpeed);
 
 		void operator=(const Rotation& rot) {
-			x= rot.x;
-			y= rot.y;
-			z= rot.z;
+			x = rot.x;
+			y = rot.y;
+			z = rot.z;
 		};
 		void operator+=(const Rotation& rot) {
 			x += rot.x;

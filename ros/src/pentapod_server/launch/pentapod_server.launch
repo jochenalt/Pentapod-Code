@@ -1,3 +1,7 @@
+<!--
+  Start the mongoose webserver that is receiving commands and sending them to pentapod_engine 
+ -->
+
 <launch>
   <node name="pentapod_server_node" 		pkg="pentapod_server"  type="pentapod_server_node" output="screen">
   	<param name="webserver_port"     		type="int"    value="8000"/>

@@ -472,13 +472,14 @@ void Engine::computeBodyPose() {
 			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 1.0, 2.0, 0.00, maxError);
-			ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")");
+			imuCompensation.orientation = imuPID.getPID(error, 1.0, .5, 0.00, maxError);
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
 			imuPID.reset();
 		}
-		currentBodyPose = toBePose  + imuCompensation;
+		currentBodyPose = toBePose;
+		currentBodyPose.orientation += imuCompensation.orientation;
+		ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")" << " before=(" << degrees(toBePose.orientation.x) << "," << degrees(toBePose.orientation.y) << ") after=(" << degrees(currentBodyPose.orientation.x) << "," << degrees(currentBodyPose.orientation.y) << ")");
 	}
 }
 
@@ -748,9 +749,9 @@ void Engine::computeGaitHeight() {
 
 	// above a constant height, moderate the gait height depending on body height
 	// At minHeight, gaitHeight is 60, at max height, gaitheight is 90mm
-	realnum gaitHeight = 60 + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
+	realnum gaitHeight = 70; // + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
-	gaitControl.setGaitHeight(gaitHeight, 50);
+	gaitControl.setGaitHeight(gaitHeight, 55);
 }
 
 void Engine::computeFrontLeg() {

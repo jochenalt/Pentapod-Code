@@ -160,24 +160,12 @@ Point GaitController::interpolateLegMotion(
 
 	realnum onePhaseBeat = (1.0-currGroundPercentage)/2.0;
 	realnum localPhaseBeat = fmod(gaitProgress,onePhaseBeat)/onePhaseBeat;
-	// determine height of gait by help of the len of the top circle movement
-	realnum curveLen = (M_PI/4.0)*fullStepLength_mm; // len of two quarters
 
 	// if we do not move but sort out the legs only, use small gait height only;
 	if (fullStepLength_mm < floatPrecision)
 		gaitHeight = sortOutLegsGaitHeight;
 	else
 		gaitHeight = walkingGaitHeight;
-
-	// compute intermediate height of gait where the circle starts
-	// such that curvelen = middleHeight
-	realnum middleHeight_mm = gaitHeight/2.0 - curveLen*2.0;
-	if (middleHeight_mm < 0.0)
-		middleHeight_mm = gaitHeight/2.0;
-	curveLen = ellipseCircumference (fullStepLength_mm/2.0, gaitHeight - middleHeight_mm)/4.0;
-	middleHeight_mm += ((gaitHeight-middleHeight_mm)-curveLen)/4.0;
-	if (fullStepLength_mm< floatPrecision)
-		middleHeight_mm = gaitHeight/2.0;
 
 	// fetch last position of the previous point2point movement
 	Point& lastPhasePosition = lastPhasePositions[legNo];

@@ -1,3 +1,8 @@
+<!--
+     - pentapod_server: the mongoose webserver that is receiving commands and sending them to pentapod_engine 
+     - pentapod_engine: receive odometry commands and send them to servos
+ -->
+ 
 <launch>
   <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
   <include file="$(find pentapod_engine)/launch/pentapod_engine.launch" />
