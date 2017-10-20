@@ -126,7 +126,7 @@ void I2CSlave::executeRequest() {
 						legAngles[limbNo] = angle;
 						if (limbNo > 0)
 							cmdSerial->print(' ');
-						cmdSerial->print((int)angle);
+						cmdSerial->print(angle,1);
 					}
 					cmdSerial->print(' ');
 					cmdSerial->print(leg.getDistance());
