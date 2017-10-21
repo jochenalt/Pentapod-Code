@@ -203,12 +203,12 @@ void SlamView::drawMap() {
 	// draw the basic raster in 1m x 1m
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glSlamGridColor4v);
 	glColor3fv(glSlamGridColor4v);
-	for (int rasterX = -fullMapSizeX/2; rasterX<fullMapSizeX/2;rasterX += rasterUnitLength ) {
+	for (int rasterX = -rasterUnitLength*(int)((fullMapSizeX/2)/rasterUnitLength); rasterX<fullMapSizeX/2;rasterX += rasterUnitLength ) {
 		glBegin(GL_LINES);
 			glVertex3f( -fullMapSizeY/2, 0, rasterX);glVertex3f( fullMapSizeY/2, 0, rasterX);
 		glEnd();
 	}
-	for (int rasterY = -fullMapSizeY/2;rasterY<fullMapSizeY/2;rasterY += rasterUnitLength ) {
+	for (int rasterY = -rasterUnitLength*(int)((fullMapSizeY/2)/rasterUnitLength);rasterY<fullMapSizeY/2;rasterY += rasterUnitLength ) {
 		glBegin(GL_LINES);
 			glVertex3f(rasterY,0, -fullMapSizeX/2);glVertex3f(rasterY, 0, fullMapSizeY/2);
 		glEnd();
@@ -234,43 +234,37 @@ void SlamView::drawMap() {
 	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
 		int xFrom = localGridX;
 		int xTo = localGridX + gridLength;
-		int yFrom = minY;
-		Map::GridState lastOccupancy = map.getOccupancyByWorld(localGridX,yFrom);
-		for (int localGridY = yFrom + gridLength;localGridY < maxY;localGridY += gridLength) {
-			int yTo = localGridY + gridLength;
-			bool isLastY = (localGridY + gridLength) >= mapSizeY/2;
-			// LastY = true;
+		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
 			Map::GridState  occupancy = map.getOccupancyByWorld(localGridX,localGridY);
 
-			if ((lastOccupancy != occupancy) || isLastY) {
-				int offset = 5;
-				int z = 0;
-				if (lastOccupancy != Map::GridState::UNKNOWN) {
-					offset = 0;
-					if (lastOccupancy == Map::GridState::OCCUPIED)
-						z = 50;
-					if (lastOccupancy == Map::GridState::FREE)
-						z = 2;
-				}
+			if (occupancy != Map::GridState::UNKNOWN) {
+				int yTo = localGridY + gridLength/2;
+				int yFrom = localGridY - gridLength/2;
 
-				if (lastOccupancy != Map::GridState::UNKNOWN) {
+				if (occupancy == Map::GridState::FREE) {
+					int offset = 3;
+					int z = 2;
 					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 					Point g2(xTo-offset, 	(yFrom+offset),		z);
 					Point g3(xTo-offset, 	(yTo-offset),		z);
 					Point g4(xFrom+offset, 	(yTo-offset),		z);
-
-					if (lastOccupancy == Map::GridState::FREE)
-						drawFreeSlamGrid(g1, g2, g3, g4);
-					else
-						drawOccupiedSlamGrid(false, g1, g2, g3, g4);
+					drawFreeSlamGrid(g1, g2, g3, g4);
 				}
-				lastOccupancy = occupancy;
-				yFrom = yTo;
+				if (occupancy == Map::GridState::OCCUPIED) {
+					int offset = 3;
+					int z = 50;
+					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
+					Point g2(xTo-offset, 	(yFrom+offset),		z);
+					Point g3(xTo-offset, 	(yTo-offset),		z);
+					Point g4(xFrom+offset, 	(yTo-offset),		z);
+					drawOccupiedSlamGrid(false,g1, g2, g3, g4);
+				}
 			}
 		}
 	}
 
-	// draw laser scan
+
+	// draw red laser scan dots
 	int numberOfScans = laserScan.getNumberOfLaserScan();
 
 	glPushMatrix();
@@ -290,7 +284,6 @@ void SlamView::drawMap() {
 		}
 	}
 	glPopMatrix();
-	cout << endl;
 
 	// draw trajectory
 	unsigned int pathLength = trajectory.size();
