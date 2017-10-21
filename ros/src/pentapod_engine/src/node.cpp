@@ -62,33 +62,37 @@ int main(int argc, char * argv[]) {
 	ROS_DEBUG_STREAM("cortex setup done " << cortexOk);
 
 	// initialize all topics
-        ROS_DEBUG_STREAM("initialization publisher");
+       ROS_DEBUG_STREAM("initialization odom publisher");
 	odomPublisher.setup(rosNode, engine);
 
 	// main loop spins at the rate the cortex wants calls (around 45Hz)
 	ros::WallRate mainLoopRate(1000.0/CORTEX_SAMPLE_RATE);
 
-	// main loop that takes care of the webserver as well as ROS
-	TimeSamplerStatic stateTimer;
-	const int publishEveryNthLoop = 3; // set to 3 to reach 10Hz transformation frequency
-	int loopCounter = 0;
-        ROS_DEBUG_STREAM("entering engine main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
+	// main loop that takes care of the engine
+	// by sending move commands with approx. 45Hz
+	TimeSamplerStatic lowPrioLoopTimer;
+    ROS_DEBUG_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
 	while (rosNode.ok()) {
-		// pump callbacks of topics
-		ros::spinOnce();
-
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
-		// so call right after sleep
+		// so call engine.loop() right after sleep
 		mainLoopRate.sleep();
-		engine.loop();
+		engine.loop(); // send move commands to cortex
 
-		// broadcast transformations at 10Hz which is 1000/(3*CORTEX_SAMPLE_RATE)
-		if ((loopCounter++ % publishEveryNthLoop) == 0) {
+		// after this call do anything which is not that timing relevant, e.g.
+		// broadcasting all transformations. Do this at approx 10Hz.
+		if (lowPrioLoopTimer.isDue(100)) {
 			odomPublisher.broadcastState();
 			odomPublisher.broadcastTransformation();
 			odomPublisher.broadcastOdom();
 		}
+
+		// pump callbacks and topics
+		// - listen to speed, bodypose and move commands coming from pentapod_server
+		// - broadcast odom2base_link to be consumed by navigation
+		// - broadcast base_link2laser to be consumed by hector slam
+		// - broadcast pentapod_state to be consumed by pentapod_server
+		ros::spinOnce();
 	}
 
 	return 0;

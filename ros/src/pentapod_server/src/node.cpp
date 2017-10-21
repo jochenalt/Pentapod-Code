@@ -123,7 +123,7 @@ int main(int argc, char * argv[]) {
 		// pump callbacks of topics
 		ros::spinOnce();
 
-		// check and dispatch incoming http requests (dispatched by CommandDispatcher) and wait for 10ms max
+		// check and dispatch incoming http requests (dispatched by CommandDispatcher) and wait for 10ms max.
 		mg_mgr_poll(&mgr, 10);
 	}
 	mg_mgr_free(&mgr);
