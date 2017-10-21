@@ -33,6 +33,8 @@ public:
 	// set a new laser scan
 	void setLaserScan(const Pose& newScanpose, const std::vector<int_millimeter> &newScan, angle_rad newStartAngle, angle_rad newAngleIncrement, angle_rad newEndAngle);
 	int getNumberOfLaserScan() { return (int)laserScan.size(); };
+
+	// return the scan of one point (i = 0..360/angleIncrement) in coordinate system of the laser scanner
 	Point getLaserScan(int i);
 	Pose& getLaserScanPose() { return poseWhenLaserScan; };
 

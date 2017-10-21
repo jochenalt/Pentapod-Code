@@ -745,10 +745,10 @@ void Engine::setTargetGaitMode(GaitModeType newGaitType) {
 
 
 void Engine::computeGaitHeight() {
-	realnum currentHeight = moderatedBodyPose.position.z;
 
 	// above a constant height, moderate the gait height depending on body height
 	// At minHeight, gaitHeight is 60, at max height, gaitheight is 90mm
+	// realnum currentHeight = moderatedBodyPose.position.z;
 	realnum gaitHeight = 70; // + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
 	gaitControl.setGaitHeight(gaitHeight, 55);

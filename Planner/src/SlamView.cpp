@@ -150,6 +150,8 @@ void SlamView::drawOccupiedSlamGrid(bool onlyTop,  const Point &g1,const Point &
 
 void SlamView::drawSmallBot(const Pose& pose) {
 	glPushMatrix();
+	glLoadIdentity();             // Reset the model-view matrix
+
 	glTranslatef(pose.position.y, pose.position.z, pose.position.x);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glFootTouchPointColor);
@@ -235,7 +237,6 @@ void SlamView::drawMap() {
 		int yFrom = minY;
 		Map::GridState lastOccupancy = map.getOccupancyByWorld(localGridX,yFrom);
 		for (int localGridY = yFrom + gridLength;localGridY < maxY;localGridY += gridLength) {
-
 			int yTo = localGridY + gridLength;
 			bool isLastY = (localGridY + gridLength) >= mapSizeY/2;
 			// LastY = true;
@@ -253,10 +254,10 @@ void SlamView::drawMap() {
 				}
 
 				if (lastOccupancy != Map::GridState::UNKNOWN) {
-					Point g1(xFrom+offset, 	yFrom+offset, 	z);
-					Point g2(xTo-offset, 	yFrom+offset,	z);
-					Point g3(xTo-offset, 	yTo-offset,		z);
-					Point g4(xFrom+offset, 	yTo-offset,		z);
+					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
+					Point g2(xTo-offset, 	(yFrom+offset),		z);
+					Point g3(xTo-offset, 	(yTo-offset),		z);
+					Point g4(xFrom+offset, 	(yTo-offset),		z);
 
 					if (lastOccupancy == Map::GridState::FREE)
 						drawFreeSlamGrid(g1, g2, g3, g4);
@@ -271,6 +272,7 @@ void SlamView::drawMap() {
 
 	// draw laser scan
 	int numberOfScans = laserScan.getNumberOfLaserScan();
+
 	glPushMatrix();
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glLaserScanColor4v);
 	glColor3fv(glLaserScanColor4v);
@@ -288,6 +290,7 @@ void SlamView::drawMap() {
 		}
 	}
 	glPopMatrix();
+	cout << endl;
 
 	// draw trajectory
 	unsigned int pathLength = trajectory.size();
@@ -329,11 +332,11 @@ void SlamView::drawMap() {
 
 	// draw coord system in red
 	glBegin(GL_LINES);
-		glColor3fv(glFootTouchPointColor);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glFootTouchPointColor);
+		glColor3fv(glSlamMapCoordSystemColor4v);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glSlamMapCoordSystemColor4v);
 
-		glVertex3f(0,0,0);glVertex3f(0, 1000, 0);
-		glVertex3f(0,0,0);glVertex3f(0, 0, 1000);
+		glVertex3f(0,0,0);glVertex3f(0, 500, 0);
+		glVertex3f(0,0,0);glVertex3f(0, 0, 2000);
 		glVertex3f(0,0,0);glVertex3f(1000, 0, 0);
 	glEnd();
 

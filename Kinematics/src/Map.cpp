@@ -18,8 +18,8 @@ Map::~Map() {
 
 
 void Map::null() {
-	noOfGridsX = 0;
-	noOfGridsY = 0;
+	gridWidth = 0;
+	gridHeight = 0;
 	mapSizeY = 0;
 	mapSizeX = 0;
 	generationNumber = 0;
@@ -27,7 +27,7 @@ void Map::null() {
 }
 
 bool Map::isNull() const {
-	return (noOfGridsX == 0) && (noOfGridsY == 0);
+	return (gridWidth == 0) && (gridHeight == 0);
 }
 
 
@@ -38,9 +38,9 @@ Map::Map(const Map& m) {
 
 std::ostream& Map::serialize(std::ostream &out) const {
 	out << "{ \"w\": ";
-	serializePrim(out, noOfGridsX);
+	serializePrim(out, gridWidth);
 	out << ",\"h\":";
-	serializePrim(out, noOfGridsY);
+	serializePrim(out, gridHeight);
 	out << ",\"r\":";
 	serializePrim(out, gridSize);
 	out << ",\"n\":";
@@ -48,7 +48,7 @@ std::ostream& Map::serialize(std::ostream &out) const {
 	out << ",\"og\":\"";
 
 
-	int len = noOfGridsX*noOfGridsY;
+	int len = gridWidth*gridHeight;
 	const int gridsPerByte = 4;
 	int s = 0;
 	int gridsInByte = 0;
@@ -81,11 +81,11 @@ std::istream& Map::deserialize(std::istream &in, bool &ok) {
     	parseCharacter(in, '{', ok);
     	parseString(in, ok); // "width"
     	parseCharacter(in, ':', ok);
-    	deserializePrim(in, noOfGridsX, ok);
+    	deserializePrim(in, gridWidth, ok);
     	parseCharacter(in, ',', ok);
     	parseString(in, ok); // "height"
     	parseCharacter(in, ':', ok);
-    	deserializePrim(in, noOfGridsY, ok);
+    	deserializePrim(in, gridHeight, ok);
     	parseCharacter(in, ',', ok);
     	parseString(in, ok); // "resolution"
     	parseCharacter(in, ':', ok);
@@ -100,9 +100,9 @@ std::istream& Map::deserialize(std::istream &in, bool &ok) {
     	parseCharacter(in, ':', ok);
     	string occupancyStr = parseString(in, ok);
     	if (ok) {
-        	setGridDimension(noOfGridsY, noOfGridsX,gridSize);
+        	setGridDimension(gridHeight, gridWidth,gridSize);
     		occupancy.clear();
-    		int occupancyLen = noOfGridsX*noOfGridsY;
+    		int occupancyLen = gridWidth*gridHeight;
     		string occupancyCompressedStr = decodeAndUncompress(occupancyStr,occupancyLen/3+256);
 
     		occupancy.resize(occupancyLen);
@@ -129,8 +129,8 @@ std::istream& Map::deserialize(std::istream &in, bool &ok) {
 
 
 void Map::operator=(const Map& m) {
-	noOfGridsX = m.noOfGridsX;
-	noOfGridsY = m.noOfGridsY;
+	gridWidth = m.gridWidth;
+	gridHeight = m.gridHeight;
 	gridSize = m.gridSize;
 	occupancy = m.occupancy;
 	mapSizeX = m.mapSizeX;
@@ -139,30 +139,30 @@ void Map::operator=(const Map& m) {
 }
 
 void Map::setGridDimension(int pWidth, int pHeight, millimeter pGridSize) {
-	noOfGridsX = pWidth;
-	noOfGridsY = pHeight;
+	gridWidth = pWidth;
+	gridHeight = pHeight;
 	gridSize = pGridSize;
-	int len = noOfGridsX*noOfGridsY;
+	int len = gridWidth*gridHeight;
 	occupancy.resize(len);
 	for (int i = 0;i<len;i++) {
 		occupancy[i] = UNKNOWN;
 	}
-	mapSizeX = noOfGridsX*gridSize;
-	mapSizeY= noOfGridsY*gridSize;
+	mapSizeX = gridWidth*gridSize;
+	mapSizeY= gridHeight*gridSize;
 }
 
 Map::GridState  Map::getOccupancyByWorld(int x,int y) {
-	int gridX = (x/gridSize + noOfGridsX/2);
-	int gridY = (y/gridSize + noOfGridsY/2);
+	int gridX = (x/gridSize + gridWidth/2);
+	int gridY = (y/gridSize + gridHeight/2);
 
-	unsigned  pos = gridX + noOfGridsX*gridY;
+	unsigned  pos = gridX + gridWidth*gridY;
 	if (pos < occupancy.size())
 		return occupancy[pos];
 	return FREE;
 };
 
 void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
-	unsigned pos = noOfGridsY*gridX + gridY;
+	unsigned pos = gridHeight*gridX + gridY;
 	if (pos < occupancy.size())
 		occupancy[pos] = p;
 	else
@@ -170,7 +170,7 @@ void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 };
 
 Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
-	unsigned pos = noOfGridsY*gridX + gridY;
+	unsigned pos = gridHeight*gridX + gridY;
 	if (pos < occupancy.size())
 		return occupancy[pos];
 

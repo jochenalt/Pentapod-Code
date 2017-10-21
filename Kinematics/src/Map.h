@@ -28,8 +28,8 @@ public:
 	void null();
 	bool isNull() const;
 	void setGridDimension(int pWidth, int pHeight, millimeter pResolution);
-	int getGridsWidth() { return noOfGridsX; };
-	int getGridsHeight() { return noOfGridsY; };
+	int getGridsWidth() { return gridWidth; };
+	int getGridsHeight() { return gridHeight; };
 
 	int getMapSizeX() { return mapSizeX;  };
 	int getMapSizeY() { return mapSizeY;  };
@@ -45,8 +45,8 @@ public:
 	virtual std::istream& deserialize(std::istream &in, bool& ok);
 	std::vector<GridState>& getVector() { return occupancy; };
 private:
-	int noOfGridsX;
-	int noOfGridsY;
+	int gridWidth;
+	int gridHeight;
 	int mapSizeX;
 	int mapSizeY;
 	int generationNumber;

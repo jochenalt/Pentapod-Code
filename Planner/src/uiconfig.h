@@ -55,6 +55,8 @@ static const GLfloat glSlamOccupiedAroundTopColor4v[] 	= GL_COLOR_4v( CapriBlue,
 static const GLfloat glSlamOccupiedTopColor4v[] 		= GL_COLOR_4v( BlackBlue, glAlphaSolid );
 static const GLfloat glSlamUnknownColor4v[]				= GL_COLOR_4v( OysterWhite, glAlphaSolid );
 static const GLfloat glLaserScanColor4v[]		    	= GL_COLOR_4v( RedOrange, glAlphaSolid);
+static const GLfloat glSlamMapCoordSystemColor4v[]		= GL_COLOR_4v( RedViolet, glAlphaSolid);
+
 static const GLfloat glTrajectoryColor4v[]		    	= GL_COLOR_4v( GrassGreen, glAlphaSolid);
 
 #endif /* UI_UICONFIG_H_ */
