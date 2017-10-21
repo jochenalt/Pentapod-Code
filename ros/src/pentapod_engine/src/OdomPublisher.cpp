@@ -166,7 +166,7 @@ void OdomPublisher::broadcastState() {
 }
 
 
-void OdomPublisher::breadcastTransformation() {
+void OdomPublisher::broadcastTransformation() {
 
 	// transform from base of bot to position of the laser
 	// influenced by body pose only
@@ -177,7 +177,7 @@ void OdomPublisher::breadcastTransformation() {
 					      tf::Vector3(engine->getCurrentBodyPose().position.x/1000.0,
 					    		      engine->getCurrentBodyPose().position.y/1000.0,
 									  engine->getCurrentBodyPose().position.z/1000.0 + CAD::LaserSensorHeight/1000.0)),
-			ros::Time::now(),"base_link", "base_laser"));
+			ros::Time::now(),"base_link", "laser"));
 
 
 	/*

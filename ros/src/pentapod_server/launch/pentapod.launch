@@ -9,5 +9,5 @@
   <include file="$(find pentapod_server)/launch/rplidar.launch" />
   <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
   <include file="$(find pentapod_engine)/launch/pentapod_engine.launch" />
-  <include file="$(find rplidar_ros)/launch/hectormapping.launch" />
+  <include file="$(find pentapod_server)/launch/hectormapping.launch" />
 </launch>

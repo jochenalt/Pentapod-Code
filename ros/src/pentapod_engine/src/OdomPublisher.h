@@ -30,7 +30,7 @@ public:
 	virtual ~OdomPublisher();
 
 	void setup(ros::NodeHandle& handle, Engine& pEngine);
-	void breadcastTransformation();
+	void broadcastTransformation();
 	void broadcastOdom();
 	void broadcastState();
 

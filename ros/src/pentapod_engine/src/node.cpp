@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
 	ROS_DEBUG_STREAM("cortex setup done " << cortexOk);
 
 	// initialize all topics
-        ROS_DEBUG_STREAM("initializaing publisher");
+        ROS_DEBUG_STREAM("initialization publisher");
 	odomPublisher.setup(rosNode, engine);
 
 	// main loop spins at the rate the cortex wants calls (around 45Hz)
@@ -86,7 +86,7 @@ int main(int argc, char * argv[]) {
 		// broadcast transformations at 10Hz which is 1000/(3*CORTEX_SAMPLE_RATE)
 		if ((loopCounter++ % publishEveryNthLoop) == 0) {
 			odomPublisher.broadcastState();
-			odomPublisher.breadcastTransformation();
+			odomPublisher.broadcastTransformation();
 			odomPublisher.broadcastOdom();
 		}
 	}

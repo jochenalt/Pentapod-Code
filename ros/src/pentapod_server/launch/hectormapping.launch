@@ -6,10 +6,11 @@ E-mail: kint.zhao@slamtec.com
  -->
 <launch>
 
-<---
+<!--
    The transformation base_link to laser is broadcasted in pentapod_engine (the distance is not constant)
-  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 0 base_link laser 100" /> <!--change -->
---->
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 base_link laser 100" /> 
+-->
+
 
     <node pkg="hector_mapping" type="hector_mapping" name="hector_height_mapping" output="screen">
     <param name="scan_topic" value="scan" />
@@ -34,7 +35,7 @@ E-mail: kint.zhao@slamtec.com
     <param name="map_start_x" value="0.5"/>
     <param name="map_start_y" value="0.5"/>
  
-    <-- min and max laser distance that is interpreted -->
+    <!-- min and max laser distance that is interpreted -->
     <param name="laser_max_dist" value="8.0"/>
     <param name="laser_min_dist" value="0.4"/>
 

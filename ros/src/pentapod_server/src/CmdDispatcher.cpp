@@ -386,7 +386,7 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 			newScan.push_back(-1);
 	}
 
-	laserScan.setLaserScan(engineState.currentMapPose, newScan, startAngle, angleIncrement, endAngle);
+	laserScan.setLaserScan(engineState.currentFusedPose, newScan, startAngle, angleIncrement, endAngle);
 	std::stringstream out;
 	laserScan.serialize(out);
 	serializedLaserScan = out.str();
