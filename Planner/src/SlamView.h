@@ -28,10 +28,19 @@ public:
 	virtual ~SlamView();
 	bool botIsVisible();
 
+
 private:
+	Point get3DByMouseClick (int x,int y);
+	void setNavigationGoal(const Point& p);
 	void drawFreeSlamGrid( const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawOccupiedSlamGrid(bool onlyTop,  const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
-	void drawLaserScanPoint(const Point &p);
+	void drawLaserScan();
+	void drawNavigationGoal();
+	void drawCoordRaster();
+	void drawMapBackground();
+	void drawTrajectory();
+	void drawCoordSystem();
+	void drawSlamMap();
 
 	void drawSmallBot(const Pose& pose);
 	string title;
@@ -39,12 +48,15 @@ private:
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 	int lastMouseScroll = 0;
-	bool mouseViewPane = false;
+	bool mouseViewPlane = false;
 	bool mousePlaneXY = false;
 
 	PentaPoseType defaultHipPoseWorld;
 	LegAnglesType defaultLegAngles;
 	Pose defaultBodyPose;
+
+	// generic marker that leaves a flag in the map. Use for navigation goal.
+	Point navigationGoal;
 
 	Pose lastFusedPosition;
 	milliseconds manualLookAtAdjustTime;

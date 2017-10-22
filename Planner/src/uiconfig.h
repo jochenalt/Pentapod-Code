@@ -48,9 +48,13 @@ static const GLfloat glFootTouchPointBackColor[] 		= GL_COLOR_4v(ResedaGreen, gl
 static const GLfloat glFootTouchPointFrontColor[] 		= GL_COLOR_4v(OliveYellow, glAlphaSolid);
 static const GLfloat glFootTouchPointAreaColor[]		= GL_COLOR_4v(BlackRed, glAlphaTransparent);
 
+static const GLfloat glMapBackgroundColor4v[]		    = GL_COLOR_4v( AnthraciteGrey, 0.2);
 static const GLfloat glMapAreaColor4v[]		    		= GL_COLOR_4v( AnthraciteGrey, glAlphaTransparent);
 static const GLfloat glSlamGridColor4v[]		    	= GL_COLOR_4v( ConcreteGrey, glAlphaTransparent);
 static const GLfloat glSlamFreeTopColor4v[]		    	= GL_COLOR_4v( LightIvory, glAlphaTransparent);
+static const GLfloat glMapMarkerColor4v[]		    	= GL_COLOR_4v( OxideRed, glAlphaSolid);
+static const GLfloat glMapSphereMarkerColor4v[]		    = GL_COLOR_4v( SalmonPink, glAlphaSolid);
+
 static const GLfloat glSlamOccupiedAroundTopColor4v[] 	= GL_COLOR_4v( CapriBlue, glAlphaSolid );
 static const GLfloat glSlamOccupiedTopColor4v[] 		= GL_COLOR_4v( BlackBlue, glAlphaSolid );
 static const GLfloat glSlamUnknownColor4v[]				= GL_COLOR_4v( OysterWhite, glAlphaSolid );
