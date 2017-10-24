@@ -438,6 +438,9 @@ void SlamView::MotionCallback(int x, int y) {
 
 void SlamView::setNavigationGoal(const Point& p) {
 	navigationGoal = p;
+	Pose goal;
+	goal.position = p;
+	EngineProxy::getInstance().setNavigationGoal(goal);
 }
 
 

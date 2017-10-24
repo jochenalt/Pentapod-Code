@@ -948,9 +948,9 @@ void Engine::computeAcceleration() {
 		angle_rad noseOrientation = getCurrentNoseOrientation();
 		noseOrientation += getCurrentAngularSpeed()*dT;
 		if (noseOrientation > M_PI)
-			noseOrientation = 2*M_PI-noseOrientation;
+			noseOrientation -= 2*M_PI;
 		if (noseOrientation < -M_PI)
-				noseOrientation = noseOrientation + 2*M_PI;
+			noseOrientation += 2*M_PI;
 
 		getBodyKinematics().setCurrentNoseOrientation(noseOrientation);
 	}
