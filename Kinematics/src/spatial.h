@@ -183,7 +183,7 @@ class Pose : public Serializable  {
 			position.null();
 		}
 
-		bool isNull() {
+		bool isNull() const {
 			return position.isNull();
 		}
 

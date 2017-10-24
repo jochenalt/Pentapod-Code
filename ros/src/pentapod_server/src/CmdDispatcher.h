@@ -26,6 +26,7 @@
 #include "nav_msgs/Path.h"
 #include <geometry_msgs/Twist.h>
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "sensor_msgs/LaserScan.h"
 #include "nav_msgs/Odometry.h"
 
@@ -60,6 +61,8 @@ public:
 	void listenToTrajectory(const nav_msgs::Path::ConstPtr& path);
 
 	void setNavigationGoal(const Pose& goalPose);
+	Pose getNavigationGoal();
+
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
 private:
@@ -79,6 +82,7 @@ private:
 	ros::Publisher cmdVel;
 	ros::Publisher cmdBodyPose;
 	ros::Publisher cmdModePub;
+	ros::Publisher initalPosePub;
 
 	ros::Subscriber occupancyGridSubscriber;
 	ros::Subscriber laserScanSubscriber;
@@ -89,6 +93,7 @@ private:
 	ros::Subscriber pathSubscriber;
 
 	MoveBaseClient* moveBaseClient;
+	Pose navigationGoal;
 };
 
 

@@ -23,7 +23,7 @@ class Point  : public Serializable {
 		void set(millimeter pX, millimeter pY,millimeter pZ);
 
 		void null();
-		bool isNull();
+		bool isNull() const;
 
 		Point getRotatedAroundZ(angle_rad alpha) const;
 		void rotateAroundZ(angle_rad alpha);

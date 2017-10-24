@@ -43,7 +43,7 @@ void Point::set(realnum pX, realnum pY,realnum pZ) {
 }
 
 
-bool Point::isNull() {
+bool Point::isNull() const {
 	return 	((abs(x) < floatPrecision) &&
 			 (abs(y) < floatPrecision) &&
 			 (abs(z) < floatPrecision));

@@ -76,12 +76,14 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
 
-	/*
+	// publish initial position (required by navigation
+	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
+
     // wait for the action server to come up
 	while(!moveBaseClient->waitForServer(ros::Duration(5.0))){
 	    ROS_INFO_THROTTLE(1,"Waiting for the move_base action server to come up");
 	}
-	*/
+
 }
 
 
@@ -89,32 +91,50 @@ actionlib::SimpleClientGoalState CommandDispatcher::getNavigationGoalStatus() {
 	return moveBaseClient->getState();
 }
 
+Pose CommandDispatcher::getNavigationGoal() {
+	return navigationGoal;
+}
+
+
 void CommandDispatcher::setNavigationGoal(const Pose& goalPose) {
 
+	// advertise the initial position for the navigation stack anytime the navigation goal is set
+	geometry_msgs::PoseWithCovarianceStamped initialPosition;
+	initialPosition.pose.pose.position.x = engineState.currentFusedPose.position.x/1000.0;
+	initialPosition.pose.pose.position.y = engineState.currentFusedPose.position.y/1000.0;
+	initialPosition.pose.pose.position.z = 0;
+	geometry_msgs::Quaternion initialPose_quat  =
+			tf::createQuaternionMsgFromYaw(
+					engineState.currentBodyPose.orientation.z +
+					engineState.currentNoseOrientation);
+
+	initialPosition.pose.pose.orientation = initialPose_quat;
+	initialPosition.header.stamp = ros::Time::now();
+	initialPosition.header.frame_id = "map";
+	initalPosePub.publish(initialPosition);
+     ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
+				engineState.currentNoseOrientation) << "");
+
+	  navigationGoal = goalPose;
 	  move_base_msgs::MoveBaseGoal goal;
 
 	  //we'll send a goal to the robot to move 1 meter forward
 	  goal.target_pose.header.frame_id = "base_link";
 	  goal.target_pose.header.stamp = ros::Time::now();
 
-	  goal.target_pose.pose.position.x = goalPose.position.x;
-	  goal.target_pose.pose.position.y = goalPose.position.y;
+	  goal.target_pose.pose.position.x = goalPose.position.x/1000.0;
+	  goal.target_pose.pose.position.y = goalPose.position.y/1000.0;
 
 	  geometry_msgs::Quaternion goalPoseQuat  =
 			tf::createQuaternionMsgFromYaw(goalPose.orientation.z);
 
 	  goal.target_pose.pose.orientation = goalPoseQuat;
 
+	  if (goalPose.isNull())
+		  moveBaseClient->cancelGoal();
 	  moveBaseClient->sendGoal(goal);
 
-	  /*
-	  moveBaseClient->waitForResult();
-
-	  if(moveBaseClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-	    ROS_INFO("Hooray, the base moved 1 meter forward");
-	  else
-	    ROS_INFO("The base failed to move forward 1 meter for some reason");
-	   */
+	  ROS_INFO_STREAM("setting navigation goal " << goalPose.position);
 }
 
 
@@ -352,9 +372,13 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			okOrNOk = true;
 			return true;
 		}
-		else if (hasPrefix(command,"goal")) {
+		else if (hasPrefix(command,"get")) {
 			std::ostringstream out;
-			out << (int)getNavigationGoalStatus().state_;
+			int navStatus = NavigationStatusType::NavPending;
+			if (!navigationGoal.isNull()) {
+				navStatus = (int)getNavigationGoalStatus().state_;
+			}
+			out << "\"goal\"=" << navigationGoal << ", \"status\"=" << navStatus;
 			response = out.str() + "," + getResponse(true);
 			okOrNOk = true;
 		}
