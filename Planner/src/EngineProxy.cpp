@@ -170,6 +170,7 @@ void EngineProxy::loop() {
 		if (UpdateTrajectorySampleRate > 0) {
 			if (fetchTrajectoryTimer.isDue(UpdateTrajectorySampleRate)) {
 				updateTrajectory();
+				updateNavigation();
 			}
 		}
 
@@ -334,7 +335,7 @@ angle_rad EngineProxy::getCurrenWalkingDirection() {
 	return data.currentWalkingDirection;
 };
 
-angle_rad EngineProxy::getCurrenAngularSpeed() {
+radPerSecond EngineProxy::getCurrenAngularSpeed() {
 	return data.currentAngularSpeed;
 };
 
@@ -413,6 +414,28 @@ Trajectory& EngineProxy::getTrajectory() {
 	return trajectory;
 }
 
+
+// get last navigation goal(gets nulled once it has been reached)
+Pose EngineProxy::getCurrentNavigationGoal() {
+	return navigationGoal;
+}
+
+// get last navigation goal(gets nulled once it has been reached)
+NavigationStatusType EngineProxy::getCurrentNavigationStatus() {
+	return navigationStatus;
+}
+
+void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+
+		url << "/navigation/goal/set"
+			<< "?bodypose="  << navigationGoal;
+		remoteEngine.httpGET(url.str(), responseStr, 5000);
+	};
+}
+
 void EngineProxy::updateMap() {
 	if (callRemoteEngine) {
 		string responseStr;
@@ -474,6 +497,31 @@ void EngineProxy::updateTrajectory() {
 	}
 }
 
+void EngineProxy::updateNavigation() {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+		url << "/navigation/get";
+		remoteEngine.httpGET(url.str(), responseStr, 20000);
+		std::istringstream in(responseStr);
+
+		bool ok = true;
+		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
+		parseString(in, ok); // parse "goal"
+		parseCharacter(in, ':', ok); // parse ":"
+		navigationGoal.deserialize(in, ok);
+		parseCharacter(in, ',', ok); // parse ","
+		parseString(in, ok); // parse "status"
+		parseCharacter(in, ':', ok); // parse ":"
+		int statusInt = parseInt(in, ok);
+		navigationStatus = (NavigationStatusType)statusInt;
+
+		if (ok) {
+			newNavigationStatusIsAvailable = true;
+		}
+	}
+}
+
 bool EngineProxy::isBotDataAvailable() {
 	if (newBotDataAvailable) {
 		newBotDataAvailable = false;
@@ -507,6 +555,14 @@ bool EngineProxy::isEstimatedPoseAvailable() {
 	return false;
 }
 
+
+bool EngineProxy::isNavigationStatusAvailable() {
+	if (newNavigationStatusIsAvailable) {
+		newNavigationStatusIsAvailable = false;
+		return true;
+	}
+	return false;
+}
 
 bool EngineProxy::isLaserScanAvailable() {
 	if (newLaserScanAvailable) {

@@ -72,71 +72,103 @@ public:
 	// get the pose of all hips in world coordinates (relative to the belly buttons origin)
 	const PentaPoseType& getHipPoseWorld();
 
-	// get all relevant data representing the current pose of the body and all legs
+	// get all current angles of all legs
 	LegAnglesType getLegAngles();
-	PentaPointType getGaitRefPoints();
-	const PentaPointType& getGroundPoints();
-	Pose getBodyPose();
-	realnum getLiftHeight();
-	angle_rad getNoseOrientation();
-	mmPerSecond getCurrenSpeed();
-	angle_rad getCurrenWalkingDirection();
-	angle_rad getCurrenAngularSpeed();
 
+	// get all gait ref points (the point in der middle of a gait when the foot is on the ground)
+	PentaPointType getGaitRefPoints();
+
+	// get all ground points that is the current toe point but projected to the ground
+	const PentaPointType& getGroundPoints();
+
+	// get current position and orientation of the body
+	Pose getBodyPose();
+
+	// get orientation of the front leg (=nose). Not necessarily the same like WalkingDirection. 0° is towards x-axis
+	angle_rad getNoseOrientation();
+
+	// get current speed in [mm/s] in the walking direction
+	mmPerSecond getCurrenSpeed();
+
+	// get the current walking direction, 0° is towards x-axis
+	angle_rad getCurrenWalkingDirection();
+
+	// get the current rotational speed in [°/s]
+	radPerSecond getCurrenAngularSpeed();
+
+	// conviniency method to get all of the above in one call
 	void getCurrentMovement ( angle_rad& orientation, mmPerSecond& newSpeed, realnum& rotateZ /* radians/s */, realnum& speedDirection);
 
+	// get flags which foot is currently touching the ground
 	const FootOnGroundFlagType& getFootOnGround();
 
+	// get the pose of the front leg in case we are in the 4-foot-gait mode where the front leg can be moved freely
 	LegPose getFrontLegPoseWorld();
 
+	// return current mode in terms of sleeping, walking, standing up,...
 	GeneralEngineModeType getGeneralMode();
 
+	// get perpendicular angle of a foot against the ground plane
 	angle_deg getFootAngle(int legNo);
 
+	// get toe point in world coordinates. LegNo= [0..4]
 	Point getToePointsWorld(int legNo) ;
 
+	// get gait ref point in world coordinates. LegNo= [0..4]
 	Point getGaitRefPointWorld(int legNo);
 
+	// get current gait phase of one leg in terms of moving up, moving down, on the ground
 	LegGaitPhase getLegsGaitPhase(int legNo);
 
 	void imposeDistanceSensors(realnum distance[NumberOfLegs]);
 
-	// return the occupancy grid
+	// return the map with occupancy grid
 	Map& getMap();
 
-	// return the last lidar scan
+	// return the last 360° lidar scan in one array
 	LaserScan& getLaserScan();
 
-	// return the passed path
+	// return the current trajectory
 	Trajectory& getTrajectory();
 
-
-	// return the pose in the map
+	// return the pose in coordinates of the map (jumps descretly depending on SLAM)
 	const Pose& getMapPose();
 
-	// return the pose in the map
+	// return the odom pose (continously moving)
 	const Pose& getOdomPose();
 
 	// take map pose for general pose and incrementally update via odom
 	const Pose& getFusedPose();
 
+	// set the new navigation goal
+	void setNavigationGoal(const Pose& goal);
+
+	// get last navigation goal(gets nulled once it has been reached)
+	Pose getCurrentNavigationGoal();
+
+	// get last navigation goal(gets nulled once it has been reached)
+	NavigationStatusType getCurrentNavigationStatus();
+
+	// flags if new data from server is available
 	bool isBotDataAvailable();
 	bool isMapDataAvailable();
 	bool isLaserScanAvailable();
 	bool isTrajectoryDataAvailable();
-
 	bool isEstimatedPoseAvailable();
+	bool isNavigationStatusAvailable();
 
 private:
 	void updateLaserScan();
 	void updateMap();
 	void updateTrajectory();
+	void updateNavigation();
 
 	bool newLaserScanAvailable = false;
 	bool newBotDataAvailable = false;
 	bool newMapDataAvailable = false;
 	bool newMapPoseDataAvailable = false;
 	bool newTrajectoryDataAvailable = false;
+	bool newNavigationStatusIsAvailable = false;
 
 	EngineCaller remoteEngine;
 	Engine engine;
@@ -154,6 +186,8 @@ private:
 	Pose mapPose;
 	LaserScan laserScan;
 	Trajectory trajectory;
+	Pose navigationGoal;
+	NavigationStatusType navigationStatus;
 };
 
 #endif /* KINEMATICSDISPATCHER_H_ */
