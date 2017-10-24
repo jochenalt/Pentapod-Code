@@ -430,8 +430,11 @@ void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
 		string responseStr;
 		std::ostringstream url;
 
+		std::ostringstream bodyposeIn;
+		navigationGoal.serialize(bodyposeIn);
+
 		url << "/navigation/goal/set"
-			<< "?bodypose="  << navigationGoal;
+			<< "?bodypose="  << stringToJSonString(bodyposeIn.str());
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	};
 }
