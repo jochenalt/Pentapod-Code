@@ -23,7 +23,6 @@
 
 // Pentapod messages
 #include "pentapod_engine/engine_command_mode.h"
-
 #include "OdomPublisher.h"
 
 #include "ros/ros.h"
