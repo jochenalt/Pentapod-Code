@@ -51,12 +51,15 @@ const realnum maxAngularSpeed = 0.4; 			 //  [rad/s]
 // walking direction cannot be changed immediately but with that angular speed per speed*t
 const realnum maxAngularSpeedPerSpeed = 0.3;	 // [rad/s /  (mm/s)] = [rad/mm]
 
+<<<<<<< Updated upstream
 // max speed acceleration
 const realnum maxSpeedAcceleration = 80.0; 		// [mm/s^2]
 
 // maximum speed
 const realnum maxSpeed = 150.0; 				// [mm/s]
 
+=======
+>>>>>>> Stashed changes
 // minimum foot speed used in gait � place to reset legs
 const realnum minGaitFrequency = 0.2; 				// [Hz]
 const realnum maxGaitFrequency = 3.0; 				// [Hz]
@@ -93,6 +96,9 @@ const realnum kneeZenitPointFactor = 1.0;					// [0..1]
 =======
 // max acceleration of a toe
 const realnum maxAcceleration = 20.0; 				// [mm/s^2]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 #endif /* SETUP_H_ */
