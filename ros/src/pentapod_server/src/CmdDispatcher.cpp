@@ -112,29 +112,28 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose) {
 	initialPosition.header.stamp = ros::Time::now();
 	initialPosition.header.frame_id = "map";
 	initalPosePub.publish(initialPosition);
-     ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
-				engineState.currentNoseOrientation) << "");
+	ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
+					engineState.currentNoseOrientation) << "");
 
-	  navigationGoal = goalPose;
-	  move_base_msgs::MoveBaseGoal goal;
+	navigationGoal = goalPose;
+	move_base_msgs::MoveBaseGoal goal;
 
-	  //we'll send a goal to the robot to move 1 meter forward
-	  goal.target_pose.header.frame_id = "base_link";
-	  goal.target_pose.header.stamp = ros::Time::now();
+	//we'll send a goal to the robot to move 1 meter forward
+	goal.target_pose.header.frame_id = "base_link";
+	goal.target_pose.header.stamp = ros::Time::now();
 
-	  goal.target_pose.pose.position.x = goalPose.position.x/1000.0;
-	  goal.target_pose.pose.position.y = goalPose.position.y/1000.0;
+	goal.target_pose.pose.position.x = goalPose.position.x/1000.0;
+	goal.target_pose.pose.position.y = goalPose.position.y/1000.0;
+	goal.target_pose.pose.position.z = 0;
 
-	  geometry_msgs::Quaternion goalPoseQuat  =
-			tf::createQuaternionMsgFromYaw(goalPose.orientation.z);
+	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(goalPose.orientation.z);
+	goal.target_pose.pose.orientation = goalPoseQuat;
 
-	  goal.target_pose.pose.orientation = goalPoseQuat;
+	if (goalPose.isNull())
+		moveBaseClient->cancelGoal();
+	moveBaseClient->sendGoal(goal);
 
-	  if (goalPose.isNull())
-		  moveBaseClient->cancelGoal();
-	  moveBaseClient->sendGoal(goal);
-
-	  ROS_INFO_STREAM("setting navigation goal " << goalPose.position);
+	ROS_INFO_STREAM("setting navigation goal " << goalPose.position);
 }
 
 

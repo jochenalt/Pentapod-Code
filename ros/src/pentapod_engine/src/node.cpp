@@ -31,7 +31,6 @@
 
 using namespace std;
 
-
 int main(int argc, char * argv[]) {
 
 	ROS_INFO_STREAM("starting pentapod_engine node");

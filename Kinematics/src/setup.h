@@ -57,7 +57,7 @@ const realnum maxSpeedAcceleration = 80.0; 		// [mm/s^2]
 // maximum speed
 const realnum maxSpeed = 150.0; 				// [mm/s]
 
-// minimum foot speed used in gait á place to reset legs
+// minimum foot speed used in gait ï¿½ place to reset legs
 const realnum minGaitFrequency = 0.2; 				// [Hz]
 const realnum maxGaitFrequency = 3.0; 				// [Hz]
 
@@ -89,5 +89,10 @@ const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
 const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 1.0;					// [0..1]
 
+<<<<<<< Updated upstream
+=======
+// max acceleration of a toe
+const realnum maxAcceleration = 20.0; 				// [mm/s^2]
+>>>>>>> Stashed changes
 
 #endif /* SETUP_H_ */

@@ -1,5 +1,5 @@
 <launch>
-  <node name="pentapod_engine_node" 			pkg="pentapod_engine"  type="pentapod_engine_node">
+  <node name="pentapod_engine_node" 			pkg="pentapod_engine"  type="pentapod_engine_node" output="screen">
 	  <param name="cortex_serial_port"         	type="string" value="/dev/ttyS1"/>
 	  <param name="cortex_serial_baudrate"     	type="int"    value="230400"/>
 	  <param name="cortex_i2c_port"         	type="string" value="/dev/i2c-1"/>
