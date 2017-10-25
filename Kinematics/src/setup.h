@@ -95,10 +95,14 @@ const realnum kneeZenitPointFactor = 1.0;					// [0..1]
 <<<<<<< Updated upstream
 =======
 // max acceleration of a toe
+<<<<<<<
 const realnum maxAcceleration = 20.0; 				// [mm/s^2]
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+const realnum maxAcceleration = 20.0; 				// [mm/s^2]
+>>>>>>>
 
 #endif /* SETUP_H_ */
