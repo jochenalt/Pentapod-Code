@@ -28,7 +28,6 @@ public:
 	// call me to compute the next iteration of the gait
 	void loop();
 
-
 	// return current speed (not neccessarily the target speed set by setTargetMovement)
 	mmPerSecond getCurrentSpeedX() { return speedX; };
 	mmPerSecond getCurrentSpeedY() { return speedY; };

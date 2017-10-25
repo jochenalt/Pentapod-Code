@@ -45,15 +45,21 @@ const realnum maxFootTouchPointRadius = 340.0;
 const realnum sleepingFootTouchPointRadius = 300;
 
 // possible acceleration of angualar speed
-const realnum maxAngularSpeedAcceleration = 0.1; //  [rad/s^2]
-const realnum maxAngularSpeed = 20.0; 			 //  [rad/s]
+const realnum maxAngularSpeedAcceleration = 0.5; //  [rad/s^2]
+const realnum maxAngularSpeed = 0.4; 			 //  [rad/s]
 
 // walking direction cannot be changed immediately but with that angular speed per speed*t
-const realnum maxAngularSpeedPerSpeed = 0.3;
+const realnum maxAngularSpeedPerSpeed = 0.3;	 // [rad/s /  (mm/s)] = [rad/mm]
+
+// max speed acceleration
+const realnum maxSpeedAcceleration = 80.0; 		// [mm/s^2]
+
+// maximum speed
+const realnum maxSpeed = 150.0; 				// [mm/s]
 
 // minimum foot speed used in gait á place to reset legs
 const realnum minGaitFrequency = 0.2; 				// [Hz]
-const realnum maxGaitFrequency = 1.0; 				// [Hz]
+const realnum maxGaitFrequency = 3.0; 				// [Hz]
 
 // maximum speed of virtual foot ref point
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
@@ -83,7 +89,5 @@ const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
 const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 1.0;					// [0..1]
 
-// max acceleration of a toe
-const realnum maxAcceleration = 8.0; 				// [mm/s^2]
 
 #endif /* SETUP_H_ */

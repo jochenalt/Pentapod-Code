@@ -56,10 +56,3 @@ ros/src/CMakeFiles/
 ros/src/catkin/catkin_generated/version/
 ros/src/devel/
 ros/src/gtest/
-
-
-
-
-ros/src/pentapod_server/maps/mymap\.pgm
-
-ros/src/pentapod_server/maps/mymap\.yaml

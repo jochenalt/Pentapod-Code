@@ -491,8 +491,6 @@ void GaitController::imposeFootPointsWorld(const PentaPointType& footPointsWorld
 	toePoints = footPointsWorld.getRotatedAroundZ(-mainController->getBodyKinematics().getCurrentNoseOrientation());
 }
 
-
-
 PentaPointType GaitController::getGaitRefPointsWorld() {
 	return currentGaitRefPoints.getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
 };

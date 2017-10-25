@@ -683,10 +683,15 @@ void Engine::computeGaitRefPointRadius() {
 }
 
 void Engine::computeGaitSpeed() {
-	// gait speed is computed by defining a gait length, i.e. the length
-	// one leg is on the ground and compute the gait speed in terms of gaits
-	// per second accordingly
-	realnum gaitStepLength = 100.0  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight) - 50.0*gaitControl.getCurrentAngularSpeed()/maxAngularSpeed;
+	// gait speed is computed by defining a to-be gait length. In order to not
+	// let it stumble when big changes occur in terms of speed, angular speed,
+	// or body speed, reduce the gait step length accordingly
+	realnum gaitStepLength =  100.0
+			                  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
+			                  - 40.0*abs(getCurrentAngularSpeed() - targetAngularSpeed)/maxAngularSpeed
+							  - 40.0*abs(getCurrentSpeed() - targetSpeed)/maxSpeed;
+
+	gaitStepLength =  constrain(gaitStepLength, 40.0, 100.0); // take care that there is a minimum gait step length
 	const realnum gaitSpeedPerBodySpeed = 1.0/80; // [gaits/(mm/s)] one gait per 80mm/s speed of body
 
 	// compute foot speed and body speed
@@ -911,19 +916,36 @@ void Engine::computeAcceleration() {
 
 	if (isListeningToMovements()) {
 		// accelerate to totalSpeed
+		realnum newSpeed = getCurrentSpeed();
 		if (abs(getCurrentSpeed() - targetSpeed) > floatPrecision) {
 			realnum speedDiff = getTargetSpeed()-getCurrentSpeed();
-			if (abs(speedDiff)> maxAcceleration*dT)
-				speedDiff = sgn(speedDiff)*maxAcceleration*dT;
-			gaitControl.getCurrentSpeed() += speedDiff;
+			if (abs(speedDiff)> maxSpeedAcceleration*dT)
+				speedDiff = sgn(speedDiff)*maxSpeedAcceleration*dT;
+			newSpeed += speedDiff;
+			newSpeed = constrain(newSpeed, -maxSpeed, maxSpeed);
+
 		}
 
 		// move towards target angular speed
-		if (abs(getCurrentAngularSpeed() - getTargetAngularSpeed())> floatPrecision) {
+		realnum newAngularSpeed = gaitControl.getCurrentAngularSpeed();
+		if (abs(newAngularSpeed - getTargetAngularSpeed())> floatPrecision) {
 			realnum angularSpeedAcc= (getTargetAngularSpeed() - getCurrentAngularSpeed())/dT;
 			angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
-			gaitControl.getCurrentAngularSpeed() += angularSpeedAcc*dT;
+			newAngularSpeed += angularSpeedAcc*dT;
 		}
+
+		// in case both angular speed and linear speed are active, reduce both when sum is more than 100%
+		realnum speedRatio  = abs(newSpeed)/maxSpeed;
+		realnum angularSpeedRatio  = abs(newAngularSpeed)/maxAngularSpeed;
+		realnum totalSpeedRatio = speedRatio + angularSpeedRatio;
+		if (totalSpeedRatio> 1.0) {
+			newSpeed /= totalSpeedRatio;
+			angularSpeedRatio /= totalSpeedRatio;
+		}
+
+		// really set the new values
+		gaitControl.getCurrentSpeed() = newSpeed;
+		gaitControl.getCurrentAngularSpeed() = newAngularSpeed;
 
 		// move towards target walking direction
 		angle_rad absTargetWalkingDirection = getTargetWalkingDirection() + getCurrentNoseOrientation();
