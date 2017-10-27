@@ -56,9 +56,9 @@ weight_max_vel_x: 2
 weight_max_vel_theta: 1
 weight_acc_lim_x: 1
 weight_acc_lim_theta: 1
-weight_kinematics_nh: 0
-weight_kinematics_forward_drive: 0
-weight_kinematics_turning_radius: 10
+weight_kinematics_nh: 1
+weight_kinematics_forward_drive: 2
+weight_kinematics_turning_radius: 1
 weight_optimaltime: 1
 weight_obstacle: 50
 weight_dynamic_obstacle: 10 # not in use yet
