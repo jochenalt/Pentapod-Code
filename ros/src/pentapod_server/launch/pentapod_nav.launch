@@ -11,5 +11,8 @@
        <rosparam file="$(find pentapod_server)/costmaps/local_costmap_params.yaml" command="load" /> 
        <rosparam file="$(find pentapod_server)/costmaps/global_costmap_params.yaml" command="load" /> 
        <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
+       
+	   <rosparam file="$(find pentapod_server)/costmaps/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
+	   <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
    </node>
 </launch>

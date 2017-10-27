@@ -69,7 +69,9 @@ int main(int argc, char * argv[]) {
 	// main loop that takes care of the engine
 	// by sending move commands with approx. 45Hz
 	TimeSamplerStatic lowPrioLoopTimer;
-    ROS_DEBUG_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
+	TimeSamplerStatic odomTimer;
+
+	ROS_DEBUG_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
 	while (rosNode.ok()) {
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
@@ -81,6 +83,9 @@ int main(int argc, char * argv[]) {
 		// broadcasting all transformations. Do this at approx 10Hz.
 		if (lowPrioLoopTimer.isDue(100)) {
 			odomPublisher.broadcastState();
+		}
+
+		if (odomTimer.isDue(22)) {
 			odomPublisher.broadcastTransformation();
 			odomPublisher.broadcastOdom();
 		}

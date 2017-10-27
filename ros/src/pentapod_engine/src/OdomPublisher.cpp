@@ -58,8 +58,7 @@ void OdomPublisher::listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& 
 		ROS_WARN_STREAM_THROTTLE(10,
 				"received cmd_vel, but engine is currently not yet listening to movements. Engine is woken up, please wait");
 	} else {
-		ROS_INFO_STREAM_THROTTLE(1,
-				"cmd_vel=(x,y|z)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm],"
+		ROS_INFO_STREAM_THROTTLE(1,"cmd_vel=(x,y|z)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm],"
 				<< degrees(vel_msg->angular.z) << "[deg/s])-> (v,direction)=" << fullspeed << "[mm/s], " << degrees(newWalkingDirection) << "[deg]");
 	}
 }
