@@ -39,18 +39,15 @@ void OdomPublisher::listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& 
 	// has a nose-direction where the x/y frame is located and a walking-direction that defines a
 	// deviation from the nose direction
 	mmPerMillisecond fullspeed = sqrt(sqr(vel_msg->linear.x*1000.0) + sqr(vel_msg->linear.y*1000.0));
-	angle_rad newWalkingDirectionDeviation = atan2(vel_msg->linear.y, vel_msg->linear.x);
+	angle_rad newWalkingDirection = atan2(vel_msg->linear.y, vel_msg->linear.x);
 	if (vel_msg->linear.x < 0) {
 		fullspeed = -fullspeed;
-		newWalkingDirectionDeviation += M_PI;
+		newWalkingDirection += M_PI;
 
-		if (newWalkingDirectionDeviation > M_PI)
-			newWalkingDirectionDeviation = 2*M_PI-newWalkingDirectionDeviation;
-		if (newWalkingDirectionDeviation < -M_PI)
-			newWalkingDirectionDeviation = newWalkingDirectionDeviation + 2*M_PI;
+		newWalkingDirection = fmod(newWalkingDirection + M_PI, 2.0*M_PI) - M_PI;
 	}
 
-	angle_rad newWalkingDirection = newWalkingDirectionDeviation + engine->getCurrentWalkingDirection();
+	// newWalkingDirection = newWalkingDirection + engine->getCurrentWalkingDirection();
 
 	engine->setTargetSpeed(fullspeed);
 	engine->setTargetAngularSpeed(vel_msg->angular.z);
@@ -63,7 +60,7 @@ void OdomPublisher::listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& 
 	} else {
 		ROS_INFO_STREAM_THROTTLE(1,
 				"cmd_vel=(x,y|z)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm],"
-				<< degrees(vel_msg->angular.z) << "[deg/s])-> (v,direction)=" << fullspeed << "[mm/s], " << degrees(newWalkingDirectionDeviation) << "[deg]");
+				<< degrees(vel_msg->angular.z) << "[deg/s])-> (v,direction)=" << fullspeed << "[mm/s], " << degrees(newWalkingDirection) << "[deg]");
 	}
 }
 
@@ -123,12 +120,13 @@ void OdomPublisher::broadcastOdom() {
 	geometry_msgs::TransformStamped odom_trans;
 	ros::Time current_time = ros::Time::now();
 
+	// transformation of body translation within base_link
 	odom_trans.header.stamp = current_time;
 	odom_trans.header.frame_id = "odom";
 	odom_trans.child_frame_id = "base_link";
 	odom_trans.transform.translation.x = engine->getOdomPose().position.x/1000.0;
 	odom_trans.transform.translation.y = engine->getOdomPose().position.y/1000.0;
-	odom_trans.transform.translation.z = engine->getOdomPose().position.z/1000.0;
+	odom_trans.transform.translation.z = 0;
 	odom_trans.transform.rotation = odom_quat;
 	broadcaster.sendTransform(odom_trans);
 
@@ -141,7 +139,7 @@ void OdomPublisher::broadcastOdom() {
 	odom.header.frame_id = "odom";
 	odom.pose.pose.position.x = engine->getOdomPose().position.x/1000.0;
 	odom.pose.pose.position.y = engine->getOdomPose().position.y/1000.0;
-	odom.pose.pose.position.z = 0.0;
+	odom.pose.pose.position.z = 0;
 	odom.pose.pose.orientation = odom_quat;
 	odom.child_frame_id = "base_link";
 	odom.twist.twist.linear.x = engine->getCurrentSpeedX()/1000.0;
