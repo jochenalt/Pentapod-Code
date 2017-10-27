@@ -96,7 +96,7 @@ Pose CommandDispatcher::getNavigationGoal() {
 }
 
 
-void CommandDispatcher::setNavigationGoal(const Pose& goalPose) {
+void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 
 	// advertise the initial position for the navigation stack anytime the navigation goal is set
 	geometry_msgs::PoseWithCovarianceStamped initialPosition;
@@ -111,29 +111,32 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose) {
 	initialPosition.pose.pose.orientation = initialPose_quat;
 	initialPosition.header.stamp = ros::Time::now();
 	initialPosition.header.frame_id = "map";
-	initalPosePub.publish(initialPosition);
+	// initalPosePub.publish(initialPosition);
 	ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
 					engineState.currentNoseOrientation) << "");
 
-	navigationGoal = goalPose;
+	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
+	navigationGoal = goalPose_world - engineState.currentFusedPose.position;
+	navigationGoal.position.rotateAroundZ(- (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation));
+	navigationGoal.orientation.null();
 	move_base_msgs::MoveBaseGoal goal;
 
 	//we'll send a goal to the robot to move 1 meter forward
 	goal.target_pose.header.frame_id = "base_link";
 	goal.target_pose.header.stamp = ros::Time::now();
 
-	goal.target_pose.pose.position.x = goalPose.position.x/1000.0;
-	goal.target_pose.pose.position.y = goalPose.position.y/1000.0;
+	goal.target_pose.pose.position.x = navigationGoal.position.x/1000.0;
+	goal.target_pose.pose.position.y = navigationGoal.position.y/1000.0;
 	goal.target_pose.pose.position.z = 0;
 
-	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(goalPose.orientation.z);
+	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(navigationGoal.orientation.z);
 	goal.target_pose.pose.orientation = goalPoseQuat;
 
-	if (goalPose.isNull())
+	if (navigationGoal.isNull())
 		moveBaseClient->cancelGoal();
 	moveBaseClient->sendGoal(goal);
 
-	ROS_INFO_STREAM("setting navigation goal " << goalPose.position);
+	ROS_INFO_STREAM("setting navigation goal " << navigationGoal.position);
 }
 
 
