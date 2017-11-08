@@ -54,7 +54,10 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	//tell the action client that we want to spin a thread by default and wait until up and running
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
-	// subscribe to the SLAM topic that deliveres the occupancyGrid
+	// subscribe to the navigation stack topic that delivers the global costmap
+	occupancyGridSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
+
+	// subscribe to the SLAM topic that delivers the occupancyGrid
 	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
@@ -328,6 +331,32 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
+	if (hasPrefix(uri, "/costmap/")) {
+		string mapCommand = uri.substr(string("/map/").length());
+		// map/get
+		if (hasPrefix(mapCommand, "get")) {
+			string generationNumberStr ;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+			int generationNumber;
+			if (ok) {
+				generationNumber = stringToInt(generationNumberStr,ok);
+				if (!ok || (generationNumber < costMapGenerationNumber)) {
+					// passed version is older than ours, deliver map
+					response = globalCostMapSerialized + "," + getResponse(true);
+				}
+				else {
+					// client has already the current map version, dont deliver it again
+					response = getResponse(true);
+				}
+			} else {
+				// deliver map without version check
+				response = globalCostMapSerialized + "," + getResponse(true);
+			}
+			okOrNOk = true;
+			return true;
+		}
+	}
+
 	// delivery the laser scan
 	if (hasPrefix(uri, "/scan/")) {
 		string command = uri.substr(string("/scan/").length());
@@ -420,30 +449,39 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 
 }
 
+void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, const Map& map, int& generationNumber,  string& serializedMap) {
+	Map m;
+		if ((og->info.width > 0) && (og->info.height > 0)) {
+			m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
+			int mapArraySize = og->info.width * og->info.height;
+			int width = og->info.width;
+			for (int i = 0;i<mapArraySize;i++) {
+				// this is the regular call, but we take the short (and ugly) route
+				// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
+				int occupancy = og->data[i];
+
+				// the occupancy Map has different values than Map::GridState
+				switch (occupancy) {
+					case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
+					case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
+					case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
+				}
+			}
+			m.setGenerationNumber(++generationNumber);
+		}
+
+		std::stringstream out;
+		m.serialize(out);
+		serializedMap = out.str();
+}
+
 void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	Map m;
-	if ((og->info.width > 0) && (og->info.height > 0)) {
-		m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
-		int mapArraySize = og->info.width * og->info.height;
-		int width = og->info.width;
-		for (int i = 0;i<mapArraySize;i++) {
-			// this is the regular call, but we take the short (and ugly) route
-			// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
-			int occupancy = og->data[i];
+	convertOccupancygridToMap(og, m, mapGenerationNumber, serializedMap);
+}
 
-			// the occupancy Map has different values than Map::GridState
-			switch (occupancy) {
-				case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
-				case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
-				case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
-			}
-		}
-		m.setGenerationNumber(++mapGenerationNumber);
-	}
-
-	std::stringstream out;
-	m.serialize(out);
-	serializedMap = out.str();
+void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+	convertOccupancygridToMap(og, globalCostMap, costMapGenerationNumber, globalCostMapSerialized);
 }
 
 void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
@@ -509,16 +547,4 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
  	engineState.currentMapPose = mapPose;
 }
 
-/*
-void CommandDispatcher::broadcastTransformations() {
-	// map to odom is a correction introduced by localization or SLAM packages, to account for odometric errors.
-	// map to base_link is therefore the corrected pose of the robot in the inertial world frame. This is computed
-	// transitively out of map->odom and odom->base_link
-	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"map", "odom"));
 
-}
-*/

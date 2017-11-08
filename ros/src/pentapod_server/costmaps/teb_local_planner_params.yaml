@@ -1,6 +1,7 @@
 odom_topic: /odom
 map_frame: /map
 
+# use a frequency that is a multiple of the servo update ratio of 11.2ms
 controller_frequency: 22.3
   
 # Trajectory
@@ -29,8 +30,9 @@ acc_lim_theta: 5.0
 # change that to a proper insect modelling without turning radius
 min_turning_radius: 0
 cmd_angle_instead_rotvel: false # stage simulator takes the angle instead of the rotvel as input (twist message)
-footprint_model: circular       # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
-radius: 0.05                    # for type "circular"
+footprint_model: 
+  type: circular       # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
+  radius: 0.4                     # for type "circular"
 
 # GoalTolerance
 xy_goal_tolerance: 0.05

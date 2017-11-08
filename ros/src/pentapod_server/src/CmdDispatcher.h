@@ -53,6 +53,7 @@ public:
 	bool dispatch(string uri, string query, string body, string &response, bool &okOrNOk);
 
 	void listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
 	void setLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
 
 	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
@@ -70,7 +71,11 @@ private:
 	std::string serializedLaserScan;
 
 	std::string serializedMap;
+	Map globalCostMap;
+	std::string globalCostMapSerialized;
+
 	int mapGenerationNumber;
+	int costMapGenerationNumber;
 
 	std::string serializedLaserData;
 	std::string serializedTrajectory;

@@ -1,8 +1,5 @@
-# footprint of the pentapod  actually has a radius 0.4m, but for the sake of navigation stack
-# a point with a real inflation radius works better
-robot_radius: 0.01
-# footprint is polygon with 5 edge and radius of 0.04[m]
-# footprint: [ [-0.032,-0.024], [0.012,-0.038], [0.04,0], [0.012,0.038], [-0.032,0.024]]
+# circular footprint radius of the pentapod
+robot_radius: 0.4
 # timing tolerance of transformation in [s] 
 transform_tolerance: 0.3
 map_type: costmap
@@ -15,7 +12,7 @@ obstacle_layer:
   # The inflation radius should be set to the maximum distance from obstacles 
   # Since we have defined a footprint that is smaller than the real footprint 
   # we have to compensate that by setting a bigger inflation radius of 0.2m
-  inflation_radius: 0.100
+  inflation_radius: 0.500
   # do not go in unknown space
   track_unknown_space: false
   combination_method: 1
@@ -27,9 +24,10 @@ inflation_layer:
   # The inflation radius should be set to the maximum distance from obstacles 
   # Since we have defined a footprint that is smaller than the real footprint 
   # we have to compensate that by setting a bigger inflation radius of 0.2m
-  inflation_radius: 0.100
+  inflation_radius: 0.800
 static_layer:
   enabled: true
   map_topic: /map
 
+# use a frequency that is a multiple of the servo update ratio of 11.2ms
 controller_frequency: 22.3
