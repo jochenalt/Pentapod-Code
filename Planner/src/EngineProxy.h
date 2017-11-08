@@ -26,6 +26,7 @@ public:
 class EngineProxy {
 	const int BotTrajectorySampleRate = 100; 	// [ms] update rate of fetching the kinematic
 	const int UpdateMapSampleRate = 500;		// [ms] update rate of map fetching (if no map is there, nothing happens)
+	const int UpdateCostmapSampleRate = 2000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
 	const int UpdateLaserScanSampleRate = 500;	// [ms] update rate of laser scan
 	const int UpdateTrajectorySampleRate = 500;	// [ms] update rate of laser scan
 
@@ -125,6 +126,9 @@ public:
 	// return the map with occupancy grid
 	Map& getMap();
 
+	// return the costmap with occupancy grid
+	Map& getCostmap();
+
 	// return the last 360° lidar scan in one array
 	LaserScan& getLaserScan();
 
@@ -152,6 +156,8 @@ public:
 	// flags if new data from server is available
 	bool isBotDataAvailable();
 	bool isMapDataAvailable();
+	bool isCostmapDataAvailable();
+
 	bool isLaserScanAvailable();
 	bool isTrajectoryDataAvailable();
 	bool isEstimatedPoseAvailable();
@@ -160,12 +166,14 @@ public:
 private:
 	void updateLaserScan();
 	void updateMap();
+	void updateCostmap();
 	void updateTrajectory();
 	void updateNavigation();
 
 	bool newLaserScanAvailable = false;
 	bool newBotDataAvailable = false;
 	bool newMapDataAvailable = false;
+	bool newCostmapAvailable = false;
 	bool newMapPoseDataAvailable = false;
 	bool newTrajectoryDataAvailable = false;
 	bool newNavigationStatusIsAvailable = false;
@@ -178,10 +186,12 @@ private:
 	bool callRemoteEngine;
 	TimeSamplerStatic remoteEngineCallTimer;
 	TimeSamplerStatic fetchMapTimer;
+	TimeSamplerStatic fetchCostmapTimer;
 	TimeSamplerStatic fetchEstimatedPoseTimer;
 	TimeSamplerStatic fetchLaserScanTimer;
 	TimeSamplerStatic fetchTrajectoryTimer;
 
+	Map costmap;
 	Map map;
 	Pose mapPose;
 	LaserScan laserScan;

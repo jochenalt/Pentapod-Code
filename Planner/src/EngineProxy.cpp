@@ -162,6 +162,14 @@ void EngineProxy::loop() {
 				updateMap();
 			}
 		}
+
+		if (UpdateCostmapSampleRate > 0) {
+			if (fetchCostmapTimer.isDue(UpdateCostmapSampleRate)) {
+				updateCostmap();
+			}
+		}
+
+
 		if (UpdateLaserScanSampleRate > 0) {
 			if (fetchLaserScanTimer.isDue(UpdateLaserScanSampleRate)) {
 				updateLaserScan();
@@ -406,6 +414,10 @@ Map& EngineProxy::getMap() {
 	return map;
 }
 
+
+Map& EngineProxy::getCostmap() {
+	return costmap;
+}
 LaserScan& EngineProxy::getLaserScan() {
 	return laserScan;
 }
@@ -459,6 +471,25 @@ void EngineProxy::updateMap() {
 	}
 }
 
+void EngineProxy::updateCostmap() {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+		url << "/costmap/get?no=" << costmap.getGenerationNumber();
+		remoteEngine.httpGET(url.str(), responseStr, 20000);
+		std::istringstream in(responseStr);
+
+		bool ok = true;
+		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
+		Map tmp;
+		tmp.deserialize(in, ok);
+
+		if (ok) {
+			newCostmapAvailable = true;
+			costmap = tmp;
+		}
+	}
+}
 
 void EngineProxy::updateLaserScan() {
 	if (callRemoteEngine) {
@@ -541,6 +572,13 @@ bool EngineProxy::isMapDataAvailable() {
 	return false;
 }
 
+bool EngineProxy::isCostmapDataAvailable() {
+	if (newCostmapAvailable) {
+		newCostmapAvailable = false;
+		return true;
+	}
+	return false;
+}
 bool EngineProxy::isTrajectoryDataAvailable() {
 	if (newTrajectoryDataAvailable) {
 		newTrajectoryDataAvailable = false;

@@ -705,21 +705,21 @@ void cmdHELP() {
 	bool paramsOK = hostComm.sCmd.endOfParams(false);
 	if (paramsOK) {
 		cmdSerial->println(F("usage:"));
-		cmdSerial->println(F("\tLED <on|off|blink>"));
-		cmdSerial->println(F("\tSETUP"));
-		cmdSerial->println(F("\tCONSOLE <on|off>"));
-		cmdSerial->println(F("\tENABLE"));
-		cmdSerial->println(F("\tDISABLE"));
-		cmdSerial->println(F("\tCHECKSUM <on|off>"));
-		cmdSerial->println(F("\tMEM (<reset>|<list>|saveimucalib)"));
+		cmdSerial->println(F("\tSETUP           \t - initialize imu and all servos"));
+		cmdSerial->println(F("\tENABLE          \t - switch torque of servos on"));
+		cmdSerial->println(F("\tDISABLE         \t - switch torque off"));
+		cmdSerial->println(F("\tMEM reset       \t - reset all calibration values"));
+		cmdSerial->println(F("\tMEM list        \t - show all calibration values"));
+		cmdSerial->println(F("\tMEM nullimu     \t - take current orientation as IMU null value"));
+		cmdSerial->println(F("\tMEM saveimucalib\t - save current imu calibration"));
+		cmdSerial->println(F("\tINFO            \t - show data like IMU I2C address, voltage, "));
+
 		cmdSerial->println(F("\tCONFIG <LegNo> <LimbNo> [min=<min>] [max=<max>] [null=<nullvalue>] "));
 		cmdSerial->println(F("\tGET <LegNo> : {ang=<angle> min=<min> max=<max> null=<null>}"));
 		cmdSerial->println(F("\tGET all : (i=<id> n=<name> ang=<angle> min=<min> max=<max> null=<null>)"));
 		cmdSerial->println(F("\tMOVELEG <LegNo> <angle1> <angle2> <angle3> <angle4> <durationMS>"));
 		cmdSerial->println(F("\tMOVE 	(<angle1> <angle2> <angle3>)x5 <durationMS>"));
-
 		cmdSerial->println(F("\tLOG <setup|servo|stepper|encoder|loop> <on|off>"));
-		cmdSerial->println(F("\tINFO"));
 
 		replyOk();
 	}

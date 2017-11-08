@@ -8,10 +8,18 @@
 #include <Map.h>
 #include "setup.h"
 #include "basics/zip.h"
+#include "basics/stringhelper.h"
+
+Map::Map(const MapType& pType) {
+	null();
+	mapType = pType;
+}
 
 Map::Map() {
 	null();
+	mapType = OCCUPANCY_MAP;;
 }
+
 
 Map::~Map() {
 }
@@ -24,6 +32,7 @@ void Map::null() {
 	mapSizeX = 0;
 	generationNumber = 0;
 	occupancy.clear();
+	mapType = OCCUPANCY_MAP;
 }
 
 bool Map::isNull() const {
@@ -49,23 +58,10 @@ std::ostream& Map::serialize(std::ostream &out) const {
 
 
 	int len = gridWidth*gridHeight;
-	const int gridsPerByte = 4;
-	int s = 0;
-	int gridsInByte = 0;
 	std::ostringstream occupancyGridOut;
 
 	for (int i = 0;i<len; i++) {
-		s *= gridsPerByte;
-		s += (int)occupancy[i];
-		gridsInByte++;
-		if (gridsInByte == gridsPerByte) {
-			occupancyGridOut << (char)((int)0 + s);
-			s = 0;
-			gridsInByte = 0;
-		}
-	}
-	if (gridsInByte != 0) {
-		occupancyGridOut << (char)((int)0 + s);
+		occupancyGridOut << std::setfill('0') << std::setw(2) << std::hex << occupancy[i];
 	}
 	out << compressAndEncode(occupancyGridOut.str());
 
@@ -103,22 +99,15 @@ std::istream& Map::deserialize(std::istream &in, bool &ok) {
         	setGridDimension(gridHeight, gridWidth,gridSize);
     		occupancy.clear();
     		int occupancyLen = gridWidth*gridHeight;
-    		string occupancyCompressedStr = decodeAndUncompress(occupancyStr,occupancyLen/3+256);
+    		string occupancyCompressedStr = decodeAndUncompress(occupancyStr,occupancyLen*2+256);
 
     		occupancy.resize(occupancyLen);
 			int len = occupancyCompressedStr.length();
-			const int gridsPerByte = 4;
 			int pos = 0;
-			for (int i = 0;i < len;i++) {
-				int c = (int)(occupancyCompressedStr[i]-0);
-				for (int j = 0;j<gridsPerByte;j++) {
-					int occPos = pos+gridsPerByte-j-1;
-					if (occPos < occupancyLen) {
-						occupancy[occPos] = (GridState)(c % gridsPerByte);
-						c /= gridsPerByte;
-					}
-				}
-				pos += gridsPerByte;
+			string s;
+			for (int i = 0;i < len;i += 2) {
+				s = occupancyCompressedStr.substr(i,2);
+				occupancy[pos++] = hexToInt(s);
 			}
     	}
 
@@ -136,6 +125,7 @@ void Map::operator=(const Map& m) {
 	mapSizeX = m.mapSizeX;
 	mapSizeY = m.mapSizeY;
 	generationNumber = m.generationNumber;
+	mapType = m.mapType;
 }
 
 void Map::setGridDimension(int pWidth, int pHeight, millimeter pGridSize) {
@@ -157,7 +147,7 @@ Map::GridState  Map::getOccupancyByWorld(int x,int y) {
 
 	unsigned  pos = gridX + gridWidth*gridY;
 	if (pos < occupancy.size())
-		return occupancy[pos];
+		return (GridState)occupancy[pos];
 	return FREE;
 };
 
@@ -172,7 +162,7 @@ void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
 	unsigned pos = gridHeight*gridX + gridY;
 	if (pos < occupancy.size())
-		return occupancy[pos];
+		return (GridState)occupancy[pos];
 
 	return FREE;
 }
