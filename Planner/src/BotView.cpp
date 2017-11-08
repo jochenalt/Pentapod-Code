@@ -125,16 +125,6 @@ void BotView::drawCoordSystem(bool withRaster) {
 						glVertex3f(p2.y, p2.z, p2.x);
 					}
 
-					// diagonals
-					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapAreaColor4v);
-					glColor3fv(glMapAreaColor4v);
-
-					glVertex3f(p3.y, p3.z, p3.x);
-					glVertex3f(p2.y, p2.z, p2.x);
-
-					glVertex3f(p2.y, p2.z, p2.x);
-					glVertex3f(p3.y, p3.z, p3.x);
-
 				glEnd();
 				glBegin(GL_TRIANGLES);
 					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapAreaColor4v);
@@ -343,7 +333,6 @@ void BotView::display() {
 			EngineProxy::getInstance().getLegAngles());
 
 	glutSetWindow(windowHandle);
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix

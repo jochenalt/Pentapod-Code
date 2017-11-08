@@ -20,10 +20,8 @@
 class Map  : public Serializable {
 public:
 	enum GridState { UNKNOWN=0, FREE = 1, OCCUPIED = 2 }; // in case of occupancy map
-	enum MapType { OCCUPANCY_MAP=0, COSTMAP=1 };
 	Map();
 	Map(const Map& map);
-	Map(const MapType& type);
 
 	void operator=(const Map& m);
 
@@ -41,13 +39,15 @@ public:
 	int getGenerationNumber() { return generationNumber; };
 	void setGenerationNumber(int no) { generationNumber = no; };
 
-	GridState getOccupancyByWorld(int x,int y);
 	void setOccupancyByGridCoord(int x,int y, GridState p);
+	GridState getOccupancyByWorld(int x,int y);
 	GridState getOccupancyByGridCoord(int x,int y);
+	int getValueByWorld(int x,int y);
+	int getValueByGridCoord(int x,int y);
+
 	virtual std::ostream& serialize(std::ostream &out) const;
 	virtual std::istream& deserialize(std::istream &in, bool& ok);
 	std::vector<int>& getVector() { return occupancy; };
-	void setType(const MapType& type) { mapType = type; };
 private:
 	int gridWidth;
 	int gridHeight;
@@ -57,7 +57,6 @@ private:
 
 	millimeter gridSize;
 	std::vector<int> occupancy;
-	MapType mapType;
 };
 
 #endif /* MAP_H_ */

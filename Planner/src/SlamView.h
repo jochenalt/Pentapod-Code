@@ -34,6 +34,7 @@ private:
 	void setNavigationGoal(const Point& p);
 	void drawFreeSlamGrid( const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawOccupiedSlamGrid(bool onlyTop,  const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
+	void drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
 	void drawLaserScan();
 	void drawNavigationGoal();
 	void drawCoordRaster();
@@ -41,6 +42,7 @@ private:
 	void drawTrajectory();
 	void drawCoordSystem();
 	void drawSlamMap();
+	void drawCostMap();
 
 	void drawSmallBot(const Pose& pose);
 	string title;

@@ -41,7 +41,6 @@ void displaySlamView() {
 	WindowController::getInstance().slamView.display();
 }
 
-
 int SlamView::create(int mainWindow, string pTitle) {
 
 	manualLookAtAdjustTime = 0;
@@ -163,6 +162,20 @@ void SlamView::drawFreeSlamGrid( const Point &g1,const Point &g2, const Point &g
 	glEnd();
 }
 
+void SlamView::drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
+	float red = value/100.0;
+	GLfloat color[] = { red, 0.5, 0.5, glAlphaTransparent};
+	glBegin(GL_TRIANGLE_STRIP);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
+		glColor4fv(color);
+		glNormal3f(0.0,1.0,0.0);
+		glVertex3f(g1.y, g1.z, g1.x);
+		glVertex3f(g2.y, g2.z, g2.x);
+		glVertex3f(g4.y, g4.z, g4.x);
+		glVertex3f(g3.y, g3.z, g3.x);
+	glEnd();
+}
+
 void SlamView::drawOccupiedSlamGrid(bool onlyTop,  const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
 	glBegin(GL_TRIANGLE_STRIP);
 		// top
@@ -222,14 +235,14 @@ bool SlamView::botIsVisible() {
 
 void SlamView::drawMapBackground() {
 	// draw one area as base. This is necessary to allow clicking in an 3D
-	// objekt in order to give gluUnProject an objekt where the z-axis ends
+	// object in order to give gluUnProject an objekt where the z-axis ends
 	Map& map = EngineProxy::getInstance().getMap();
 	int fullMapSizeX = map.getMapSizeX();
 	int fullMapSizeY = map.getMapSizeY();
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapBackgroundColor4v);
-	glColor3fv(glMapBackgroundColor4v);
 	glBegin(GL_QUADS);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapBackgroundColor4v);
+		glColor3fv(glMapBackgroundColor4v);
+        glNormal3f(0.0,1.0,0.0);
 		glVertex3f(-fullMapSizeY/2, 0, -fullMapSizeX/2); glVertex3f(fullMapSizeY/2, 0, -fullMapSizeX/2);
 		glVertex3f(fullMapSizeY/2, 0, fullMapSizeX/2);
 		glVertex3f(-fullMapSizeY/2, 0, fullMapSizeX/2);
@@ -314,6 +327,8 @@ void SlamView::drawCoordSystem() {
 	glEnd();
 }
 
+
+
 void SlamView::drawSlamMap() {
 	Map& map = EngineProxy::getInstance().getMap();
 	int fullMapSizeX = map.getMapSizeX();
@@ -369,6 +384,50 @@ void SlamView::drawSlamMap() {
 	}
 }
 
+void SlamView::drawCostMap() {
+	Map& map = EngineProxy::getInstance().getCostmap();
+	int fullMapSizeX = map.getMapSizeX();
+	int fullMapSizeY = map.getMapSizeY();
+	millimeter gridLength = map.getGridSize();
+	// limit the drawn structures to an area that is three times the viewing distance
+	int mapSizeX = constrain((int)getEyeDistance()*3, 0, fullMapSizeX);
+	int mapSizeY = constrain((int)getEyeDistance()*3, 0, fullMapSizeY);
+
+	// draw the SLAM map.
+	Point lookAtPosition(getLookAtPosition());
+
+	// take care that the origin is dividable by gridLength in order to
+	// have the grids assigned correctly and one line is going right through the origin
+	lookAtPosition.x = ((int)(lookAtPosition.x/gridLength))*gridLength;
+	lookAtPosition.y = ((int)(lookAtPosition.y/gridLength))*gridLength;
+
+	int minX = constrain(- mapSizeX/2 + (int)lookAtPosition.x, -fullMapSizeX/2, fullMapSizeX/2);
+	int maxX = constrain(+ mapSizeX/2 + (int)lookAtPosition.x,-fullMapSizeX/2, fullMapSizeX/2);
+	int minY = constrain(- mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
+	int maxY = constrain(+ mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
+
+	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
+		int xFrom = localGridX;
+		int xTo = localGridX + gridLength;
+		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
+
+			int costValue = map.getValueByWorld(localGridX,localGridY);
+			if (costValue > 0) {
+				int yTo = localGridY + gridLength/2;
+				int yFrom = localGridY - gridLength/2;
+
+				int offset = 3;
+				int z = 20;
+				Point g1(xFrom+offset, 	(yFrom+offset), 	z);
+				Point g2(xTo-offset, 	(yFrom+offset),		z);
+				Point g3(xTo-offset, 	(yTo-offset),		z);
+				Point g4(xFrom+offset, 	(yTo-offset),		z);
+				drawCostmapGrid(costValue, g1, g2, g3, g4);
+			}
+		}
+	}
+}
+
 void SlamView::drawMap() {
 
 	const Pose& fusedPose = EngineProxy::getInstance().getFusedPose();
@@ -387,10 +446,12 @@ void SlamView::drawMap() {
 	glLoadIdentity();
 
 	drawCoordRaster();
-	drawMapBackground();
+	// drawMapBackground();
 	drawSmallBot(fusedPose);
 	drawNavigationGoal();
 	drawSlamMap();
+	drawCostMap();
+
 	drawLaserScan();
 	drawTrajectory();
 	drawCoordSystem();

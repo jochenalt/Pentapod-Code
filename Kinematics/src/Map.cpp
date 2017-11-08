@@ -10,14 +10,8 @@
 #include "basics/zip.h"
 #include "basics/stringhelper.h"
 
-Map::Map(const MapType& pType) {
-	null();
-	mapType = pType;
-}
-
 Map::Map() {
 	null();
-	mapType = OCCUPANCY_MAP;;
 }
 
 
@@ -32,7 +26,6 @@ void Map::null() {
 	mapSizeX = 0;
 	generationNumber = 0;
 	occupancy.clear();
-	mapType = OCCUPANCY_MAP;
 }
 
 bool Map::isNull() const {
@@ -125,7 +118,6 @@ void Map::operator=(const Map& m) {
 	mapSizeX = m.mapSizeX;
 	mapSizeY = m.mapSizeY;
 	generationNumber = m.generationNumber;
-	mapType = m.mapType;
 }
 
 void Map::setGridDimension(int pWidth, int pHeight, millimeter pGridSize) {
@@ -151,6 +143,16 @@ Map::GridState  Map::getOccupancyByWorld(int x,int y) {
 	return FREE;
 };
 
+int  Map::getValueByWorld(int x,int y) {
+	int gridX = (x/gridSize + gridWidth/2);
+	int gridY = (y/gridSize + gridHeight/2);
+
+	unsigned  pos = gridX + gridWidth*gridY;
+	if (pos < occupancy.size())
+		return occupancy[pos];
+	return -1;
+};
+
 void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 	unsigned pos = gridHeight*gridX + gridY;
 	if (pos < occupancy.size())
@@ -167,4 +169,12 @@ Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
 	return FREE;
 }
 
+
+int Map::getValueByGridCoord(int gridX,int gridY) {
+	unsigned pos = gridHeight*gridX + gridY;
+	if (pos < occupancy.size())
+		return occupancy[pos];
+
+	return -1;
+}
 
