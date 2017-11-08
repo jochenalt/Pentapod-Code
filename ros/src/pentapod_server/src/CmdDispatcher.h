@@ -90,6 +90,8 @@ private:
 	ros::Publisher initalPosePub;
 
 	ros::Subscriber occupancyGridSubscriber;
+	ros::Subscriber costmapSubscriber;
+
 	ros::Subscriber laserScanSubscriber;
 
 	ros::Subscriber estimatedSLAMPoseSubscriber;

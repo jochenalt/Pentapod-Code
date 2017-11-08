@@ -55,7 +55,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
 	// subscribe to the navigation stack topic that delivers the global costmap
-	occupancyGridSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
+	costmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
 
 	// subscribe to the SLAM topic that delivers the occupancyGrid
 	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
@@ -332,7 +332,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	}
 
 	if (hasPrefix(uri, "/costmap/")) {
-		string mapCommand = uri.substr(string("/map/").length());
+		string mapCommand = uri.substr(string("/costmap/").length());
 		// map/get
 		if (hasPrefix(mapCommand, "get")) {
 			string generationNumberStr ;
