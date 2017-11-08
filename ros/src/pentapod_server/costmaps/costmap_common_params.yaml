@@ -12,7 +12,7 @@ obstacle_layer:
   # The inflation radius should be set to the maximum distance from obstacles 
   # Since we have defined a footprint that is smaller than the real footprint 
   # we have to compensate that by setting a bigger inflation radius of 0.2m
-  inflation_radius: 0.500
+  inflation_radius: 0.10
   # do not go in unknown space
   track_unknown_space: false
   combination_method: 1
@@ -24,7 +24,7 @@ inflation_layer:
   # The inflation radius should be set to the maximum distance from obstacles 
   # Since we have defined a footprint that is smaller than the real footprint 
   # we have to compensate that by setting a bigger inflation radius of 0.2m
-  inflation_radius: 0.800
+  inflation_radius: 0.10
 static_layer:
   enabled: true
   map_topic: /map

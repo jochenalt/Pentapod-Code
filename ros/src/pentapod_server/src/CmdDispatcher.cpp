@@ -449,7 +449,8 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 
 }
 
-void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, const Map& map, int& generationNumber,  string& serializedMap) {
+enum MapType { SLAM_MAP_TYPE, COSTMAP_TYPE };
+void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, MapType type,  const Map& map, int& generationNumber,  string& serializedMap) {
 	Map m;
 		if ((og->info.width > 0) && (og->info.height > 0)) {
 			m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
@@ -461,10 +462,14 @@ void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, cons
 				int occupancy = og->data[i];
 
 				// the occupancy Map has different values than Map::GridState
-				switch (occupancy) {
-					case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
-					case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
-					case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
+				if (type == SLAM_MAP_TYPE) {
+					switch (occupancy) {
+						case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
+						case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
+						case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
+					}
+				} else {
+					m.getVector()[i] = occupancy;
 				}
 			}
 			m.setGenerationNumber(++generationNumber);
@@ -477,11 +482,11 @@ void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, cons
 
 void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	Map m;
-	convertOccupancygridToMap(og, m, mapGenerationNumber, serializedMap);
+	convertOccupancygridToMap(og, SLAM_MAP_TYPE, m, mapGenerationNumber, serializedMap);
 }
 
 void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	convertOccupancygridToMap(og, globalCostMap, costMapGenerationNumber, globalCostMapSerialized);
+	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, costMapGenerationNumber, globalCostMapSerialized);
 }
 
 void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
