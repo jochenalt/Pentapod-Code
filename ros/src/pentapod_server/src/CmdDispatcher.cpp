@@ -5,10 +5,11 @@
 
 #include "core.h"
 #include "Map.h"
-
 #include "Util.h"
 
 #include <move_base_msgs/MoveBaseAction.h>
+
+#include "DarkHoleFinder.h"
 
 using namespace std;
 
@@ -81,6 +82,11 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 
 	// publish initial position (required by navigation
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
+
+	// tell the hole finder the maximum laser range (that's the window where it tries to find new holes
+	float maxLaserDistance;
+	handle.param<float>("laser_max_dist", maxLaserDistance, 5.0); // defined in hectormapping.launch
+	holeFinder.setMaxLaserRange(maxLaserDistance);
 
     // wait for the action server to come up
 	while(!moveBaseClient->waitForServer(ros::Duration(5.0))){
@@ -450,43 +456,43 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 }
 
 enum MapType { SLAM_MAP_TYPE, COSTMAP_TYPE };
-void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, MapType type,  const Map& map, int& generationNumber,  string& serializedMap) {
-	Map m;
-		if ((og->info.width > 0) && (og->info.height > 0)) {
-			m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
-			int mapArraySize = og->info.width * og->info.height;
-			int width = og->info.width;
-			for (int i = 0;i<mapArraySize;i++) {
-				// this is the regular call, but we take the short (and ugly) route
-				// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
-				int occupancy = og->data[i];
+void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, MapType type,  Map& m, int& generationNumber,  string& serializedMap) {
+	if ((og->info.width > 0) && (og->info.height > 0)) {
+		m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
+		int mapArraySize = og->info.width * og->info.height;
+		int width = og->info.width;
+		for (int i = 0;i<mapArraySize;i++) {
+			// this is the regular call, but we take the short (and ugly) route
+			// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
+			int occupancy = og->data[i];
 
-				// the occupancy Map has different values than Map::GridState
-				if (type == SLAM_MAP_TYPE) {
-					switch (occupancy) {
-						case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
-						case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
-						case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
-					}
-				} else {
-					m.getVector()[i] = occupancy;
+			// the occupancy Map has different values than Map::GridState
+			if (type == SLAM_MAP_TYPE) {
+				switch (occupancy) {
+					case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
+					case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
+					case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
 				}
+			} else {
+				m.getVector()[i] = occupancy;
 			}
-			m.setGenerationNumber(++generationNumber);
 		}
+		m.setGenerationNumber(++generationNumber);
+	}
 
-		std::stringstream out;
-		m.serialize(out);
-		serializedMap = out.str();
+	std::stringstream out;
+	m.serialize(out);
+	serializedMap = out.str();
 }
 
 void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	Map m;
-	convertOccupancygridToMap(og, SLAM_MAP_TYPE, m, mapGenerationNumber, serializedMap);
+	convertOccupancygridToMap(og, SLAM_MAP_TYPE, slamMap, mapGenerationNumber, serializedMap);
 }
 
 void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, costMapGenerationNumber, globalCostMapSerialized);
+
+	holeFinder.feed(slamMap, globalCostMap, fusedMapOdomPose);
 }
 
 void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {

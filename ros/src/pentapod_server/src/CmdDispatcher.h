@@ -40,6 +40,9 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 
+// navigation targets
+#include "DarkHoleFinder.h"
+
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 using namespace std;
@@ -66,10 +69,12 @@ public:
 
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
+	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
 private:
 
 	std::string serializedLaserScan;
 
+	Map slamMap;
 	std::string serializedMap;
 	Map globalCostMap;
 	std::string globalCostMapSerialized;
@@ -101,6 +106,8 @@ private:
 
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
+
+	DarkHoleFinder holeFinder;
 };
 
 
