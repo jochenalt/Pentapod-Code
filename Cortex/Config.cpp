@@ -62,7 +62,7 @@ void LegConfigType::setDefaults() {
 	memory.persMem.legs[3].limbs[HIP].nullAngle		= 4.8;
 	memory.persMem.legs[3].limbs[THIGH].nullAngle	= -28.2;
 	memory.persMem.legs[3].limbs[KNEE].nullAngle	= -3.5;
-	memory.persMem.legs[3].limbs[FOOT].nullAngle	= 8.5;
+	memory.persMem.legs[3].limbs[FOOT].nullAngle	= -2.5;
 
 	memory.persMem.legs[4].limbs[HIP].nullAngle		= -12.3;
 	memory.persMem.legs[4].limbs[THIGH].nullAngle	= 4.1;
@@ -84,6 +84,7 @@ void LegConfigType::setDefaults() {
 	memory.persMem.legs[2].nullDistance = 31;
 	memory.persMem.legs[3].nullDistance = 26;
 	memory.persMem.legs[4].nullDistance = 32;
+
 }
 
 

@@ -154,7 +154,7 @@ std::string getServoStatusTypeName(ServoStatusType stat);
 // Herkulex servos are working with, sample rate should be a multiple of that
 // With 22.4ms, we run at 45Hz
 #define HERKULEX_MIN_SAMPLE 11.2
-#define CORTEX_SAMPLE_RATE  (2.0*HERKULEX_MIN_SAMPLE)
+#define CORTEX_SAMPLE_RATE  (3.0*HERKULEX_MIN_SAMPLE)
 
 // there is a low prio loop running in the cortex (1Hz) that checks the
 // voltage, the servo status and other stuff
