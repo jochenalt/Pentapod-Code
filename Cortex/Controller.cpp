@@ -18,9 +18,9 @@ Controller controller;
 
 Controller::Controller()
 {
-	setuped= false;						// flag to indicate a finished setup (used in stepperloop())
+	setuped= false;
 	enabled = false;					// motors are disabled until explicitly enabled
-	loopTime_ms = 0;					// we measure the time per loop
+	loopTime_ms = 0;					// we measure the time per loop, just to check that everyhing is running finde
 }
 
 void Controller::enable() {

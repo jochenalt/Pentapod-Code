@@ -52,13 +52,10 @@ public:
 	void getDistanceSensor(realnum distance[NumberOfLegs]);
 
 	// retrieve IMU orientation
-	const Rotation& getIMUOrientation();
+	Rotation getIMUOrientation();
 
 	// returns true, if values returned by getIMUOrientations are accurate and have been measured recently (i.e. within the last cycle)
 	bool isIMUValueValid(int sinceMeasurement = CORTEX_SAMPLE_RATE*2);
-
-	// get status of servos
-	ServoStatusType getServoStatus(int legNo, int limbNo) { return legStatus[legNo][limbNo]; };
 
 	// retrieve voltage in cortex
 	realnum getCortexVoltage();
@@ -138,9 +135,6 @@ private:
 
 	// most recent toe distance from cortex
 	int measuredDistance[NumberOfLegs];
-
-	// most recent servo status
-	ServoStatusType legStatus[NumberOfLegs][NumberOfLimbs];
 
 	// most recent IMU orientation
 	Rotation measuredOrientation;

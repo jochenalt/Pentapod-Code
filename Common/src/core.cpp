@@ -132,7 +132,7 @@ CortexCommandDefinitionType commDef[CortexCommandDefinitionType::NumberOfCommand
 	{ CortexCommandDefinitionType::CONSOLE_CMD,		"CONSOLE", 	500, 		cmdCONSOLE},
 	{ CortexCommandDefinitionType::ENABLE_CMD,		"ENABLE", 	1000, 		cmdENABLE},
 	{ CortexCommandDefinitionType::DISABLE_CMD,		"DISABLE", 	200, 		cmdDISABLE },
-	{ CortexCommandDefinitionType::SETUP_CMD,		"SETUP", 	3000, 		cmdSETUP},
+	{ CortexCommandDefinitionType::SETUP_CMD,		"SETUP", 	4000, 		cmdSETUP},
 	{ CortexCommandDefinitionType::CHECKSUM_CMD,	"CHECKSUM", 200, 		cmdCHECKSUM},
 	{ CortexCommandDefinitionType::MEM_CMD,	        "MEM", 		200, 		cmdMEM},
 	{ CortexCommandDefinitionType::CONFIG_CMD,      "CONFIG", 	100, 		cmdCONFIG},

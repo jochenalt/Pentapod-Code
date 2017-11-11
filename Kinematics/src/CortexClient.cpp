@@ -80,7 +80,7 @@ bool CortexClient::isIMUValueValid(int sinceMeasurement) {
 	return ((millis()-timeOfLastIMUValue) < (unsigned)sinceMeasurement) && (imuStatusSys >= 1) && (imuStatusAcc >= 1) && (imuStatusGyro >= 1);
 }
 
-const Rotation& CortexClient::getIMUOrientation() {
+Rotation CortexClient::getIMUOrientation() {
 	return measuredOrientation;
 };
 
@@ -209,7 +209,7 @@ bool CortexClient::cmdGETall() {
 		imuStatusSys  = imuStatus/100;
 		imuStatusGyro = (imuStatus/10) % 10;
 		imuStatusAcc  = imuStatus  % 10;
-		measuredOrientation = Rotation(radians(imuDegreeX),radians(imuDegreeY),radians(imuDegreeZ));
+		measuredOrientation = Rotation(radians(imuDegreeX),radians(imuDegreeY),0);
 		timeOfLastIMUValue = millis();
 		// check distances for errors, take only valid values
 		for (int i = 0;i<NumberOfLegs;i++) {
