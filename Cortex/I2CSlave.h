@@ -22,7 +22,7 @@ public:
 	static I2CSlave& getInstance();
 
 	void setup(i2c_t3* wire);
-	void loop();
+	bool loop();
 
 private:
 	// if a request is available, carry it out

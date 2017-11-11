@@ -72,6 +72,7 @@ extern void headlessSetup();
 
 
 void I2CSlave::executeRequest() {
+
 	/*
 	cmdSerial->print("onReceive:(");
 	cmdSerial->print(receiveBufferLen);
@@ -209,6 +210,7 @@ void I2CSlave::executeRequest() {
 
 		}
 	}
+
 }
 
 void I2CSlave::onRequest() {
@@ -231,9 +233,11 @@ void I2CSlave::setup(i2c_t3* myWire) {
 	responsePending = false;
 }
 
-void I2CSlave::loop() {
+bool I2CSlave::loop() {
 	if (requestPending == true) {
 		requestPending = false;
 		executeRequest();
+		return true;
 	}
+	return false;
 }

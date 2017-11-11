@@ -233,15 +233,7 @@ void headlessSetup() {
 		delay(50);
 
 	// controller for all serial lines with the servos behind
-	bool ok = controller.setup();
-	/*
-	if (!ok) {
-		// one more chance to come up
-		delay(500);
-		ok = controller.setup();
-	}
-	*/
-
+	controller.setup();
 
 	// now IMU had enozugh time to settle, read calibration
 	orientationSensor.updateCalibration();
@@ -274,10 +266,10 @@ void loop() {
 
 	// high priority jobs
 	uint32_t now = millis();
+	i2cSlave.loop();			// check for for command from ODroid
 	controller.loop(now);		// run the actuators
 	hostComm.loop();			// wait for commands via serial interface
-	orientationSensor.loop(now);// check orientation with same ratio like servos
-	i2cSlave.loop();
+	orientationSensor.loop(now);// fetch orientation from IMU
 
 	// low priority jobs
 	voltage.loop(now);			// check the voltage with 1Hz
