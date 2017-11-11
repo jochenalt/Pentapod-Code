@@ -159,6 +159,8 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 
 		// plausibility check, maybe bot is on its back or IMU delivers rubbish
 		if ((abs(newXAngle) > 30) || (abs(newYAngle)>30)) {
+			newXAngle = 0;
+			newYAngle = 0;
 			setupOk = false;
 		}
 	} else {
