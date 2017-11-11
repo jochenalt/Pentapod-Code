@@ -252,6 +252,12 @@ bool CortexClient::readResponse(const Cortex::ResponsePackageData& response) {
 		imuStatusGyro = (imuStatus/10) % 10;
 		imuStatusAcc  = imuStatus  % 10;
 		timeOfLastIMUValue = millis(); // used to check if last IMU value is recent enough
+
+		if ((abs(imuDegreeX) > 30) || (abs(imuDegreeY) > 30)) {
+			ROS_ERROR_STREAM("IMU is out of bounds=(" << imuDegreeX << "," << imuDegreeY << ")");
+			imuDegreeX = 0;
+			imuDegreeY = 0;
+		}
 		measuredOrientation = Rotation(radians(imuDegreeX),radians(imuDegreeY),0);
 
 		// check distances for errors, take only valid values
