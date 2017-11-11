@@ -50,17 +50,17 @@ int main(int argc, char * argv[]) {
 	Engine engine;
 	OdomPublisher odomPublisher;
 
-	ROS_DEBUG_STREAM("cortex setup(" << cortexI2CPort << "(" << cortexI2CAdr << ") uart=" << cortexSerialPort << " @" << cortexBaudRate);
+	ROS_INFO_STREAM("cortex setup(" << cortexI2CPort << "(" << cortexI2CAdr << ") uart=" << cortexSerialPort << " @" << cortexBaudRate);
 	bool cortexOk = engine.setupProduction(cortexI2CPort, cortexI2CAdr, cortexSerialPort, cortexBaudRate);
 	if (!cortexOk) {
 		ROS_ERROR_STREAM("cortex setup failed, I will continue with a simulation");
 		cortexOk = engine.setupSimulation();
 	}
 
-	ROS_DEBUG_STREAM("cortex setup done " << cortexOk);
+	ROS_INFO_STREAM("cortex setup done " << cortexOk);
 
 	// initialize all topics
-       ROS_DEBUG_STREAM("initialization odom publisher");
+	ROS_INFO_STREAM("initialization odom publisher");
 	odomPublisher.setup(rosNode, engine);
 
 	// main loop spins at the rate the cortex wants calls (around 45Hz)
@@ -71,7 +71,7 @@ int main(int argc, char * argv[]) {
 	TimeSamplerStatic lowPrioLoopTimer;
 	TimeSamplerStatic odomTimer;
 
-	ROS_DEBUG_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
+	ROS_INFO_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
 	while (rosNode.ok()) {
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
@@ -79,13 +79,14 @@ int main(int argc, char * argv[]) {
 		mainLoopRate.sleep();
 		engine.loop(); // send move commands to cortex
 
-		// after this call do anything which is not that timing relevant, e.g.
-		// broadcasting all transformations. Do this at approx 10Hz.
-		if (lowPrioLoopTimer.isDue(100)) {
+		// broadcast the bots state to webserver at 10Hz
+		if (lowPrioLoopTimer.isDue(1000/10)) {
 			odomPublisher.broadcastState();
 		}
 
-		if (odomTimer.isDue(22)) {
+		// broadcast odom and transformations for Hector SLAM and navigation at 20Hz
+		// since that is the navigation controller frequency
+		if (odomTimer.isDue(1000/20)) {
 			odomPublisher.broadcastTransformation();
 			odomPublisher.broadcastOdom();
 		}

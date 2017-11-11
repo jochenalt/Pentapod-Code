@@ -177,6 +177,13 @@ void OdomPublisher::broadcastTransformation() {
 			ros::Time::now(),"base_link", "laser"));
 
 
+	// constant transformation from map to odom
+	broadcaster.sendTransform(
+		  tf::StampedTransform(
+			tf::Transform(tf::Quaternion(0, 0, 0, 1),
+					      tf::Vector3(0,0,0)),
+			ros::Time::now(),"map", "odom"));
+
 	/*
 	// in case the bot is running across hills, the base_footprint is different from the
 	// base_link. We do not do that, so we have a neutral transformation
@@ -218,13 +225,8 @@ void OdomPublisher::broadcastTransformation() {
 			tf::Transform(tf::Quaternion(0, 0, 0, 1),
 					      tf::Vector3(0,0,0)),
 			ros::Time::now(),"base_frame", "laser"));
+*/
 
-	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"base_frame", "nav"));
-			*/
 }
 
 

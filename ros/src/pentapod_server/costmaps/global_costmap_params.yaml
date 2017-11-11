@@ -7,10 +7,7 @@ global_costmap:
   rolling_window: false
   always_send_full_costmap : false
 
-  # pentapods frequencies are multiples of 1000/11.2s (the servo frequency) 
-  # odom is prodduced with 2*1000/11.2 = 45Hz 
-  # path planning is done on base of 22Hz  
-  controller_frequency: 22.3
+  controller_frequency: 20
   # simulation time in seconds. Significant influence on CPU use. 
   sim_time: 2.0 # Default 1.0
   

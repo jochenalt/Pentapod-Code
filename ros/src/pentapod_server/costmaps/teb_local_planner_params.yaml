@@ -19,8 +19,8 @@ max_vel_x_backwards: 0.100
 max_vel_y: 0.100
 max_vel_y_backwards: 0.100
 
-max_vel_theta: 0.3 
-min_vel_theta: -0.3 
+max_vel_theta: 0.2 
+min_vel_theta: -0.2 
 
 acc_lim_x: 0.08
 acc_lim_y: 0.08
@@ -31,8 +31,8 @@ acc_lim_theta: 5.0
 min_turning_radius: 0
 cmd_angle_instead_rotvel: false # stage simulator takes the angle instead of the rotvel as input (twist message)
 footprint_model: 
-  type: circular       # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
-  radius: 0.4                     # for type "circular"
+  type: circular           # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
+  radius: 0.4              # [m] for type "circular"
 
 # GoalTolerance
 xy_goal_tolerance: 0.05
@@ -54,11 +54,15 @@ no_outer_iterations: 3
 optimization_activate: True
 optimization_verbose: False
 penalty_epsilon: 0.05
+#Optimization weight for satisfying the maximum allowed translational velocity
 weight_max_vel_x: 2
 weight_max_vel_theta: 1
 weight_acc_lim_x: 1
 weight_acc_lim_theta: 1
+# Optimization weight for satisfying the non-holonomic kinematics. Must be low for tendency to strafing instead
 weight_kinematics_nh: 1
+# Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). 
+# A small weight (e.g. 1.0) still allows driving backwards. 
 weight_kinematics_forward_drive: 2
 weight_kinematics_turning_radius: 1
 weight_optimaltime: 1

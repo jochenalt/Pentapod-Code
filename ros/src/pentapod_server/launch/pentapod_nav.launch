@@ -1,8 +1,9 @@
 <launch>
    <!-- start static transformation map->odom -->
+   <!--
    <node pkg="tf" type="static_transform_publisher" name="map_2_odom"
 	     args="0 0 0 0 0 0 /map /odom 100"/> 
-	     
+   -->	     
    <!-- start navigation stack via move_base node -->
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
        <!-- parameters valid for local and global costmap -->

@@ -6,9 +6,14 @@
   - pentapod_server that coordinates everything and provides results via a mongoose webserver
  -->
 <launch>
+  <include file="$(find pentapod_server)/launch/pentapod_engine.launch" />
   <include file="$(find pentapod_server)/launch/rplidar.launch" />
   <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
-  <include file="$(find pentapod_engine)/launch/pentapod_engine.launch" />
-  <include file="$(find pentapod_server)/launch/hectormapping.launch" />
   <include file="$(find pentapod_server)/launch/pentapod_nav.launch" />
+  
+  <!-- this will throw some errors on missing transformations delivered by pentapod_engine, if it is not yet up -->
+  <include file="$(find pentapod_server)/launch/hectormapping.launch" />
 </launch>
+
+
+
