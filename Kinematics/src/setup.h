@@ -35,9 +35,9 @@ enum NavigationStatusType { NavPending=0, 	 	// The goal has yet to be processed
 const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 
 // maximum and minimum body height
-const realnum maxBodyHeight = 280.0;
-const realnum minBodyHeight = 50.0;
-const realnum standardBodyHeigh = 110.0;
+const realnum maxBodyHeight = 260.0;			// maximum height of the body (goes along with minFootTouchPointRadius)
+const realnum minBodyHeight = 50.0;				// minimum height of the body (goes along with maxFootTouchPointRadius)
+const realnum standardBodyHeigh = 140.0;		// default height when walking
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 220.0;
@@ -70,12 +70,6 @@ const realnum maxFootSpeed = 400; 					// [mm/s]
 // maximum speed of a foot that is in the air during a gait
 const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 
-// breathing configuration
-const realnum minBreathingFrequency = 0.3; 			// [Hz]
-const realnum maxBreathingFrequency = 3.0; 			// [Hz]
-const realnum maxBreathingFromFootSpeed = 200.0; 	// [mm/s]
-const realnum minBreathingFromFootSpeed = 50;		// [mm/s]
-const realnum breathingAmplitude = 3.0;
 
 // below that distance a toe is already moving with the ground
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)

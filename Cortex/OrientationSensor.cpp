@@ -101,6 +101,8 @@ void OrientationSensor::reset() {
 	digitalWrite(IMU_RESET_PIN, HIGH);
 	delay(5);
 	digitalWrite(IMU_RESET_PIN, LOW);
+	delay(5);
+	pinMode(IMU_RESET_PIN, INPUT);
 }
 
 void OrientationSensor::setup(i2c_t3* newWireline) {
@@ -143,6 +145,7 @@ float  normDegree(float x) {
 		return normDegree(x+360.0);
 	return x;
 }
+
 bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc) {
 	newSystem = systemCalibStatus;
 	newGyro = gyroCalibStatus;
@@ -153,6 +156,11 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 		newXAngle = normDegree(orientationEvent.orientation.y - memory.persMem.imuCalib.nullX) 		 ;
 		newYAngle = normDegree(180.0-orientationEvent.orientation.z - memory.persMem.imuCalib.nullY) ;
 		newZAccel = getZAccel();
+
+		// plausibility check, maybe bot is on its back or IMU delivers rubbish
+		if ((abs(newXAngle) > 30) || (abs(newYAngle)>30)) {
+			setupOk = false;
+		}
 	} else {
 		// if IMU is not working, return 0
 		newXAngle = 0;

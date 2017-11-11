@@ -45,8 +45,8 @@ extern HardwareSerial* logger;
 #define LED_PIN 13			// blinking LED on Teensy
 
 // ADC of power line
-#define POWER_VOLTAGE_14V_PIN 22
-#define POWER_VOLTAGE_10V_PIN 23
+#define POWER_HIGH_VOLTAGE_PIN 22
+#define POWER_LOW_VOLTAGE_PIN 23
 
 // pin for relay that turns on power to the servos
 #define RELAY_PIN 39

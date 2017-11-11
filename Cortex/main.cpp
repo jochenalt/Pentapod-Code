@@ -96,9 +96,9 @@ void logPinAssignment() {
 		logger->println(RELAY_PIN);
 
 		logger->print("VDD 14V_AD PIN      = ");
-		logger->println(POWER_VOLTAGE_14V_PIN);
+		logger->println(POWER_HIGH_VOLTAGE_PIN);
 		logger->print("VDD 10V AD PIN      = ");
-		logger->println(POWER_VOLTAGE_10V_PIN);
+		logger->println(POWER_LOW_VOLTAGE_PIN);
 
 		logger->print("Cmd      RX,TX      = (");
 		logger->print(getRXPin(1));
@@ -185,7 +185,9 @@ void headlessSetup() {
 	// initialize I2C for IMU
 	logger->println("IMU: initializing");
 
+	// measure start time since we need to give IMU one second for settling, meanwhile we can do something else
 	uint32_t setupStart = millis();
+	orientationSensor.reset(); 	// reset IMU via reset PIN
 	pinMode(IMU_RESET_PIN, INPUT);
 	IMUWire = &Wire;
 	IMUWire->begin(I2C_MASTER, 0, I2C_PINS_16_17, I2C_PULLUP_INT, I2C_RATE_800);
@@ -193,12 +195,13 @@ void headlessSetup() {
 	IMUWire->resetBus();
 	orientationSensor.setup(IMUWire); // this takes up to 1000ms, depending on IMU state!
 
-	// wait 2000ms to give servos time to switch really off
-	unsigned int waitWithServosTurnedOff = 1000;
+	// wait 1500ms to give servos time to switch really off
+	unsigned int waitWithServosTurnedOff = 1500;
 	logger->print("SETUP: waiting ");
 	logger->print(waitWithServosTurnedOff - (millis() - setupStart));
 	logger->println("ms more with servos turned off");
 
+	// wait until IMU and servco has been settling 1500 ms
 	while (millis() - setupStart < waitWithServosTurnedOff)
 		delay(10);
 

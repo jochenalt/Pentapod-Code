@@ -16,12 +16,12 @@ public:
 	void setup();
 	void loop(uint32_t now);
 	void print();
-	float get14Voltage();
-	float get10Voltage();
+	float getHighVoltage();
+	float getLowVoltage();
 
 private:
-	float measured10Voltage;
-	float measured14Voltage;
+	float measuredLowVoltage;
+	float measuredHighVoltage;
 
 };
 

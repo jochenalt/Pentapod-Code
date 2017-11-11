@@ -197,7 +197,7 @@ void I2CSlave::executeRequest() {
 			ok = Cortex::ComPackage::createResponse(
 					status, angles, distance, servoStatus,
 					imuX, imuY, imuStatus,
-					voltage.get14Voltage(),
+					voltage.getHighVoltage(),
 					controller.looptime(),
 					response);
 

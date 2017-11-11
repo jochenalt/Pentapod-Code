@@ -15,19 +15,19 @@ PowerVoltage voltage;
 
 
 PowerVoltage::PowerVoltage() {
-	measured10Voltage = 0;
-	measured14Voltage = 0;
+	measuredLowVoltage = 0;
+	measuredHighVoltage = 0;
 
 }
 
 void PowerVoltage::setup() {
-	pinMode(POWER_VOLTAGE_14V_PIN, INPUT);
-	pinMode(POWER_VOLTAGE_10V_PIN, INPUT);
+	pinMode(POWER_HIGH_VOLTAGE_PIN, INPUT);
+	pinMode(POWER_LOW_VOLTAGE_PIN, INPUT);
 
 	analogReference(INTERNAL1V2);
 	// first measurement during setup
-	measured14Voltage = (float)analogRead(POWER_VOLTAGE_14V_PIN) / 1024.0 * 2.0;
-	measured10Voltage = (float)analogRead(POWER_VOLTAGE_10V_PIN) / 1024.0 * 2.0;
+	measuredHighVoltage = (float)analogRead(POWER_HIGH_VOLTAGE_PIN) / 1024.0 * 2.0;
+	measuredLowVoltage = (float)analogRead(POWER_LOW_VOLTAGE_PIN) / 1024.0 * 2.0;
 
 }
 
@@ -41,24 +41,26 @@ void PowerVoltage::loop(uint32_t now) {
 		const float voltageDivider = 10.0/(10.0+150.0);
 
 		// small correction factors due to inaccurate resistors has been measured manually
-		measured10Voltage = (float)analogRead(POWER_VOLTAGE_10V_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.02;
-		measured14Voltage = (float)analogRead(POWER_VOLTAGE_14V_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.04;
+		measuredLowVoltage = (float)analogRead(POWER_LOW_VOLTAGE_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.02;
+		measuredHighVoltage = (float)analogRead(POWER_HIGH_VOLTAGE_PIN) / 1024.0 * TeensyReferenceVoltage / voltageDivider * 1.04;
 	}
 }
 
-float PowerVoltage::get10Voltage() {
-	return measured10Voltage;
+// supposed to return 9.5V for DRS-0101
+float PowerVoltage::getLowVoltage() {
+	return measuredLowVoltage;
 }
 
-float PowerVoltage::get14Voltage() {
-	return measured14Voltage;
+// supposed to return 14.7V for DRS-0401
+float PowerVoltage::getHighVoltage() {
+	return measuredHighVoltage;
 }
 
 void PowerVoltage::print() {
 	logger->print("voltage ");
-	logger->print(measured14Voltage,2);
+	logger->print(measuredHighVoltage,2);
 	logger->println("V,");
-	logger->print(measured10Voltage,2);
+	logger->print(measuredLowVoltage,2);
 	logger->println("V");
 
 }

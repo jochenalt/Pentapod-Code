@@ -602,7 +602,6 @@ void Engine::computeBodySwing() {
 	realnum angle;
 
 	realnum gaitRatio = gaitControl.getGaitRatio();
-	realnum speed = targetSpeed;
 	GaitModeType gaitMode = gaitControl.getCurrentGaitMode();
 
 	if (NumberOfLegs % 2 == 0)
@@ -620,25 +619,6 @@ void Engine::computeBodySwing() {
 		newBodySwing.position.y = 30.0*sin(angle);
 		newBodySwing.position.x = 30.0*cos(angle);
 		newBodySwing.position.z = 0; // dont breath, too hectic
-	} else {
-		// breathing with 0.3 Hz when not moving, and going up to 4 Hz when running
-		// use a complementary filter that reacts after 5s when slowing down and 1s if accelerating
-
-		if (false) {
-			static realnum breathingFrequency = minBreathingFrequency;
-			static realnum breathingAngle = 0;
-			realnum breathingRatio = speed/(maxBreathingFromFootSpeed-minBreathingFromFootSpeed);
-			realnum newBreathingFrequency = minBreathingFrequency + breathingRatio*(maxBreathingFrequency-minBreathingFrequency);
-
-			realnum filterReactingTime = (newBreathingFrequency > breathingFrequency)?1.0:5.0;
-
-			breathingFrequency = lowpass(breathingFrequency, newBreathingFrequency, filterReactingTime, dT);
-			breathingAngle += dT*(breathingFrequency*(2.0*M_PI));
-			if (generalMode == FallASleep)
-				newBodySwing.position.z = breathingAmplitude*sin(breathingAngle) / 2.0;
-			else
-				newBodySwing.position.z = breathingAmplitude*sin(breathingAngle);
-		}
 	}
 
 	// moderate the body swing
