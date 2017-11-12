@@ -331,18 +331,18 @@ void SlamView::drawSlamMap() {
 	Map& map = EngineProxy::getInstance().getMap();
 	int fullMapSizeX = map.getMapSizeX();
 	int fullMapSizeY = map.getMapSizeY();
-	millimeter gridLength = map.getGridSize();
+	int gridLength = map.getGridSize();
 	// limit the drawn structures to an area that is three times the viewing distance
-	int mapSizeX = constrain((int)getEyeDistance()*3, 0, fullMapSizeX);
-	int mapSizeY = constrain((int)getEyeDistance()*3, 0, fullMapSizeY);
+	int mapSizeX =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeX)/gridLength/2);
+	int mapSizeY =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeY)/gridLength/2);
 
 	// draw the SLAM map.
 	Point lookAtPosition(getLookAtPosition());
 
 	// take care that the origin is dividable by gridLength in order to
 	// have the grids assigned correctly and one line is going right through the origin
-	lookAtPosition.x = ((int)(lookAtPosition.x/gridLength))*gridLength;
-	lookAtPosition.y = ((int)(lookAtPosition.y/gridLength))*gridLength;
+	lookAtPosition.x = gridLength*2*((int)(lookAtPosition.x/gridLength/2));
+	lookAtPosition.y = gridLength*2*((int)(lookAtPosition.y/gridLength/2));
 
 	int minX = constrain(- mapSizeX/2 + (int)lookAtPosition.x, -fullMapSizeX/2, fullMapSizeX/2);
 	int maxX = constrain(+ mapSizeX/2 + (int)lookAtPosition.x,-fullMapSizeX/2, fullMapSizeX/2);
@@ -358,9 +358,9 @@ void SlamView::drawSlamMap() {
 			if (occupancy != Map::GridState::UNKNOWN) {
 				int yTo = localGridY + gridLength/2;
 				int yFrom = localGridY - gridLength/2;
+				int offset = 3;
 
 				if (occupancy == Map::GridState::FREE) {
-					int offset = 3;
 					int z = 2;
 					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 					Point g2(xTo-offset, 	(yFrom+offset),		z);
@@ -369,7 +369,6 @@ void SlamView::drawSlamMap() {
 					drawFreeSlamGrid(g1, g2, g3, g4);
 				}
 				if (occupancy == Map::GridState::OCCUPIED) {
-					int offset = 3;
 					int z = 50;
 					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 					Point g2(xTo-offset, 	(yFrom+offset),		z);
@@ -503,7 +502,8 @@ void SlamView::setNavigationGoal(const Point& p) {
 
 
 Point SlamView::get3DByMouseClick(int screenX,int screenY) {
-	// use opengl to compute the 3D coordinates of the clicked object
+	// compute the 3D coordinates of the clicked object
+	// requires an object to click on, so take care that a opengl pane is drawn.
 
 	// retrieve view port (X, Y, Width, Height)
 	GLint viewport[4];
@@ -543,8 +543,7 @@ void SlamView::MouseCallback(int button, int button_state, int x, int y )
 	    mouseViewPlane = true;
 	}
 
-
-	// right button translates the view moving the lookat point
+	// right button translates the view moving the look-at point
 	if (button == GLUT_RIGHT_BUTTON && (button_state == GLUT_DOWN && !withCtrl && !withShift))
 		mousePlaneXY = true;
 
