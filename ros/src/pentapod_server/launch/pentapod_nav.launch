@@ -1,18 +1,20 @@
 <launch>
-   <!-- start static transformation map->odom -->
-   <!--
-   <node pkg="tf" type="static_transform_publisher" name="map_2_odom"
-	     args="0 0 0 0 0 0 /map /odom 100"/> 
-   -->	     
    <!-- start navigation stack via move_base node -->
-   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+   <node pkg="move_base" type="move_base" name="move_base" output="log">
+       <!-- global parameters -->
+       <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
+
        <!-- parameters valid for local and global costmap -->
        <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
        <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" /> 
+
+       <!-- separate parameters valid for local costmap -->
        <rosparam file="$(find pentapod_server)/costmaps/local_costmap_params.yaml" command="load" /> 
+
+       <!-- separate parameters valid for global costmap  -->
        <rosparam file="$(find pentapod_server)/costmaps/global_costmap_params.yaml" command="load" /> 
-       <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
-       
+
+       <!-- separate parameters valid for local planner -->       
 	   <rosparam file="$(find pentapod_server)/costmaps/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
 	   <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
    </node>
