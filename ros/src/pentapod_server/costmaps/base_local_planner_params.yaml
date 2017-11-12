@@ -10,6 +10,6 @@ TrajectoryPlannerROS:
   max_vel_y: 0.100  
   min_vel_y: -0.100
   acc_lim_theta: 3.0
-  acc_lim_x: 0.08
-  acc_lim_y: 0.08
+  acc_lim_x: 0.10
+  acc_lim_y: 0.10
 

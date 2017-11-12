@@ -2,7 +2,7 @@ odom_topic: /odom
 map_frame: /map
 
 # use a frequency that is a multiple of the servo update ratio of 11.2ms
-controller_frequency: 22.3
+controller_frequency: 20
   
 # Trajectory
 teb_autosize: True
@@ -22,9 +22,9 @@ max_vel_y_backwards: 0.100
 max_vel_theta: 0.2 
 min_vel_theta: -0.2 
 
-acc_lim_x: 0.08
-acc_lim_y: 0.08
-acc_lim_theta: 5.0
+acc_lim_x: 0.10
+acc_lim_y: 0.10
+acc_lim_theta: 3.0
 
 # ***************** pentapod robot parameters ********************
 # change that to a proper insect modelling without turning radius
@@ -60,12 +60,12 @@ weight_max_vel_theta: 1
 weight_acc_lim_x: 1
 weight_acc_lim_theta: 1
 # Optimization weight for satisfying the non-holonomic kinematics. Must be low for tendency to strafing instead
-weight_kinematics_nh: 1
+weight_kinematics_nh: 0
 # Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). 
 # A small weight (e.g. 1.0) still allows driving backwards. 
-weight_kinematics_forward_drive: 2
+weight_kinematics_forward_drive: 1
 weight_kinematics_turning_radius: 1
-weight_optimaltime: 1
+weight_optimaltime: 5
 weight_obstacle: 50
 weight_dynamic_obstacle: 10 # not in use yet
 
