@@ -347,7 +347,6 @@ void copyMovementToView() {
 
 	realnum noseOrientation, speed, rotateZ, walkingDirection;
 	EngineProxy::getInstance().getCurrentMovement(noseOrientation, speed, rotateZ, walkingDirection);
-	cout << "view dir " << degrees(walkingDirection) << endl;
 
 	if ((int)degrees(walkingDirection) != gaitDirectionLiveVar) {
 		gaitWakingDirectionSpinner->set_int_val(degrees(walkingDirection));

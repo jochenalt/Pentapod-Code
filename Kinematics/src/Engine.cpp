@@ -955,7 +955,5 @@ void Engine::computeAcceleration() {
 			noseOrientation += 2*M_PI;
 
 		getBodyKinematics().setCurrentNoseOrientation(noseOrientation);
-		cout << "dir=" << degrees(currentWalkingDirection) << " nose=" << degrees(noseOrientation) << endl;
-
 	}
 }
