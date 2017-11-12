@@ -372,7 +372,7 @@ bool CortexClient::cmdBinaryCommand(Cortex::Command cmd) {
 	} while (retry(ok));
 
 	if (ok) {
-		ok = readResponse(response);
+		ok = readResponse(response); // returns false, if checksum error
 	}
 
 	if (!ok)
@@ -514,6 +514,7 @@ bool CortexClient::setupCortexCommunication(string i2cport, int i2cadr, string s
 		cortexConnected = false;
 	}
 
+	/*
 	// now start command interface
 	serialCmd.disconnect();
 	ok = serialCmd.connect(serialPort , baudRate);
@@ -530,37 +531,7 @@ bool CortexClient::setupCortexCommunication(string i2cport, int i2cadr, string s
 			ROS_ERROR_STREAM("cortex setup failed with (" << getLastError()<< ")");
 		}
 	}
-
-	// switch on server control mode (logging off and checksum on);
-	/*
-	ok = cmdCONSOLE(false);
-	if (!ok) {
-		ROS_ERROR_STREAM("console mode in cortex failed (" << getLastError() << ")");
-		return false;
-	}
-
-	// console command switch checksum on
-	withChecksum = true;
-
-	// try first communication and check correct reponse
-	int challenge = randomInt(10,99);
-	string challengeStr= std::to_string(challenge);
-	ok = cmdECHO(challengeStr);
-	if (!ok) {
-		ROS_ERROR_STREAM("challenge/response failed (" << getLastError() << ")");
-		return false;
-	}
-
-	if (ok) {
-		cortexCommRetryCounter = 0;
-
-		// switch off logging
-		ok = cmdLOGsetup(false);
-		ok = ok && cmdLOGservos(false);
-		ok = ok && cmdLOGtest(false);
-	}
-		*/
-
+	*/
 	return ok;
 }
 

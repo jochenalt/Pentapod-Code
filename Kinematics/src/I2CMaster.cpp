@@ -63,7 +63,7 @@ int I2CMaster::sendArray(uint8_t *buffer, int len) {
 		remainingLen -= blockSize;
 		positionInBuffer  += blockSize;
 	}
-	// closing byte (anything). Otherwise the message is not received by the cortex
+	// closing byte (any value). Otherwise the message is not received by the cortex
 	// but with the next invokation. Dont know why.
 	i2c.writeByte(255,0);
 
