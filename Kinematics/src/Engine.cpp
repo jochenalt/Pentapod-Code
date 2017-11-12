@@ -405,9 +405,9 @@ angle_rad& Engine::getTargetWalkingDirection() {
 angle_rad Engine::getCurrentWalkingDirection() {
 	angle_rad currentWalkingDirection = gaitControl.getCurrentAbsWalkingDirection() - getCurrentNoseOrientation();
 	if (currentWalkingDirection > M_PI)
-		currentWalkingDirection = 2*M_PI-currentWalkingDirection;
+		currentWalkingDirection -= 2.0*M_PI;
 	if (currentWalkingDirection < -M_PI)
-		currentWalkingDirection = currentWalkingDirection + 2*M_PI;
+		currentWalkingDirection += 2.0*M_PI;
 	return currentWalkingDirection;
 };
 
@@ -940,9 +940,9 @@ void Engine::computeAcceleration() {
 		currentWalkingDirection += getCurrentAngularSpeed()*dT;
 
 		if (currentWalkingDirection > M_PI)
-			currentWalkingDirection = 2*M_PI-currentWalkingDirection;
+			currentWalkingDirection -= 2.0*M_PI;
 		if (currentWalkingDirection < -M_PI)
-			currentWalkingDirection = currentWalkingDirection + 2*M_PI;
+			currentWalkingDirection += 2.0*M_PI;
 
 		gaitControl.getCurrentAbsWalkingDirection() = currentWalkingDirection;
 
@@ -955,5 +955,7 @@ void Engine::computeAcceleration() {
 			noseOrientation += 2*M_PI;
 
 		getBodyKinematics().setCurrentNoseOrientation(noseOrientation);
+		cout << "dir=" << degrees(currentWalkingDirection) << " nose=" << degrees(noseOrientation) << endl;
+
 	}
 }

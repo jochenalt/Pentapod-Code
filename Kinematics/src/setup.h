@@ -49,10 +49,10 @@ const realnum maxAngularSpeedAcceleration = 0.5; //  [rad/s^2]
 const realnum maxAngularSpeed = 0.4; 			 //  [rad/s]
 
 // walking direction cannot be changed immediately but with that angular speed per speed*t
-const realnum maxAngularSpeedPerSpeed = 0.6;	 // [rad/s /  (mm/s)] = [rad/mm]
+const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
 
 // max speed acceleration
-const realnum maxSpeedAcceleration = 80.0; 		// [mm/s^2]
+const realnum maxSpeedAcceleration = 60.0; 		// [mm/s^2]
 
 // maximum speed
 const realnum maxSpeed = 150.0; 				// [mm/s]

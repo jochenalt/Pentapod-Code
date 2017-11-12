@@ -134,7 +134,7 @@ void SlamView::drawNavigationGoal() {
 
 	if (!navigationGoal.isNull())
 	{
-		glTranslatef(navigationGoal.y, navigationGoal.z, navigationGoal.x);
+		glTranslatef(navigationGoal.position.y, navigationGoal.position.z, navigationGoal.position.x);
 		glRotatef(-90, 1,0,0);
 		GLUquadricObj *quadratic = gluNewQuadric();
 		gluCylinder(quadratic, 20, 10, 1000, 12, 1);
@@ -144,6 +144,17 @@ void SlamView::drawNavigationGoal() {
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapSphereMarkerColor4v);
 		glColor3fv(glMapSphereMarkerColor4v);
 		glutSolidSphere(50, 12, 12);
+
+		// draw the small
+		glRotatef(degrees(navigationGoal.orientation.z), 0, 1,0);
+		glBegin(GL_TRIANGLE_STRIP);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapSphereMarkerColor4v);
+			glColor4fv(glMapSphereMarkerColor4v);
+			glNormal3f(0.0,1.0,0.0);
+			glVertex3f(0,-50,0);
+			glVertex3f(0,0,300);
+			glVertex3f(0,50,0);
+		glEnd();
 	}
 
 	glPopMatrix();
@@ -243,10 +254,10 @@ void SlamView::drawMapBackground() {
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapBackgroundColor4v);
 		glColor3fv(glMapBackgroundColor4v);
         glNormal3f(0.0,1.0,0.0);
-		glVertex3f(-fullMapSizeY/2, 0, -fullMapSizeX/2); glVertex3f(fullMapSizeY/2, 0, -fullMapSizeX/2);
-		glVertex3f(fullMapSizeY/2, 0, fullMapSizeX/2);
-		glVertex3f(-fullMapSizeY/2, 0, fullMapSizeX/2);
-		glVertex3f(-fullMapSizeY/2, 0, -fullMapSizeX/2);
+		glVertex3f(-fullMapSizeY/2, -5, -fullMapSizeX/2); glVertex3f(fullMapSizeY/2, 0, -fullMapSizeX/2);
+		glVertex3f(fullMapSizeY/2, -5, fullMapSizeX/2);
+		glVertex3f(-fullMapSizeY/2, -5, fullMapSizeX/2);
+		glVertex3f(-fullMapSizeY/2, -5, -fullMapSizeX/2);
 	glEnd();
 }
 
@@ -332,7 +343,8 @@ void SlamView::drawSlamMap() {
 	int fullMapSizeX = map.getMapSizeX();
 	int fullMapSizeY = map.getMapSizeY();
 	int gridLength = map.getGridSize();
-	// limit the drawn structures to an area that is three times the viewing distance
+
+	// limit the drawn structure to an area that is three times the viewing distance
 	int mapSizeX =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeX)/gridLength/2);
 	int mapSizeY =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeY)/gridLength/2);
 
@@ -340,7 +352,7 @@ void SlamView::drawSlamMap() {
 	Point lookAtPosition(getLookAtPosition());
 
 	// take care that the origin is dividable by gridLength in order to
-	// have the grids assigned correctly and one line is going right through the origin
+	// have the grids assigned correctly
 	lookAtPosition.x = gridLength*2*((int)(lookAtPosition.x/gridLength/2));
 	lookAtPosition.y = gridLength*2*((int)(lookAtPosition.y/gridLength/2));
 
@@ -442,21 +454,30 @@ void SlamView::drawMap() {
 	glLoadIdentity();
 
 	drawCoordRaster();
-	drawMapBackground();
 	drawSmallBot(fusedPose);
 	drawNavigationGoal();
 	drawSlamMap();
 	drawCostMap();
-
 	drawLaserScan();
 	drawTrajectory();
 	drawCoordSystem();
+
+	// this is required for having an object to click for 3D mouse projection
+	drawMapBackground();
 
 	glPopAttrib();
 	glPopAttrib();
 	glPopMatrix();
 }
 
+
+void SlamView::defineNavigationGoal() {
+	EngineProxy::getInstance().setNavigationGoal(navigationGoal);
+}
+
+void SlamView::setNavigationGoal(const Pose& p) {
+	navigationGoal = p;
+}
 
 void SlamView::MotionCallback(int x, int y) {
 	float diffX = (float) (x-lastMouseX);
@@ -479,25 +500,26 @@ void SlamView::MotionCallback(int x, int y) {
 			setLookAtPosition(lookAt);
 			postRedisplay();
 		} else {
-			if (lastMouseScroll != 0) {
-				WindowController::getInstance().slamView.changeEyePosition(-getCurrentEyeDistance()*2*lastMouseScroll/100, 0,0);
-				postRedisplay();
-				lastMouseScroll = 0;
+			if (mouseNavigationGoalDirection){
+				// check current projection of mouse position
+				Point targetDirection = get3DByMouseClick(x,y);
+				// compute direction from goal set to current position
+				Point directionPoint = targetDirection - navigationGoal.position;
+				navigationGoal.orientation.z = atan2(directionPoint.y, directionPoint.x);
+			} else {
+				if (lastMouseScroll != 0) {
+					WindowController::getInstance().slamView.changeEyePosition(-getCurrentEyeDistance()*2*lastMouseScroll/100, 0,0);
+					postRedisplay();
+					lastMouseScroll = 0;
+				}
 			}
 		}
 	}
 
-	if (mouseViewPlane || mousePlaneXY) {
+	if (mouseViewPlane || mousePlaneXY || mouseNavigationGoalDirection) {
 		lastMouseX = x;
 		lastMouseY = y;
 	}
-}
-
-void SlamView::setNavigationGoal(const Point& p) {
-	navigationGoal = p;
-	Pose goal;
-	goal.position = p;
-	EngineProxy::getInstance().setNavigationGoal(goal);
 }
 
 
@@ -532,11 +554,17 @@ Point SlamView::get3DByMouseClick(int screenX,int screenY) {
 
 void SlamView::MouseCallback(int button, int button_state, int x, int y )
 {
-	mouseViewPlane = false;
-	mousePlaneXY = false;
-
 	bool withShift = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
 	bool withCtrl= glutGetModifiers() & GLUT_ACTIVE_CTRL;
+
+	// When releasing left-ctrl, navigation goal is really set
+	if ( mouseNavigationGoalDirection && button == GLUT_LEFT_BUTTON && button_state == GLUT_UP && !withShift && withCtrl) {
+		defineNavigationGoal();
+	}
+
+	mouseViewPlane = false;
+	mousePlaneXY = false;
+	mouseNavigationGoalDirection = false;
 
 	// left button turns the view around the same lookat point
 	if ( button == GLUT_LEFT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl) {
@@ -547,11 +575,14 @@ void SlamView::MouseCallback(int button, int button_state, int x, int y )
 	if (button == GLUT_RIGHT_BUTTON && (button_state == GLUT_DOWN && !withCtrl && !withShift))
 		mousePlaneXY = true;
 
-	// Left+Ctrl sets the navigation point
+	// Left+Ctrl-click sets the navigation point and allows to move the direction
 	if ( button == GLUT_LEFT_BUTTON && button_state == GLUT_DOWN && !withShift && withCtrl) {
 		Point p = get3DByMouseClick(x,y);
-		setNavigationGoal(p);
+		Pose navigationGoal(p, Rotation());
+		setNavigationGoal(navigationGoal);
+		mouseNavigationGoalDirection = true;
 	}
+
 
 	// Wheel reports as button 3(scroll up) and button 4(scroll down)
 	if ((button == 3) || (button == 4)) // It's a wheel event

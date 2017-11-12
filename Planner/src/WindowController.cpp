@@ -347,6 +347,7 @@ void copyMovementToView() {
 
 	realnum noseOrientation, speed, rotateZ, walkingDirection;
 	EngineProxy::getInstance().getCurrentMovement(noseOrientation, speed, rotateZ, walkingDirection);
+	cout << "view dir " << degrees(walkingDirection) << endl;
 
 	if ((int)degrees(walkingDirection) != gaitDirectionLiveVar) {
 		gaitWakingDirectionSpinner->set_int_val(degrees(walkingDirection));
@@ -505,7 +506,7 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 	GLUI_Panel* movementPanel = new GLUI_Panel(interactivePanel,"Movement Panel", GLUI_PANEL_RAISED);
 
 	gaitWakingDirectionSpinner= new GLUI_Spinner(movementPanel,"dir", GLUI_SPINNER_INT,&gaitDirectionLiveVar,WalkingDirectionID, gaitSpeedCallback);
-	gaitWakingDirectionSpinner->set_int_limits(-360,360);
+	gaitWakingDirectionSpinner->set_int_limits(-180,180);
 
 	gaitSpeedSpinner= new GLUI_Spinner(movementPanel,"v", GLUI_SPINNER_INT,&gaitSpeedLiveVar,MovementSpeedID, gaitSpeedCallback);
 	gaitSpeedSpinner->set_int_limits(-200,200);
@@ -514,7 +515,7 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 	gaitRotateSpinner->set_int_limits(-90,90);
 
 	gaitNoseOrientationSpinner= new GLUI_Spinner(movementPanel,"ori", GLUI_SPINNER_INT,&gaitNoseOrientationLiveVar,MovementOrientationID, gaitSpeedCallback);
-	gaitNoseOrientationSpinner->set_int_limits(-360,360);
+	gaitNoseOrientationSpinner->set_int_limits(-180,180);
 
 	mapControl = new GLUI_Checkbox(movementPanel,"map", &mapLiveVar, 4, mapCallback);
 	mapControl->set_int_val(0);

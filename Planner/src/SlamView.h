@@ -31,7 +31,9 @@ public:
 
 private:
 	Point get3DByMouseClick (int x,int y);
-	void setNavigationGoal(const Point& p);
+	void setNavigationGoal(const Pose& p);
+	void defineNavigationGoal();
+
 	void drawFreeSlamGrid( const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawOccupiedSlamGrid(bool onlyTop,  const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
@@ -50,15 +52,17 @@ private:
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 	int lastMouseScroll = 0;
-	bool mouseViewPlane = false;
-	bool mousePlaneXY = false;
+
+	bool mouseViewPlane = false; 				// true when we move the view point via mouse
+	bool mousePlaneXY = false;   				// true when we translate the xy plane
+	bool mouseNavigationGoalDirection = false; 	// true, when the direction of the navigation goal is chosen
 
 	PentaPoseType defaultHipPoseWorld;
 	LegAnglesType defaultLegAngles;
 	Pose defaultBodyPose;
 
 	// generic marker that leaves a flag in the map. Use for navigation goal.
-	Point navigationGoal;
+	Pose navigationGoal;
 
 	Pose lastFusedPosition;
 	milliseconds manualLookAtAdjustTime;
