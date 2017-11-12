@@ -327,8 +327,6 @@ void SlamView::drawCoordSystem() {
 	glEnd();
 }
 
-
-
 void SlamView::drawSlamMap() {
 	Map& map = EngineProxy::getInstance().getMap();
 	int fullMapSizeX = map.getMapSizeX();
@@ -439,14 +437,13 @@ void SlamView::drawMap() {
 		setLookAtPosition(fusedPose.position);
 	};
 
-
 	glPushAttrib(GL_CURRENT_BIT);
 	glPushAttrib(GL_LIGHTING_BIT);
 	glPushMatrix();
 	glLoadIdentity();
 
 	drawCoordRaster();
-	// drawMapBackground();
+	drawMapBackground();
 	drawSmallBot(fusedPose);
 	drawNavigationGoal();
 	drawSlamMap();
