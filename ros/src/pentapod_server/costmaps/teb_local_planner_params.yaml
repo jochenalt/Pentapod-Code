@@ -19,12 +19,15 @@ max_vel_x_backwards: 0.100
 max_vel_y: 0.100
 max_vel_y_backwards: 0.100
 
-max_vel_theta: 0.2 
-min_vel_theta: -0.2 
+max_vel_theta: 0.3
+min_vel_theta: -0.3 
 
-acc_lim_x: 0.10
-acc_lim_y: 0.10
+acc_lim_x: 0.06
+acc_lim_y: 0.06
 acc_lim_theta: 3.0
+
+min_in_place_vel_theta: 0.0
+
 
 # ***************** pentapod robot parameters ********************
 # change that to a proper insect modelling without turning radius

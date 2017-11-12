@@ -120,14 +120,17 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 	initialPosition.pose.pose.orientation = initialPose_quat;
 	initialPosition.header.stamp = ros::Time::now();
 	initialPosition.header.frame_id = "map";
-	// initalPosePub.publish(initialPosition);
 	ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
 					engineState.currentNoseOrientation) << "");
 
 	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
-	navigationGoal = goalPose_world - engineState.currentFusedPose.position;
+	navigationGoal.position = goalPose_world.position - engineState.currentFusedPose.position;
+	// navigationGoal = goalPose_world - engineState.currentFusedPose.position;
+
 	navigationGoal.position.rotateAroundZ(- (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation));
 	navigationGoal.orientation.null();
+	navigationGoal.orientation.z = goalPose_world.orientation.z - (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation);
+
 	move_base_msgs::MoveBaseGoal goal;
 
 	//we'll send a goal to the robot to move 1 meter forward

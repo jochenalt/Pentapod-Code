@@ -1,15 +1,16 @@
 TrajectoryPlannerROS:
   holonomic_robot: true
-  min_in_place_vel_theta: 0.3
-  y_vels: -0.150, -0.125, -0.1, -0.075,  -0.05, -0.025, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15
-  max_vel_theta: 0.2
-  min_vel_theta: -0.2
+  min_in_place_vel_theta: 0.0
+  y_vels: -0.100, -0.09, -0.08, -0.07,  -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1 
+  max_vel_theta: 0.3
+  min_vel_theta: -0.3
+  # use negative value to escape, otherwise bot runs forward when escaping
   escape_vel: -0.100
   max_vel_x: 0.100  
   min_vel_x: -0.100
   max_vel_y: 0.100  
   min_vel_y: -0.100
   acc_lim_theta: 3.0
-  acc_lim_x: 0.10
-  acc_lim_y: 0.10
+  acc_lim_x: 0.06
+  acc_lim_y: 0.06
 
