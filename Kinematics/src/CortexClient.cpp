@@ -514,15 +514,16 @@ bool CortexClient::setupCortexCommunication(string i2cport, int i2cadr, string s
 		cortexConnected = false;
 	}
 
-	/*
 	// now start command interface
 	serialCmd.disconnect();
+
+	/*
 	ok = serialCmd.connect(serialPort , baudRate);
 	if (!ok) {
 		ROS_ERROR_STREAM("connecting to " << serialPort << "(" << baudRate << ") failed");
 		setError(CORTEX_COM_FAILED);
 	}
-
+*/
 
 	if (cortexConnected) {
 		ok = cmdSETUP();
@@ -531,7 +532,6 @@ bool CortexClient::setupCortexCommunication(string i2cport, int i2cadr, string s
 			ROS_ERROR_STREAM("cortex setup failed with (" << getLastError()<< ")");
 		}
 	}
-	*/
 	return ok;
 }
 

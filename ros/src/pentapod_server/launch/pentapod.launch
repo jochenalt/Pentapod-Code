@@ -6,13 +6,23 @@
   - pentapod_server that coordinates everything and provides results via a mongoose webserver
  -->
 <launch>
-  <include file="$(find pentapod_server)/launch/pentapod_engine.launch" />
-  <include file="$(find pentapod_server)/launch/rplidar.launch" />
-  <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
   <include file="$(find pentapod_server)/launch/pentapod_nav.launch" />
+  <include file="$(find pentapod_server)/launch/rplidar.launch" />
+
+  <include file="$(find pentapod_server)/launch/pentapod_engine.launch" />
+  <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
   
+  <!-- Hector mapping updates only when the bot moves by at least 40cm, so if first mapping
+       was wrong, it would not be corrected when the lidar is finally running, which leads
+       to a improper first navigation. So, the lidar needs to be up and running to ensure a proper first mapping. 
+       Start hector mapping with a 5s delay.
+  -->
+  <node pkg="timed_roslaunch" type="timed_roslaunch.sh"
+    args="5 pentapod_server hectormapping.launch"
+    name="timed_roslaunch" output="screen" />
+    
   <!-- this will throw some errors on missing transformations delivered by pentapod_engine, if it is not yet up -->
-  <include file="$(find pentapod_server)/launch/hectormapping.launch" />
+  <!-- <include file="$(find pentapod_server)/launch/hectormapping.launch" /> -->
 </launch>
 
 

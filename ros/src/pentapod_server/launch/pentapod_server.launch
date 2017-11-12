@@ -3,7 +3,7 @@
  -->
 
 <launch>
-  <node name="pentapod_server_node" 		pkg="pentapod_server"  type="pentapod_server_node" output="screen">
+  <node name="pentapod_server_node" 		pkg="pentapod_server"  type="pentapod_server_node" output="log">
   	<param name="webserver_port"     		type="int"    value="8000"/>
   </node>
 </launch>
