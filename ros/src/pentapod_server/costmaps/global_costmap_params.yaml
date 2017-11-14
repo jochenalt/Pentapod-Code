@@ -7,7 +7,8 @@ global_costmap:
   rolling_window: false
   always_send_full_costmap : false
 
-  controller_frequency: 10
+  controller_frequency: 20
+  
   # simulation time in seconds. Significant influence on CPU use. 
-  sim_time: 1.0 # Default 1.0
+  sim_time: 2.0 # Default 1.0
   

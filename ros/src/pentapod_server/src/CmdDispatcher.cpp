@@ -56,10 +56,16 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
 	// subscribe to the navigation stack topic that delivers the global costmap
-	costmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
+	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
 
-	// subscribe to the SLAM topic that delivers the occupancyGrid
-	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
+	// subscribe to the navigation stack topic that delivers the local costmap
+	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &CommandDispatcher::listenerLocalCostmap, this);
+
+	// subscribe to local path computation
+	localPathSubscriber = handle.subscribe("/move_base/TebLocalPlannerROS/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
+
+	// subscribe to global path computation
+	globalPathSubscriber = handle.subscribe("/move_base/TebLocalPlannerROS/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
@@ -340,8 +346,8 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	if (hasPrefix(uri, "/costmap/")) {
-		string mapCommand = uri.substr(string("/costmap/").length());
+	if (hasPrefix(uri, "/costmap/global")) {
+		string mapCommand = uri.substr(string("/costmap/global").length());
 		// map/get
 		if (hasPrefix(mapCommand, "get")) {
 			string generationNumberStr ;
@@ -349,7 +355,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			int generationNumber;
 			if (ok) {
 				generationNumber = stringToInt(generationNumberStr,ok);
-				if (!ok || (generationNumber < costMapGenerationNumber)) {
+				if (!ok || (generationNumber < globalCostmapGenerationNumber)) {
 					// passed version is older than ours, deliver map
 					response = globalCostMapSerialized + "," + getResponse(true);
 				}
@@ -360,6 +366,32 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			} else {
 				// deliver map without version check
 				response = globalCostMapSerialized + "," + getResponse(true);
+			}
+			okOrNOk = true;
+			return true;
+		}
+	}
+
+	if (hasPrefix(uri, "/costmap/local")) {
+		string mapCommand = uri.substr(string("/costmap/local").length());
+		// map/get
+		if (hasPrefix(mapCommand, "get")) {
+			string generationNumberStr ;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+			int generationNumber;
+			if (ok) {
+				generationNumber = stringToInt(generationNumberStr,ok);
+				if (!ok || (generationNumber < localCostmapGenerationNumber)) {
+					// passed version is older than ours, deliver map
+					response = localCostMapSerialized + "," + getResponse(true);
+				}
+				else {
+					// client has already the current map version, dont deliver it again
+					response = getResponse(true);
+				}
+			} else {
+				// deliver map localCostMapSerialized version check
+				response = localCostMapSerialized + "," + getResponse(true);
 			}
 			okOrNOk = true;
 			return true;
@@ -394,6 +426,48 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			return true;
 		}
 	}
+
+	if (hasPrefix(uri, "/plan/local")) {
+		string command = uri.substr(string("/plan/local").length());
+		if (hasPrefix(command, "get")) {
+			string generationNumberStr ;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+			int generationNumber;
+			if (ok) {
+				generationNumber = stringToInt(generationNumberStr,ok);
+				if (localPlanSerialized!= "")
+					response = localPlanSerialized+ "," + getResponse(true);
+				else
+					response = getResponse(false);
+			} else {
+				response = localPlanSerialized + "," + getResponse(true);
+			}
+			okOrNOk = true;
+			return true;
+		}
+	}
+
+	if (hasPrefix(uri, "/plan/global")) {
+		string command = uri.substr(string("/plan/global").length());
+		if (hasPrefix(command, "get")) {
+			string generationNumberStr ;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+			int generationNumber;
+			if (ok) {
+				generationNumber = stringToInt(generationNumberStr,ok);
+				if (globalPlanSerialized!= "")
+					response = globalPlanSerialized+ "," + getResponse(true);
+				else
+						response = getResponse(false);
+			} else {
+				response = globalPlanSerialized + "," + getResponse(true);
+			}
+			okOrNOk = true;
+			return true;
+		}
+	}
+
+
 
 	if (hasPrefix(uri, "/navigation/")) {
 		string command = uri.substr(string("/navigation/").length());
@@ -459,32 +533,33 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 }
 
 enum MapType { SLAM_MAP_TYPE, COSTMAP_TYPE };
-void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& og, MapType type,  Map& m, int& generationNumber,  string& serializedMap) {
-	if ((og->info.width > 0) && (og->info.height > 0)) {
-		m.setGridDimension(og->info.width, og->info.height, og->info.resolution*1000.0);
-		int mapArraySize = og->info.width * og->info.height;
-		int width = og->info.width;
+void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& inputMap, MapType type,  Map& outputMap, int& generationNumber,  string& serializedMap) {
+	if ((inputMap->info.width > 0) && (inputMap->info.height > 0)) {
+		outputMap.null();
+		outputMap.setGridDimension(inputMap->info.width, inputMap->info.height, inputMap->info.resolution*1000.0);
+		int mapArraySize = inputMap->info.width * inputMap->info.height;
+		int width = inputMap->info.width;
 		for (int i = 0;i<mapArraySize;i++) {
 			// this is the regular call, but we take the short (and ugly) route
 			// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
-			int occupancy = og->data[i];
+			int occupancy = inputMap->data[i];
 
 			// the occupancy Map has different values than Map::GridState
 			if (type == SLAM_MAP_TYPE) {
 				switch (occupancy) {
-					case -1: 	m.getVector()[i] = Map::GridState::UNKNOWN; break;
-					case 0: 	m.getVector()[i] = Map::GridState::FREE; break;
-					case 100: 	m.getVector()[i] = Map::GridState::OCCUPIED; break;
+					case -1: 	outputMap.getVector()[i] = Map::GridState::UNKNOWN; break;
+					case 0: 	outputMap.getVector()[i] = Map::GridState::FREE; break;
+					case 100: 	outputMap.getVector()[i] = Map::GridState::OCCUPIED; break;
 				}
 			} else {
-				m.getVector()[i] = occupancy;
+				outputMap.getVector()[i] = occupancy;
 			}
 		}
-		m.setGenerationNumber(++generationNumber);
+		outputMap.setGenerationNumber(++generationNumber);
 	}
 
 	std::stringstream out;
-	m.serialize(out);
+	outputMap.serialize(out);
 	serializedMap = out.str();
 }
 
@@ -493,9 +568,39 @@ void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::Co
 }
 
 void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, costMapGenerationNumber, globalCostMapSerialized);
+	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
 	holeFinder.feed(slamMap, globalCostMap, fusedMapOdomPose);
+}
+
+void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
+}
+
+void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
+	outputPlan.clear();
+	for (unsigned int i = 0;i<inputPlan->poses.size();i++) {
+		Point p(inputPlan->poses[i].pose.position.x*1000.0,inputPlan->poses[i].pose.position.y*1000.0,inputPlan->poses[i].pose.position.z*1000.0);
+		Quaternion q(inputPlan->poses[i].pose.orientation.x,
+					 inputPlan->poses[i].pose.orientation.y,
+					 inputPlan->poses[i].pose.orientation.z,
+					 inputPlan->poses[i].pose.orientation.w);
+
+		StampedPose sp(Pose(p,q),inputPlan->poses[i].header.stamp.toNSec()/1000);
+		outputPlan.add(sp);
+	}
+
+	std::stringstream out;
+	outputPlan.serialize(out);
+	serializedPlan = out.str();
+}
+
+void CommandDispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
+	convertPoseStampedToTrajectory(og, localPlan, localPlanGenerationNumber, localPlanSerialized);
+}
+
+void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
+	convertPoseStampedToTrajectory(og, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
 }
 
 void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {

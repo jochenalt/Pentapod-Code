@@ -1,0 +1,20 @@
+<!--
+  all in all launch file
+  - rplidar node that publishes /laser scans
+  - hector node taking /laser topic and producing map and /slam_out_pose in map
+  - pentapod_engine taking topic /pentapod/cmd_vel and producing /pentapod/odom and /pentapod/get_state
+  - pentapod_server that coordinates everything and provides results via a mongoose webserver
+ -->
+<launch>
+  <include file="$(find pentapod_server)/launch/pentapod_nav.launch" />
+
+  <include file="$(find pentapod_server)/launch/pentapod_engine.launch" />
+  <include file="$(find pentapod_server)/launch/pentapod_server.launch" />
+
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find pentapod_server)/launch/mymap.yaml" />
+
+</launch>
+
+
+

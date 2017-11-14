@@ -57,6 +57,10 @@ public:
 
 	void listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
 	void listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenerLocalPlan(const nav_msgs::Path::ConstPtr& og );
+	void listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og );
+
 	void setLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
 
 	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
@@ -79,8 +83,20 @@ private:
 	Map globalCostMap;
 	std::string globalCostMapSerialized;
 
+	Map localCostMap;
+	std::string localCostMapSerialized;
+
+	Trajectory localPlan;
+	std::string localPlanSerialized;
+	Trajectory globalPlan;
+	std::string globalPlanSerialized;
+
 	int mapGenerationNumber;
-	int costMapGenerationNumber;
+	int localCostmapGenerationNumber;
+	int globalCostmapGenerationNumber;
+
+	int localPlanGenerationNumber;
+	int globalPlanGenerationNumber;
 
 	std::string serializedLaserData;
 	std::string serializedTrajectory;
@@ -95,7 +111,10 @@ private:
 	ros::Publisher initalPosePub;
 
 	ros::Subscriber occupancyGridSubscriber;
-	ros::Subscriber costmapSubscriber;
+	ros::Subscriber globalCostmapSubscriber;
+	ros::Subscriber localCostmapSubscriber;
+	ros::Subscriber globalPathSubscriber;
+	ros::Subscriber localPathSubscriber;
 
 	ros::Subscriber laserScanSubscriber;
 
