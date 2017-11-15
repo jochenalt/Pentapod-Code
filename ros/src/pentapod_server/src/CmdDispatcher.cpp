@@ -55,6 +55,9 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	//tell the action client that we want to spin a thread by default and wait until up and running
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
+	// subscribe to the SLAM map
+	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
+
 	// subscribe to the navigation stack topic that delivers the global costmap
 	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
 
@@ -586,7 +589,7 @@ void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, 
 					 inputPlan->poses[i].pose.orientation.z,
 					 inputPlan->poses[i].pose.orientation.w);
 
-		StampedPose sp(Pose(p,q),inputPlan->poses[i].header.stamp.toNSec()/1000);
+		StampedPose sp(Pose(p,q),inputPlan->poses[i].header.stamp.toSec()*1000.0);
 		outputPlan.add(sp);
 	}
 
@@ -629,7 +632,7 @@ void CommandDispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path)
 					 path->poses[i].pose.orientation.z,
 					 path->poses[i].pose.orientation.w);
 
-		StampedPose sp(Pose(p,q),path->poses[i].header.stamp.toNSec()/1000);
+		StampedPose sp(Pose(p,q),path->poses[i].header.stamp.toSec()*1000.0);
 		trajectory.add(sp);
 	}
 
