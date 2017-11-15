@@ -12,6 +12,7 @@
 #include <BaseView.h>
 #include <Map.h>
 #include <spatial.h>
+#include <EngineProxy.h>
 
 using namespace std;
 
@@ -41,7 +42,7 @@ private:
 	void drawNavigationGoal();
 	void drawCoordRaster();
 	void drawMapBackground();
-	void drawTrajectory();
+	void drawTrajectory(EngineProxy::TrajectoryType type);
 	void drawCoordSystem();
 	void drawSlamMap();
 	void drawCostMap();

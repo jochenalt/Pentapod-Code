@@ -174,8 +174,9 @@ void SlamView::drawFreeSlamGrid( const Point &g1,const Point &g2, const Point &g
 }
 
 void SlamView::drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
-	float red = value/100.0;
-	GLfloat color[] = { red, 0.5, 0.5, glAlphaTransparent};
+	float lethalNess= value/100.0;
+	// show lethal points in red, and harmless grid cells in green
+	GLfloat color[] = { lethalNess/2.0f, (1.0f-lethalNess)/2.0f, 0, glAlphaTransparent};
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 		glColor4fv(color);
@@ -226,8 +227,6 @@ void SlamView::drawSmallBot(const Pose& pose) {
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glFootTouchPointColor);
 	glColor3fv(glFootTouchPointColor);
-
-	drawFilledCircle(0,0,10, maxFootTouchPointRadius);
 
 	BotDrawer::getInstance().displayBot(
 			EngineProxy::getInstance().getNoseOrientation(),
@@ -282,28 +281,44 @@ void SlamView::drawCoordRaster() {
 	}
 }
 
-void SlamView::drawTrajectory() {
-	Trajectory& trajectory = EngineProxy::getInstance().getTrajectory();
+void SlamView::drawTrajectory(EngineProxy::TrajectoryType type) {
+
+	Trajectory& trajectory = EngineProxy::getInstance().getTrajectory(type);
 
 	// draw trajectory
 	unsigned int pathLength = trajectory.size();
 	glPushMatrix();
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glTrajectoryColor4v);
-	glColor3fv(glTrajectoryColor4v);
+
+	if (pathLength > 0) {
+		switch (type) {
+		case EngineProxy::TRAJECTORY: {
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glTrajectoryColor4v);
+			glColor3fv(glTrajectoryColor4v);
+			break;
+		}
+		case EngineProxy::LOCAL_PLAN: {
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glLocalPlanColor4v);
+			glColor3fv(glLocalPlanColor4v);
+			break;
+		}
+		case EngineProxy::GLOBAL_PLAN: {
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glGlobalPlanColor4v);
+			glColor3fv(glGlobalPlanColor4v);
+			break;
+		}
+		}
+	}
 	StampedPose prevPose;
 
 	// save  current line width
 	GLfloat savedLineRange[2];
 	glGetFloatv(GL_LINE_WIDTH, savedLineRange);
-	glLineWidth(3);
+	glLineWidth(4);
 
 	for (unsigned int i = 0;i<pathLength; i++) {
 		StampedPose sp = trajectory[i];
 		if (!sp.isNull()) {
 			sp.pose.position.z = 20;
-			// glLoadIdentity();
-			// glTranslatef(sp.pose.position.y, sp.pose.position.z, sp.pose.position.x);
-			// cout << "path=" << sp.pose.position << endl;
 			if (i>0) {
 				glBegin(GL_LINES);
 					glVertex3f(sp.pose.position.y, sp.pose.position.z, sp.pose.position.x);
@@ -395,20 +410,25 @@ void SlamView::drawSlamMap() {
 
 void SlamView::drawCostMap() {
 	Map& map = EngineProxy::getInstance().getCostmap();
+
 	int fullMapSizeX = map.getMapSizeX();
 	int fullMapSizeY = map.getMapSizeY();
-	millimeter gridLength = map.getGridSize();
-	// limit the drawn structures to an area that is three times the viewing distance
-	int mapSizeX = constrain((int)getEyeDistance()*3, 0, fullMapSizeX);
-	int mapSizeY = constrain((int)getEyeDistance()*3, 0, fullMapSizeY);
+	int gridLength = map.getGridSize();
+
+	if ((fullMapSizeX == 0) || (fullMapSizeY == 0) || (gridLength == 0))
+		return;
+
+	// limit the drawn structure to an area that is three times the viewing distance
+	int mapSizeX =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeX)/gridLength/2);
+	int mapSizeY =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeY)/gridLength/2);
 
 	// draw the SLAM map.
 	Point lookAtPosition(getLookAtPosition());
 
 	// take care that the origin is dividable by gridLength in order to
-	// have the grids assigned correctly and one line is going right through the origin
-	lookAtPosition.x = ((int)(lookAtPosition.x/gridLength))*gridLength;
-	lookAtPosition.y = ((int)(lookAtPosition.y/gridLength))*gridLength;
+	// have the grids assigned correctly
+	lookAtPosition.x = gridLength*2*((int)(lookAtPosition.x/gridLength/2));
+	lookAtPosition.y = gridLength*2*((int)(lookAtPosition.y/gridLength/2));
 
 	int minX = constrain(- mapSizeX/2 + (int)lookAtPosition.x, -fullMapSizeX/2, fullMapSizeX/2);
 	int maxX = constrain(+ mapSizeX/2 + (int)lookAtPosition.x,-fullMapSizeX/2, fullMapSizeX/2);
@@ -459,7 +479,10 @@ void SlamView::drawMap() {
 	drawSlamMap();
 	drawCostMap();
 	drawLaserScan();
-	drawTrajectory();
+	drawTrajectory(EngineProxy::TRAJECTORY);
+	drawTrajectory(EngineProxy::GLOBAL_PLAN);
+	drawTrajectory(EngineProxy::LOCAL_PLAN);
+
 	drawCoordSystem();
 
 	// this is required for having an object to click for 3D mouse projection
