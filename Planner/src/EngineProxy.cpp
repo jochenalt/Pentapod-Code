@@ -422,7 +422,12 @@ LaserScan& EngineProxy::getLaserScan() {
 	return laserScan;
 }
 
-Trajectory& EngineProxy::getTrajectory() {
+Trajectory& EngineProxy::getTrajectory(TrajectoryType type) {
+	switch (type) {
+	case TRAJECTORY: return trajectory;
+	case GLOBAL_PLAN: return globalPlan;
+	case LOCAL_PLAN: return localPlan;
+	}
 	return trajectory;
 }
 
@@ -475,7 +480,7 @@ void EngineProxy::updateCostmap() {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
-		url << "/costmap/get?no=" << costmap.getGenerationNumber();
+		url << "/costmap/local/get?no=" << costmap.getGenerationNumber();
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 
@@ -512,10 +517,22 @@ void EngineProxy::updateLaserScan() {
 }
 
 void EngineProxy::updateTrajectory() {
+	updateTrajectory(TRAJECTORY);
+	updateTrajectory(GLOBAL_PLAN);
+	updateTrajectory(LOCAL_PLAN);
+}
+
+void EngineProxy::updateTrajectory(TrajectoryType type) {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
-		url << "/trajectory/get";
+		switch (type) {
+			case TRAJECTORY: url << "/trajectory/get";break;
+			case GLOBAL_PLAN: url << "/plan/global/get";break;
+			case LOCAL_PLAN: url << "/plan/local/get";break;
+		}
+		url << "?no=" << costmap.getGenerationNumber();
+
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 
@@ -526,7 +543,11 @@ void EngineProxy::updateTrajectory() {
 
 		if (ok) {
 			newTrajectoryDataAvailable = true;
-			trajectory = tmp;
+			switch (type) {
+				case TRAJECTORY: trajectory = tmp;break;
+				case GLOBAL_PLAN: globalPlan = tmp;break;
+				case LOCAL_PLAN: localPlan = tmp;break;
+			}
 		}
 	}
 }

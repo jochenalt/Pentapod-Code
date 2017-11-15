@@ -34,6 +34,9 @@ public:
 	EngineProxy();
 	virtual ~EngineProxy();
 
+	enum TrajectoryType { TRAJECTORY, GLOBAL_PLAN, LOCAL_PLAN };
+
+
 	static EngineProxy& getInstance();
 	void setupRemoteEngine(string engineWebserverHost, int engineWebserverPort);
 	void setupSimulatedEngine();
@@ -133,7 +136,7 @@ public:
 	LaserScan& getLaserScan();
 
 	// return the current trajectory
-	Trajectory& getTrajectory();
+	Trajectory& getTrajectory(TrajectoryType type);
 
 	// return the pose in coordinates of the map (jumps descretly depending on SLAM)
 	const Pose& getMapPose();
@@ -167,7 +170,9 @@ private:
 	void updateLaserScan();
 	void updateMap();
 	void updateCostmap();
+	void updateTrajectory(TrajectoryType type);
 	void updateTrajectory();
+
 	void updateNavigation();
 
 	bool newLaserScanAvailable = false;
@@ -196,6 +201,9 @@ private:
 	Pose mapPose;
 	LaserScan laserScan;
 	Trajectory trajectory;
+	Trajectory localPlan;
+	Trajectory globalPlan;
+
 	Pose navigationGoal;
 	NavigationStatusType navigationStatus;
 };
