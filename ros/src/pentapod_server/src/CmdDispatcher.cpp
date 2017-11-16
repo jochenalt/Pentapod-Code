@@ -583,7 +583,7 @@ void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::Cons
 void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
 	outputPlan.clear();
 	for (unsigned int i = 0;i<inputPlan->poses.size();i++) {
-		Point p(inputPlan->poses[i].pose.position.x*1000.0,inputPlan->poses[i].pose.position.y*1000.0,inputPlan->poses[i].pose.position.z*1000.0);
+		Point p(inputPlan->poses[i].pose.position.x*1000.0,inputPlan->poses[i].pose.position.y*1000.0,0);
 		Quaternion q(inputPlan->poses[i].pose.orientation.x,
 					 inputPlan->poses[i].pose.orientation.y,
 					 inputPlan->poses[i].pose.orientation.z,
