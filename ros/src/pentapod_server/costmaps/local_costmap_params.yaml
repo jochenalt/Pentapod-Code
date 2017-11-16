@@ -1,16 +1,16 @@
 local_costmap:
-  global_frame: map
+  global_frame: /map
   robot_base_frame: base_link
-  update_frequency: 2.5
+  update_frequency: 2.0
   publish_frequency: 1.0
   static_map: true
   # Setting the "rolling_window" parameter to true means that the costmap 
   # will remain centered around the robot as the robot moves through the world
-  rolling_window: false
-  width: 4
-  height: 4
+  rolling_window: False
+  width: 1.5
+  height: 1.5
   resolution: 0.05
-  transform_tolerance: 10
+  transform_tolerance: 0.5
 plugins:
 - {name: static_layer, type: "costmap_2d::StaticLayer"}
 - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}

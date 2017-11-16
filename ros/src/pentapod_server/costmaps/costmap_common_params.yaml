@@ -1,5 +1,5 @@
 # circular footprint radius of the pentapod
-robot_radius: 0.1
+robot_radius: 0.35
 # timing tolerance of transformation in [s] 
 transform_tolerance: 0.3
 map_type: costmap
@@ -8,9 +8,7 @@ obstacle_layer:
   # the maximum range sensor reading that will result in an obstacle being put into the costmap
   obstacle_range: 2.5  
   # determines the range to which we will raytrace freespace given a sensor reading
-  raytrace_range: 3.5
-  # The inflation radius should be set to the maximum distance from obstacles 
-  inflation_radius: 0.6
+  raytrace_range: 4.0
   # do not go in unknown space
   track_unknown_space: false
   combination_method: 1
@@ -20,9 +18,8 @@ inflation_layer:
   enabled: true
   cost_scaling_factor: 10.0 
   # The inflation radius should be set to the maximum distance from obstacles 
-  inflation_radius: 0.6
+  inflation_radius: 0.60
 static_layer:
   enabled: true
   map_topic: /map
 
-controller_frequency: 20

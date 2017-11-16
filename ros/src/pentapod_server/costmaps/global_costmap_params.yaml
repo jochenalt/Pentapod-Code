@@ -1,14 +1,10 @@
 global_costmap:
   global_frame: /map
   robot_base_frame: base_link
-  update_frequency: 2.5
+  update_frequency: 2.0
   publish_frequency: 1.0
   static_map: true
   rolling_window: false
   always_send_full_costmap : false
 
-  controller_frequency: 20
-  
-  # simulation time in seconds. Significant influence on CPU use. 
-  sim_time: 2.0 # Default 1.0
-  
+ 
