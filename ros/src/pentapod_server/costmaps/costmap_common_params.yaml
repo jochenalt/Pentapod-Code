@@ -1,5 +1,5 @@
 # circular footprint radius of the pentapod
-robot_radius: 0.35
+robot_radius: 0.30
 # timing tolerance of transformation in [s] 
 transform_tolerance: 0.3
 map_type: costmap
@@ -16,9 +16,9 @@ obstacle_layer:
   laser_scan_sensor: {sensor_frame: base_link, data_type: LaserScan, topic: scan, marking: true, clearing: true}
 inflation_layer:
   enabled: true
-  cost_scaling_factor: 10.0 
+  cost_scaling_factor: 50.0 
   # The inflation radius should be set to the maximum distance from obstacles 
-  inflation_radius: 0.60
+  inflation_radius: 0.55
 static_layer:
   enabled: true
   map_topic: /map
