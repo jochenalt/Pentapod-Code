@@ -308,55 +308,6 @@ class StampedPose : public Serializable  {
 		milliseconds timestamp;
 };
 
-class Trajectory : public Serializable  {
-	public:
-		friend ostream& operator<<(ostream&, const Trajectory&);
-
-		Trajectory() {
-			null();
-		};
-		virtual ~Trajectory() {};
-
-
-		void clear() {
-			path.clear();
-		}
-
-		void add(const StampedPose& p) {
-			path.push_back(p);
-		}
-
-		void null() {
-			path.clear();
-		}
-
-		bool isNull() {
-			return (path.size() == 0);
-		}
-
-		Trajectory(const Trajectory& p) {
-			path = p.path;
-		};
-
-
-		void operator= (const Trajectory& p) {
-			path = p.path;
-		}
-
-		StampedPose& operator[] (int i) {
-			return path[i];
-		}
-
-		unsigned int size() {
-			return path.size();
-		}
-
-		virtual std::ostream& serialize(std::ostream &out) const;
-		virtual std::istream& deserialize(std::istream &in, bool &ok);
-
-		vector<StampedPose> path;
-};
-
 
 class SpatialPID {
 public:

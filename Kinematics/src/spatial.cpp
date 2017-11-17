@@ -359,28 +359,3 @@ std::istream& StampedPose::deserialize(std::istream &in, bool &ok) {
     }
     return in;
 }
-
-ostream& operator<<(ostream& os, const Trajectory& p)
-{
-	os << std::setprecision(2) << "(";
-	for (unsigned int i = 0;i<p.path.size(); i++) {
-		if (i>0)
-			os << ",";
-		os << "{ pose=" << p.path[i].pose << ", t=" << p.path[i].timestamp << "}";
-	}
-	os << ")";
-	return os;
-}
-
-
-std::ostream& Trajectory::serialize(std::ostream &out) const {
-	serializeVectorOfSerializable(path, out);
-	return out;
-}
-
-std::istream& Trajectory::deserialize(std::istream &in, bool &ok) {
-    if (in) {
-    	deserializeVectorOfSerializable(in, path, ok);
-    }
-    return in;
-}

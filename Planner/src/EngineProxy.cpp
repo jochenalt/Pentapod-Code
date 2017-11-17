@@ -527,12 +527,10 @@ void EngineProxy::updateTrajectory(TrajectoryType type) {
 		string responseStr;
 		std::ostringstream url;
 		switch (type) {
-			case TRAJECTORY: url << "/trajectory/get";break;
-			case GLOBAL_PLAN: url << "/plan/global/get";break;
-			case LOCAL_PLAN: url << "/plan/local/get";break;
+			case TRAJECTORY: url << "/trajectory/get?no=" << trajectory.getGenerationNumber();break;
+			case GLOBAL_PLAN: url << "/plan/global/get?no=" << globalPlan.getGenerationNumber();break;
+			case LOCAL_PLAN: url << "/plan/local/get?no=" << localPlan.getGenerationNumber();break;
 		}
-		url << "?no=" << costmap.getGenerationNumber();
-
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 

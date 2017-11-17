@@ -177,6 +177,11 @@ void SlamView::drawCostmapGrid( int value, const Point &g1,const Point &g2, cons
 	float lethalNess= value/100.0;
 	// show lethal points in red, and harmless grid cells in green
 	GLfloat color[] = { lethalNess/2.0f, (1.0f-lethalNess)/2.0f, 0, glAlphaTransparent};
+	if (value >= 99) {
+		color[0] = 1.0;
+		color[1] = 0.0;
+		color[2] = 0.0;
+	}
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 		glColor4fv(color);
@@ -227,6 +232,8 @@ void SlamView::drawSmallBot(const Pose& pose) {
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glFootTouchPointColor);
 	glColor3fv(glFootTouchPointColor);
+
+	drawFilledCircle(0,0,10, maxFootTouchPointRadius);
 
 	BotDrawer::getInstance().displayBot(
 			EngineProxy::getInstance().getNoseOrientation(),
@@ -328,14 +335,6 @@ void SlamView::drawTrajectory(EngineProxy::TrajectoryType type) {
 		}
 		prevPose = sp;
 	}
-
-	const Pose& fusedPose = EngineProxy::getInstance().getFusedPose();
-
-	// last piece to current position
-	glBegin(GL_LINES);
-		glVertex3f(prevPose.pose.position.y, prevPose.pose.position.z, prevPose.pose.position.x);
-		glVertex3f(fusedPose.position.y, fusedPose.position.z, fusedPose.position.x);
-	glEnd();
 
 	glLineWidth(savedLineRange[0]);
 	glPopMatrix();
@@ -479,7 +478,7 @@ void SlamView::drawMap() {
 	drawSlamMap();
 	drawCostMap();
 	drawLaserScan();
-	drawTrajectory(EngineProxy::TRAJECTORY);
+	// drawTrajectory(EngineProxy::TRAJECTORY);
 	drawTrajectory(EngineProxy::GLOBAL_PLAN);
 	drawTrajectory(EngineProxy::LOCAL_PLAN);
 

@@ -10,6 +10,7 @@
 
 #include "Engine.h"
 #include "Map.h"
+#include "Trajectory.h"
 #include "LaserScan.h"
 
 class EngineCaller {

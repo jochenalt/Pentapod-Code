@@ -42,7 +42,7 @@ static const GLfloat glLidarColor[] 					= GL_COLOR_4v(BlackBrown, glAlphaSolid 
 static const GLfloat glBotFrontLegColor[] 				= GL_COLOR_4v(PearlBeige, glAlphaSolid );
 static const GLfloat glBotLegColor[] 					= GL_COLOR_4v(PearlMouseGrey, glAlphaSolid );
 
-static const GLfloat glFootTouchPointColor[] 			= GL_COLOR_4v(Ivory, glAlphaTransparent );
+static const GLfloat glFootTouchPointColor[] 			= GL_COLOR_4v(Ivory, 0.2 );
 static const GLfloat glFootTouchPointAirColor[] 		= GL_COLOR_4v(SquirrelGrey, glAlphaSolid );
 static const GLfloat glFootTouchPointBackColor[] 		= GL_COLOR_4v(ResedaGreen, glAlphaSolid );
 static const GLfloat glFootTouchPointFrontColor[] 		= GL_COLOR_4v(OliveYellow, glAlphaSolid);
@@ -62,7 +62,7 @@ static const GLfloat glLaserScanColor4v[]		    	= GL_COLOR_4v( RedOrange, glAlph
 static const GLfloat glSlamMapCoordSystemColor4v[]		= GL_COLOR_4v( RedViolet, glAlphaTransparent);
 
 static const GLfloat glTrajectoryColor4v[]		    	= GL_COLOR_4v( GrassGreen, glAlphaSolid);
-static const GLfloat glGlobalPlanColor4v[]		    	= GL_COLOR_4v( PastelViolet, glAlphaSolid);
+static const GLfloat glGlobalPlanColor4v[]		    	= GL_COLOR_4v( SkyBlue, glAlphaSolid);
 static const GLfloat glLocalPlanColor4v[]		    	= GL_COLOR_4v( Telemagenta, glAlphaSolid);
 
 #endif /* UI_UICONFIG_H_ */
