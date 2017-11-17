@@ -24,7 +24,7 @@ ostream& operator<<(ostream& os, const Trajectory& p)
 
 
 std::ostream& Trajectory::serialize(std::ostream &out) const {
-	out << "{ \"path\":";
+	out << "{\"path\":";
 	serializeVectorOfSerializable(path, out);
 	out << ",\"n\":";
 	serializePrim(out, generationNumber);

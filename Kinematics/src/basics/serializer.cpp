@@ -26,6 +26,7 @@ void parseCharacter(istream& in, char ch, bool &ok) {
 	char c;
 	if (in && !in.eof()) {
 		int cInt = in.peek();
+		char cCh = cInt;
 		if ((char)cInt == ch) {
 			in.get(c);
 		} else
