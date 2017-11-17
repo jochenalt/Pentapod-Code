@@ -896,7 +896,7 @@ void Engine::computeAcceleration() {
 		realnum newSpeed = getCurrentSpeed();
 		if (abs(getCurrentSpeed() - targetSpeed) > floatPrecision) {
 			realnum speedAcc= (getTargetSpeed() - getCurrentSpeed())/dT;
-			speedAcc = constrain(speedAcc, -3.0*maxSpeedAcceleration, maxSpeedAcceleration);
+			speedAcc = constrain(speedAcc, -maxSpeedAcceleration, maxSpeedAcceleration);
 			newSpeed += speedAcc*dT;
 			newSpeed = constrain(newSpeed, -maxSpeed, maxSpeed);
 
@@ -906,7 +906,7 @@ void Engine::computeAcceleration() {
 		realnum newAngularSpeed = gaitControl.getCurrentAngularSpeed();
 		if (abs(newAngularSpeed - getTargetAngularSpeed())> floatPrecision) {
 			realnum angularSpeedAcc= (getTargetAngularSpeed() - getCurrentAngularSpeed())/dT;
-			angularSpeedAcc = constrain(angularSpeedAcc, -3.0*maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
+			angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
 			newAngularSpeed += angularSpeedAcc*dT;
 			newAngularSpeed = constrain(newAngularSpeed, -maxAngularSpeed, +maxAngularSpeed);
 		}
