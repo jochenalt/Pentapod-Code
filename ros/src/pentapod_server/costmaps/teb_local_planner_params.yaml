@@ -6,8 +6,7 @@ map_frame: /map
 #dt_ref: 0.4
 #dt_hysteresis: 0.3                          # hysteresis of path changes. If too small, in narrow corridors robot osscilates between the two walls.  
 # global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
-max_global_plan_lookahead_dist: 1.0
-# feasibility_check_no_poses: 4                # Specify up to which pose on the predicted plan the feasibility should be checked each sampling interval. Default: 4
+max_global_plan_lookahead_dist: 1.5
 allow_init_backward_motion: true
 
 # Robot acceleration and speed limits
@@ -34,43 +33,33 @@ yaw_goal_tolerance: 0.05
 
 # Trajectory scoring parameters  
 #occdist_scale: 0.5     # The weighting for how much the controller should attempt to avoid obstacles. default 0.5
-#pdist_scale: 5.0       # The weighting for how much the controller should stay close to the path it was given. default 0.6
+#pdist_scale: 0.6       # The weighting for how much the controller should stay close to the path it was given. default 0.6
 #gdist_scale: 0.8 
   
 # Obstacles
-min_obstacle_dist: 0.32          # minumum distance from outer shape of robot to any obstacle.
-inflation_dist: 0.70             # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
+min_obstacle_dist: 0.36          # minumum distance from outer shape of robot to any obstacle.
+inflation_dist: 0.80             # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
 include_costmap_obstacles: True
 costmap_obstacles_behind_robot_dist: 0.5
-obstacle_poses_affected: 15      # Default 30
+obstacle_poses_affected: 30      # Default 30
 costmap_converter_plugin: ""
 costmap_converter_spin_thread: True
 costmap_converter_rate: 5
 
 # Optimization
-no_inner_iterations: 3
-no_outer_iterations: 3
 optimization_activate: True
 optimization_verbose: False
 penalty_epsilon: 0.05
-#Optimization weight for satisfying the maximum allowed translational velocity
-#weight_max_vel_x: 2        # default 2.0
-#weight_max_vel_theta: 1    # default 1.0
-#weight_acc_lim_x: 1        # default 1.0
-#weight_acc_lim_theta: 1    # default 1.0
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
 weight_kinematics_nh: 0 
 weight_kinematics_forward_drive: 0          # Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). A small weight (e.g. 1.0) still allows driving backwards. Default 1.0
 weight_kinematics_turning_radius: 0
-#weight_optimaltime: 5
-#weight_obstacle: 50
-#weight_dynamic_obstacle: 10 # not in use yet
 
 # Homotopy Class Planner
-enable_homotopy_class_planning: True
-enable_multithreading: True
-simple_exploration: False
-max_number_classes: 1
+enable_homotopy_class_planning: False
+#enable_multithreading: True
+#simple_exploration: False
+#max_number_classes: 1
 #selection_cost_hysteresis: 1.0
 #selection_obst_cost_scale: 1.0
 #selection_alternative_time_cost: False

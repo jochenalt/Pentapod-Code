@@ -72,11 +72,15 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// subscribe to the navigation stack topic that delivers the local costmap
 	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &CommandDispatcher::listenerLocalCostmap, this);
 
+	// string localPlannerName = "EBandPlannerROS";
+	string localPlannerName = "TebLocalPlannerROS";
+
+
 	// subscribe to local path computation
-	localPathSubscriber = handle.subscribe("/move_base/TebLocalPlannerROS/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
+	localPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
 
 	// subscribe to global path computation
-	globalPathSubscriber = handle.subscribe("/move_base/TebLocalPlannerROS/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
+	globalPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
