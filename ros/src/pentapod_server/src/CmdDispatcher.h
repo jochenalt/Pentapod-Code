@@ -17,6 +17,8 @@
 #include "Engine.h"
 #include "spatial.h"
 #include <Map.h>
+#include <Trajectory.h>
+
 #include <LaserScan.h>
 
 // common message types

@@ -155,6 +155,7 @@ add_library(${PROJECT_NAME}
    ${pentapod_kinematics_path}/src/spatial.cpp
    ${pentapod_kinematics_path}/src/Util.cpp
    ${pentapod_kinematics_path}/src/Map.cpp
+   ${pentapod_kinematics_path}/src/Trajectory.cpp
    ${pentapod_kinematics_path}/src/LaserScan.cpp
 )
 

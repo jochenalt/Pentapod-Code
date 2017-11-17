@@ -5,6 +5,8 @@
 
 #include "core.h"
 #include "Map.h"
+#include "Trajectory.h"
+
 #include "Util.h"
 
 #include <move_base_msgs/MoveBaseAction.h>
@@ -421,10 +423,20 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		string command = uri.substr(string("/trajectory/").length());
 		// map/get
 		if (hasPrefix(command, "get")) {
-			if (serializedTrajectory != "")
-				response = serializedTrajectory+ "," + getResponse(true);
-			else
-				response = getResponse(false);
+			string generationNumberStr ;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+			int generationNumber;
+			if (ok) {
+				generationNumber = stringToInt(generationNumberStr,ok);
+				if (serializedTrajectory != "")
+					response = serializedTrajectory+ "," + getResponse(true);
+				else
+					response = getResponse(false);
+			} else {
+				response = serializedTrajectory + "," + getResponse(true);
+			}
+
+
 			okOrNOk = true;
 			return true;
 		}
@@ -592,6 +604,8 @@ void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, 
 		StampedPose sp(Pose(p,q),inputPlan->poses[i].header.stamp.toSec()*1000.0);
 		outputPlan.add(sp);
 	}
+
+	outputPlan.setGenerationNumber(++generationNumber);
 
 	std::stringstream out;
 	outputPlan.serialize(out);
