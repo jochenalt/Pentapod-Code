@@ -48,6 +48,12 @@ void compileURLParameter(string uri, vector<string> &names, vector<string> &valu
 
 CommandDispatcher::CommandDispatcher() {
 	mapGenerationNumber = 0;
+	localCostmapGenerationNumber = 0;
+	globalCostmapGenerationNumber = 0;
+
+	localPlanGenerationNumber = 0;
+	globalPlanGenerationNumber = 0;
+	trajectoryGenerationNumber = 0;
 }
 
 
@@ -423,18 +429,21 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		string command = uri.substr(string("/trajectory/").length());
 		// map/get
 		if (hasPrefix(command, "get")) {
-			string generationNumberStr ;
-			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			int generationNumber;
-			if (ok) {
-				generationNumber = stringToInt(generationNumberStr,ok);
-				if (serializedTrajectory != "")
-					response = serializedTrajectory+ "," + getResponse(true);
-				else
-					response = getResponse(false);
-			} else {
-				response = serializedTrajectory + "," + getResponse(true);
+			bool deliverContent = false;
+			if (serializedTrajectory != "") {
+				string generationNumberStr ;
+				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+				if (ok) {
+					int generationNumber = stringToInt(generationNumberStr,ok);
+					if (!ok || (generationNumber < trajectoryGenerationNumber))
+						deliverContent = true;
+				} else
+					deliverContent = true;
 			}
+
+			response = getResponse(true);
+			if (deliverContent)
+				response = serializedTrajectory + "," + response;
 
 
 			okOrNOk = true;
@@ -445,18 +454,23 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	if (hasPrefix(uri, "/plan/local")) {
 		string command = uri.substr(string("/plan/local").length());
 		if (hasPrefix(command, "get")) {
-			string generationNumberStr ;
-			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			int generationNumber;
-			if (ok) {
-				generationNumber = stringToInt(generationNumberStr,ok);
-				if (localPlanSerialized!= "")
-					response = localPlanSerialized+ "," + getResponse(true);
-				else
-					response = getResponse(false);
-			} else {
-				response = localPlanSerialized + "," + getResponse(true);
+			bool deliverContent = false;
+			if (localPlanSerialized != "") {
+				string generationNumberStr ;
+				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+				if (ok) {
+					int generationNumber = stringToInt(generationNumberStr,ok);
+					if (!ok || (generationNumber < localPlanGenerationNumber))
+						deliverContent = true;
+				} else
+					deliverContent = true;
 			}
+
+			response = getResponse(true);
+			if (deliverContent)
+				response = localPlanSerialized + "," + response;
+
+
 			okOrNOk = true;
 			return true;
 		}
@@ -465,23 +479,26 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	if (hasPrefix(uri, "/plan/global")) {
 		string command = uri.substr(string("/plan/global").length());
 		if (hasPrefix(command, "get")) {
-			string generationNumberStr ;
-			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			int generationNumber;
-			if (ok) {
-				generationNumber = stringToInt(generationNumberStr,ok);
-				if (globalPlanSerialized!= "")
-					response = globalPlanSerialized+ "," + getResponse(true);
-				else
-						response = getResponse(false);
-			} else {
-				response = globalPlanSerialized + "," + getResponse(true);
+			bool deliverContent = false;
+			if (globalPlanSerialized != "") {
+				string generationNumberStr ;
+				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
+				if (ok) {
+					int generationNumber = stringToInt(generationNumberStr,ok);
+					if (!ok || (generationNumber < globalPlanGenerationNumber))
+						deliverContent = true;
+				} else
+					deliverContent = true;
 			}
+
+			response = getResponse(true);
+			if (deliverContent)
+				response = globalPlanSerialized + "," + response;
+
 			okOrNOk = true;
 			return true;
 		}
 	}
-
 
 
 	if (hasPrefix(uri, "/navigation/")) {

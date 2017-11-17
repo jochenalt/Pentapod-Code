@@ -99,6 +99,7 @@ private:
 
 	int localPlanGenerationNumber;
 	int globalPlanGenerationNumber;
+	int trajectoryGenerationNumber;
 
 	std::string serializedLaserData;
 	std::string serializedTrajectory;
