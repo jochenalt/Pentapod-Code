@@ -18,9 +18,9 @@ max_vel_y_backwards: 0.100
 
 max_vel_theta: 0.2
 min_vel_theta: -0.2 
-acc_lim_x: 0.15
-acc_lim_y: 0.15
-acc_lim_theta: 0.15
+acc_lim_x: 0.06
+acc_lim_y: 0.06
+acc_lim_theta: 0.06
 min_in_place_vel_theta: 0.0
 
 # Footprint model is a point in order to save CPU, distance is kept min_obstacle_dist
@@ -29,17 +29,17 @@ footprint_model:
   type: point            # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
 
 # GoalTolerance is smaller than a grid cell 
-xy_goal_tolerance: 0.04    
-yaw_goal_tolerance: 0.04
+xy_goal_tolerance: 0.05
+yaw_goal_tolerance: 0.05
 
 # Trajectory scoring parameters  
 #occdist_scale: 0.5     # The weighting for how much the controller should attempt to avoid obstacles. default 0.5
-pdist_scale: 5.0       # The weighting for how much the controller should stay close to the path it was given. default 0.6
+#pdist_scale: 5.0       # The weighting for how much the controller should stay close to the path it was given. default 0.6
 #gdist_scale: 0.8 
   
 # Obstacles
-min_obstacle_dist: 0.45          # minumum distance from outer shape of robot to any obstacle.
-inflation_dist: 0.55             # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
+min_obstacle_dist: 0.32          # minumum distance from outer shape of robot to any obstacle.
+inflation_dist: 0.70             # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
 include_costmap_obstacles: True
 costmap_obstacles_behind_robot_dist: 0.5
 obstacle_poses_affected: 15      # Default 30
@@ -58,13 +58,11 @@ penalty_epsilon: 0.05
 #weight_max_vel_theta: 1    # default 1.0
 #weight_acc_lim_x: 1        # default 1.0
 #weight_acc_lim_theta: 1    # default 1.0
-# Optimization weight for satisfying the non-holonomic kinematics. Set to 0 to consider strafing equal to driving forward.
-weight_kinematics_nh: 0
-# Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). 
-# A small weight (e.g. 1.0) still allows driving backwards. 
+# Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
+weight_kinematics_nh: 0 
 weight_kinematics_forward_drive: 0          # Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). A small weight (e.g. 1.0) still allows driving backwards. Default 1.0
 weight_kinematics_turning_radius: 0
-weight_optimaltime: 5
+#weight_optimaltime: 5
 #weight_obstacle: 50
 #weight_dynamic_obstacle: 10 # not in use yet
 

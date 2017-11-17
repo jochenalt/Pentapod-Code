@@ -12,9 +12,9 @@ TrajectoryPlannerROS:
   min_vel_x: -0.100
   max_vel_y: 0.100      # max strafing speed
   min_vel_y: -0.100     # 
-  acc_lim_theta: 0.15
-  acc_lim_x: 0.15
-  acc_lim_y: 0.15
+  acc_lim_theta: 0.06
+  acc_lim_x: 0.06
+  acc_lim_y: 0.06
 
   
 controller_frequency: 3
