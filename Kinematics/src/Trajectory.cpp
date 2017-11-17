@@ -28,7 +28,7 @@ std::ostream& Trajectory::serialize(std::ostream &out) const {
 	serializeVectorOfSerializable(path, out);
 	out << ",\"n\":";
 	serializePrim(out, generationNumber);
-	out << "\"}";
+	out << "}";
 	return out;
 }
 
