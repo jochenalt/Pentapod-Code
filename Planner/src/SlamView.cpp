@@ -175,6 +175,13 @@ void SlamView::drawFreeSlamGrid( const Point &g1,const Point &g2, const Point &g
 
 void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
 	float lethalNess= value/100.0;
+
+	// spread the lethalNess a bit; lethal or dangerous value are full red,
+	if (value >= 99)
+		lethalNess = 1.0;
+	else
+		lethalNess *= 0.7;
+
 	// show lethal points in red, and harmless grid cells in green
 	GLfloat color[] = { 0,0,0, glAlphaTransparent};
 
@@ -182,12 +189,12 @@ void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,con
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
-		color[3] = 0.3;
+		color[3] = 0.2;
 	} else {
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
-		color[3] = 0.6;
+		color[3] = 0.5;
 	}
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
@@ -199,7 +206,7 @@ void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,con
 		glVertex3f(g1.y, g1.z + offset, g1.x);
 		glVertex3f(g2.y, g2.z + offset, g2.x);
 		glVertex3f(g4.y, g4.z + offset, g4.x);
-		glVertex3f(g3.y, g3.z, g3.x);
+		glVertex3f(g3.y, g3.z + offset, g3.x);
 	glEnd();
 }
 
@@ -420,28 +427,29 @@ void SlamView::drawSlamMap() {
 
 void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 
-	Point botPosition = odom.position;
+	Map map = EngineProxy::getInstance().getGlobalCostmap();
+	Point origin = odom.position;
 
-	Map* map = NULL;
+	Map* costmap = NULL;
 	if (type == GLOBAL_COSTMAP) {
-		map = &EngineProxy::getInstance().getGlobalCostmap();
-		botPosition.null();
+		costmap = &EngineProxy::getInstance().getGlobalCostmap();
+		origin.null();
 	}
 	else
-		map = &EngineProxy::getInstance().getLocalCostmap();
+		costmap = &EngineProxy::getInstance().getLocalCostmap();
 
-	int fullMapSizeX = map->getMapSizeX();
-	int fullMapSizeY = map->getMapSizeY();
-	int gridLength = map->getGridSize();
+	int fullMapSizeX = costmap->getMapSizeX();
+	int fullMapSizeY = costmap->getMapSizeY();
+	int gridLength = costmap->getGridSize();
 
 	if ((fullMapSizeX == 0) || (fullMapSizeY == 0) || (gridLength == 0))
 		return;
 
 	// limit the drawn structure to an area that is three times the viewing distance
-	int mapSizeX =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeX)/gridLength/2);
-	int mapSizeY =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, fullMapSizeY)/gridLength/2);
+	int mapSizeX =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, map.getMapSizeX())/gridLength/2);
+	int mapSizeY =2*gridLength*(int)(constrain((int)(getEyeDistance()*3.0), 0, map.getMapSizeY())/gridLength/2);
 
-	// draw the SLAM map.
+	// draw the SLAM costmap.
 	Point lookAtPosition(getLookAtPosition());
 
 	// take care that the origin is dividable by gridLength in order to
@@ -454,23 +462,26 @@ void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 	int minY = constrain(- mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
 	int maxY = constrain(+ mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
 
+	Point null;
 	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
-		int xFrom = localGridX + botPosition.x;
+		int xFrom = localGridX + origin.x;
 		int xTo = xFrom + gridLength;
 		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
 
-			int costValue = map->getValueByWorld(localGridX,localGridY);
-			if (costValue > 0) {
-				int yTo = localGridY + gridLength/2 + botPosition.y;
-				int yFrom = yTo - gridLength/2;
+			if (Point(localGridX, localGridY).length() <= fullMapSizeX/2.0 + gridLength/2.0) {
+				int costValue = costmap->getValueByWorld(localGridX,localGridY);
+				if (costValue > 0) {
+					int yTo = localGridY + gridLength/2 + origin.y;
+					int yFrom = yTo - gridLength;
 
-				int offset = 3;
-				int z = 50;
-				Point g1(xFrom+offset, 	(yFrom+offset), 	z);
-				Point g2(xTo-offset, 	(yFrom+offset),		z);
-				Point g3(xTo-offset, 	(yTo-offset),		z);
-				Point g4(xFrom+offset, 	(yTo-offset),		z);
-				drawCostmapGrid(type, costValue, g1, g2, g3, g4);
+					int offset = 3;
+					int z = 50;
+					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
+					Point g2(xTo-offset, 	(yFrom+offset),		z);
+					Point g3(xTo-offset, 	(yTo-offset),		z);
+					Point g4(xFrom+offset, 	(yTo-offset),		z);
+					drawCostmapGrid(type, costValue, g1, g2, g3, g4);
+				}
 			}
 		}
 	}
