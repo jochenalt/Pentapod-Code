@@ -45,7 +45,7 @@ private:
 	void drawCoordSystem();
 	void drawSlamMap();
 	enum CostmapType { LOCAL_COSTMAP, GLOBAL_COSTMAP };
-	void drawCostMap(CostmapType type);
+	void drawCostMap(CostmapType type, const Pose& odom);
 	void drawCostmapGrid( CostmapType type, int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
 
 	void drawSmallBot(const Pose& pose);

@@ -187,13 +187,13 @@ void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,con
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
-		color[3] = 0.4;
+		color[3] = 0.6;
 	}
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 		glColor4fv(color);
 		glNormal3f(0.0,1.0,0.0);
-		int offset = 0;
+		int offset = 5;
 		if (type == GLOBAL_COSTMAP)
 			offset = -20;
 		glVertex3f(g1.y, g1.z + offset, g1.x);
@@ -418,11 +418,15 @@ void SlamView::drawSlamMap() {
 }
 
 
-void SlamView::drawCostMap(CostmapType type) {
+void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
+
+	Point botPosition = odom.position;
 
 	Map* map = NULL;
-	if (type == GLOBAL_COSTMAP)
+	if (type == GLOBAL_COSTMAP) {
 		map = &EngineProxy::getInstance().getGlobalCostmap();
+		botPosition.null();
+	}
 	else
 		map = &EngineProxy::getInstance().getLocalCostmap();
 
@@ -451,14 +455,14 @@ void SlamView::drawCostMap(CostmapType type) {
 	int maxY = constrain(+ mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
 
 	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
-		int xFrom = localGridX;
-		int xTo = localGridX + gridLength;
+		int xFrom = localGridX + botPosition.x;
+		int xTo = xFrom + gridLength;
 		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
 
 			int costValue = map->getValueByWorld(localGridX,localGridY);
 			if (costValue > 0) {
-				int yTo = localGridY + gridLength/2;
-				int yFrom = localGridY - gridLength/2;
+				int yTo = localGridY + gridLength/2 + botPosition.y;
+				int yFrom = yTo - gridLength/2;
 
 				int offset = 3;
 				int z = 50;
@@ -493,8 +497,8 @@ void SlamView::drawMap() {
 	drawSmallBot(fusedPose);
 	drawNavigationGoal();
 	drawSlamMap();
-	drawCostMap(GLOBAL_COSTMAP);
-	drawCostMap(LOCAL_COSTMAP);
+	drawCostMap(GLOBAL_COSTMAP, Pose());
+	drawCostMap( LOCAL_COSTMAP, fusedPose);
 	drawLaserScan();
 	drawTrajectory(EngineProxy::GLOBAL_PLAN);
 	drawTrajectory(EngineProxy::LOCAL_PLAN);
