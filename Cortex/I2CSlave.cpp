@@ -187,7 +187,16 @@ void I2CSlave::executeRequest() {
 				for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
 					float angle = leg.servos[limbNo].getCurrentAngle();
 					angles[limbNo + legNo*NumberOfLimbs] = angle;
-					servoStatus[limbNo + legNo*NumberOfLimbs] = leg.getStatus(limbNo);
+					ServoStatusType stat = leg.getStatus(limbNo);
+					servoStatus[limbNo + legNo*NumberOfLimbs] = stat;
+					if (stat != SERVO_STAT_OK) {
+						cmdSerial->print("servo ");
+						cmdSerial->print(limbNo);
+						cmdSerial->print("servo of leg ");
+						cmdSerial->print(legNo);
+						cmdSerial->print(" failed with status ");
+						cmdSerial->println(stat);
+					}
 				}
 			}
 

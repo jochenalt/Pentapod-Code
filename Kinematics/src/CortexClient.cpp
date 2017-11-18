@@ -680,11 +680,16 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - sendDuration);
 	// uint32_t receiveDuration = millis() - start - sendDuration;
-	bool ok = (bytesRead  == responseSize);
-
-    stringstream responseStream;
-	for (int i = 0;i<bytesRead;i++) {
-		responseStream << (int)response[i] << ' ';
+	bool ok = true;
+	if (bytesRead  == responseSize) {
+	    stringstream responseStream;
+		for (int i = 0;i<bytesRead;i++) {
+			responseStream << (int)response[i] << ' ';
+		}
+	} else {
+		ok = false;
+		setError(CORTEX_RESPONSE_SIZE_WRONG);
+		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
 
 	// ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> {" << responseStream.str() << "}" << " t=" << sendDuration + receiveDuration << " (" << getLastError() << ")");

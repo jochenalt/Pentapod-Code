@@ -517,7 +517,7 @@ void EngineProxy::updateLaserScan() {
 }
 
 void EngineProxy::updateTrajectory() {
-	updateTrajectory(TRAJECTORY);
+	// updateTrajectory(TRAJECTORY);
 	updateTrajectory(GLOBAL_PLAN);
 	updateTrajectory(LOCAL_PLAN);
 }

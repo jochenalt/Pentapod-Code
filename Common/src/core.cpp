@@ -68,6 +68,9 @@ std::string getErrorMessage(ErrorCodeType err) {
 	case CORTEX_POWER_ON_WITHOUT_SETUP: msg << "cannot power on without being setup";break;
 	case CORTEX_SETUP_MISSING: 			msg << "call setup upfront";break;
 	case CORTEX_RESPONSE_NOT_PARSED:	msg << "cortex reponse could not be parsed";break;
+	case CORTEX_RESPONSE_SIZE_WRONG:	msg << "cortex reponse size not as expected";break;
+
+
 
 	// Webserver
 	case WEBSERVER_TIMEOUT: 			msg << "no response from webserver (timeout)";break;

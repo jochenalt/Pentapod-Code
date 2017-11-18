@@ -177,7 +177,7 @@ void GluiReshapeCallback( int x, int y )
 
 void resetBodyPosition() {
 	inputBodyPose.null();
-	inputBodyPose.position.z = 140;
+	inputBodyPose.position.z = standardBodyHeigh;
 }
 
 void copyBodyPositionToView() {
