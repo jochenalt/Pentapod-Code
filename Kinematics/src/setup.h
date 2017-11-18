@@ -45,7 +45,7 @@ const realnum maxFootTouchPointRadius = 340.0;
 const realnum sleepingFootTouchPointRadius = 300;
 
 // possible acceleration of angualar speed
-const realnum maxAngularSpeedAcceleration = 0.5; //  [rad/s^2]
+const realnum maxAngularSpeedAcceleration = 0.6; //  [rad/s^2]
 const realnum maxAngularSpeed = 0.4; 			 //  [rad/s]
 
 // walking direction cannot be changed immediately but with that angular speed per speed*t

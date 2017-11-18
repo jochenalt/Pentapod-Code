@@ -109,7 +109,7 @@ public:
 
     // return the mode in terms of sleeping, walking, terrain-walking,...
 	GeneralEngineModeType getGeneralMode() { return generalMode; };
-
+	bool isAwake() { return generalMode == WalkingMode)  || (generalMode == TerrainMode)) };
 	// return true, if we can receive speed commands
 	bool isListeningToMovements() { return (generalMode == GeneralEngineModeType::WalkingMode) || (generalMode == GeneralEngineModeType::TerrainMode); };
 
