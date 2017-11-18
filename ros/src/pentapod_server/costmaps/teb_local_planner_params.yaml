@@ -2,11 +2,8 @@ odom_topic: /odom
 map_frame: /map
 
 # Trajectory
-# teb_autosize: True
-#dt_ref: 0.4
-#dt_hysteresis: 0.3                          # hysteresis of path changes. If too small, in narrow corridors robot osscilates between the two walls.  
 # global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
-max_global_plan_lookahead_dist: 1.5
+max_global_plan_lookahead_dist: 2.0
 allow_init_backward_motion: true
 
 # Robot acceleration and speed limits
@@ -49,14 +46,15 @@ costmap_converter_rate: 5
 # Optimization
 optimization_activate: True
 optimization_verbose: False
-penalty_epsilon: 0.05
+penalty_epsilon: 0.05 # needs to be smaller than any acceleration limit (really strange parameter, since acceleration limits have not the same dimension ?!? )
+
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
-weight_kinematics_nh: 0 
-weight_kinematics_forward_drive: 0          # Optimization weight for forcing the robot to choose only forward directions (positive transl. velocities). A small weight (e.g. 1.0) still allows driving backwards. Default 1.0
-weight_kinematics_turning_radius: 0
+weight_kinematics_nh: 0                     # do not create trajectories for car-like robots
+weight_kinematics_forward_drive: 0          # do not try to drive forward
+weight_kinematics_turning_radius: 0         # do not try to optimize the turning radius
 
 # Homotopy Class Planner
-enable_homotopy_class_planning: False # true induces much too high cpu load for ODroid 
+enable_homotopy_class_planning: False # would induce explosive cpu load 
 #enable_multithreading: True
 #simple_exploration: False
 #max_number_classes: 1

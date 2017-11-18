@@ -1,6 +1,6 @@
 <launch>
    <!-- start navigation stack via move_base node -->
-   <node pkg="move_base" type="move_base" name="move_base" output="screen">
+   <node pkg="move_base" type="move_base" name="move_base" respawn="true" output="log">
 
        <!-- common parameters for local and global costmap -->
        <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />

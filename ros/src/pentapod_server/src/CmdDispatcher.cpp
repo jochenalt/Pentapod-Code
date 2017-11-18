@@ -47,24 +47,16 @@ void compileURLParameter(string uri, vector<string> &names, vector<string> &valu
 
 CommandDispatcher::CommandDispatcher() {
 	mapGenerationNumber = 0;
-	localCostmapGenerationNumber = 0;
-	globalCostmapGenerationNumber = 0;
-
-	localPlanGenerationNumber = 0;
-	globalPlanGenerationNumber = 0;
 	trajectoryGenerationNumber = 0;
 	lidarIsOn = false;
 }
 
 
-
-void CommandDispatcher::setup(ros::NodeHandle& handle) {
-
-	//tell the action client that we want to spin a thread by default and wait until up and running
-	moveBaseClient = new MoveBaseClient("move_base", true);
-
-	// subscribe to the SLAM map coming from hector slamming
-	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
+void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
+	localCostmapGenerationNumber = -1;
+	globalCostmapGenerationNumber = -1;
+	localPlanGenerationNumber = -1;
+	globalPlanGenerationNumber = -1;
 
 	// subscribe to the navigation stack topic that delivers the global costmap
 	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
@@ -80,6 +72,15 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 
 	// subscribe to path of global planner
 	globalPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
+}
+
+void CommandDispatcher::setup(ros::NodeHandle& handle) {
+
+	//tell the action client that we want to spin a thread by default and wait until up and running
+	moveBaseClient = new MoveBaseClient("move_base", true);
+
+	// subscribe to the SLAM map coming from hector slamming
+	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
@@ -118,6 +119,11 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	    ROS_INFO_THROTTLE(1,"Waiting for the move_base action server to come up");
 	}
 
+	if (moveBaseClient->isServerConnected())
+		setupNavigationStackTopics(handle);
+	else {
+	    ROS_ERROR("move_base did not come up!!!");
+	}
 }
 
 
@@ -200,10 +206,6 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	vector<string> urlParamValue;
 
 	compileURLParameter(query,urlParamName,urlParamValue);
-
-	// check if direct cortex command defined via URL parameter
-	// example: /cortex/LED?blink
-	ROS_DEBUG("url: %s query:%s", uri.c_str(), query.c_str());
 
 	// check, if TransactionExecutor is called with orchestrated calls
 	if (hasPrefix(uri, "/engine/")) {
@@ -540,6 +542,28 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	}
 
 
+	if (hasPrefix(uri, "/lidar/")) {
+		string command = uri.substr(string("/lidar/").length());
+		// map/get
+		if (hasPrefix(command, "start")) {
+			startLidar(true);
+			response = getResponse(true);
+			okOrNOk = true;
+			return true;
+		}
+		else if (hasPrefix(command,"stop")) {
+			startLidar(false);
+			response = getResponse(true);
+			okOrNOk = true;
+		}
+		else if (hasPrefix(command,"get")) {
+			response = string(lidarIsOn?"true":"false") + "," + getResponse(true);
+			okOrNOk = true;
+		}
+
+		return okOrNOk;
+	}
+
 	okOrNOk = false;
 	return false;
 }
@@ -677,7 +701,7 @@ void CommandDispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path)
 
 	std::stringstream out;
 	trajectory.serialize(out);
-	serializedTrajectory= out.str();
+	serializedTrajectory = out.str();
 }
 
 // subscription to odom
@@ -693,6 +717,27 @@ void CommandDispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odo
 	realnum angularSpeedZ  = odom->twist.twist.angular.z;
 }
 
+void CommandDispatcher::startLidar(bool on) {
+ 	std_srvs::Empty srv;
+	if (on) {
+	    ROS_INFO("RPLidar is turned on");
+		 startLidarService.call(srv);
+		 lidarIsOn = true;
+	}
+	else  {
+	    ROS_INFO("RPLidar is turned off");
+ 		stopLidarService.call(srv);
+		lidarIsOn = false;
+	}
+}
+
+
+// ugly thing: if the lidar is not on during startup of the navigation stack, and
+// therefore not slam map is generated, the navigation stack gives up and does not
+// recover when the SLAM map is there.
+
+void CommandDispatcher::initNavigation() {
+}
 
 // subscription to bots state
 void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {
@@ -709,12 +754,17 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 
  	// check if we need to switch on the lidar
  	bool lidarShouldBeOn = ((engineState.engineMode == WalkingMode) || (engineState.engineMode == TerrainMode));
- 	std_srvs::Empty srv;
- 	if (lidarShouldBeOn && !lidarIsOn)
+ 	/*
+ 	if (lidarShouldBeOn && !lidarIsOn) {
+	    ROS_INFO("Bot is awakened, RPLidar is switched on");
  		startLidarService.call(srv);
- 	if (!lidarShouldBeOn && lidarIsOn)
+ 	}
+ 	if (!lidarShouldBeOn && lidarIsOn) {
+	    ROS_INFO("Bot falls asleep, RPLidar is switched off");
  		stopLidarService.call(srv);
+ 	}
 	lidarIsOn = !lidarShouldBeOn;
+	*/
 }
 
 

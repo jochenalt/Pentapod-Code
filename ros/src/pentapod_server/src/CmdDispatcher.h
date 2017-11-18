@@ -76,6 +76,11 @@ public:
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
 	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
+	void startLidar(bool on);
+	void initNavigation();
+	void setupNavigationStackTopics(ros::NodeHandle& handle);
+
+
 private:
 
 	std::string serializedLaserScan;
