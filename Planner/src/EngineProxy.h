@@ -27,8 +27,9 @@ public:
 class EngineProxy {
 	const int BotTrajectorySampleRate = 100; 	// [ms] update rate of fetching the kinematic
 	const int UpdateMapSampleRate = 500;		// [ms] update rate of map fetching (if no map is there, nothing happens)
-	const int UpdateCostmapSampleRate = 2000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
-	const int UpdateLaserScanSampleRate = 500;	// [ms] update rate of laser scan
+	const int UpdateLocalCostmapSampleRate = 1000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
+	const int UpdateGlobalCostmapSampleRate = 2000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
+	const int UpdateLaserScanSampleRate = 1000;	// [ms] update rate of laser scan
 	const int UpdateTrajectorySampleRate = 500;	// [ms] update rate of laser scan
 
 public:
@@ -130,8 +131,11 @@ public:
 	// return the map with occupancy grid
 	Map& getMap();
 
-	// return the costmap with occupancy grid
-	Map& getCostmap();
+	// return local costmap on the basis of current laser scan
+	Map& getLocalCostmap();
+
+	// return the global costmap on basis of SLAM map
+	Map& getGlobalCostmap();
 
 	// return the last 360° lidar scan in one array
 	LaserScan& getLaserScan();
@@ -170,7 +174,9 @@ public:
 private:
 	void updateLaserScan();
 	void updateMap();
-	void updateCostmap();
+	void updateLocalCostmap();
+	void updateGlobalCostmap();
+
 	void updateTrajectory(TrajectoryType type);
 	void updateTrajectory();
 
@@ -179,7 +185,8 @@ private:
 	bool newLaserScanAvailable = false;
 	bool newBotDataAvailable = false;
 	bool newMapDataAvailable = false;
-	bool newCostmapAvailable = false;
+	bool newLocalCostmapAvailable = false;
+	bool newGlobalCostmapAvailable = false;
 	bool newMapPoseDataAvailable = false;
 	bool newTrajectoryDataAvailable = false;
 	bool newNavigationStatusIsAvailable = false;
@@ -192,12 +199,16 @@ private:
 	bool callRemoteEngine;
 	TimeSamplerStatic remoteEngineCallTimer;
 	TimeSamplerStatic fetchMapTimer;
-	TimeSamplerStatic fetchCostmapTimer;
+	TimeSamplerStatic fetchLocalCostmapTimer;
+	TimeSamplerStatic fetchGlobalCostmapTimer;
+
 	TimeSamplerStatic fetchEstimatedPoseTimer;
 	TimeSamplerStatic fetchLaserScanTimer;
 	TimeSamplerStatic fetchTrajectoryTimer;
 
-	Map costmap;
+	Map localCostmap;
+	Map globalCostmap;
+
 	Map map;
 	Pose mapPose;
 	LaserScan laserScan;

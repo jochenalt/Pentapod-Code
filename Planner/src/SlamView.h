@@ -37,7 +37,6 @@ private:
 
 	void drawFreeSlamGrid( const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawOccupiedSlamGrid(bool onlyTop,  const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
-	void drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
 	void drawLaserScan();
 	void drawNavigationGoal();
 	void drawCoordRaster();
@@ -45,7 +44,9 @@ private:
 	void drawTrajectory(EngineProxy::TrajectoryType type);
 	void drawCoordSystem();
 	void drawSlamMap();
-	void drawCostMap();
+	enum CostmapType { LOCAL_COSTMAP, GLOBAL_COSTMAP };
+	void drawCostMap(CostmapType type);
+	void drawCostmapGrid( CostmapType type, int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
 
 	void drawSmallBot(const Pose& pose);
 	string title;

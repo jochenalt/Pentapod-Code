@@ -192,7 +192,7 @@ void I2CSlave::executeRequest() {
 					if (stat != SERVO_STAT_OK) {
 						cmdSerial->print("servo ");
 						cmdSerial->print(limbNo);
-						cmdSerial->print("servo of leg ");
+						cmdSerial->print(" of leg ");
 						cmdSerial->print(legNo);
 						cmdSerial->print(" failed with status ");
 						cmdSerial->println(stat);

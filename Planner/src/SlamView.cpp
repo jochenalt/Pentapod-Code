@@ -173,22 +173,32 @@ void SlamView::drawFreeSlamGrid( const Point &g1,const Point &g2, const Point &g
 	glEnd();
 }
 
-void SlamView::drawCostmapGrid( int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
+void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
 	float lethalNess= value/100.0;
 	// show lethal points in red, and harmless grid cells in green
-	GLfloat color[] = { lethalNess/2.0f, (1.0f-lethalNess)/2.0f, 0, glAlphaTransparent};
-	if (value >= 99) {
-		color[0] = 1.0;
-		color[1] = 0.0;
+	GLfloat color[] = { 0,0,0, glAlphaTransparent};
+
+	if (type == GLOBAL_COSTMAP) {
+		color[0] = lethalNess/2.0f;
+		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
+		color[3] = 0.3;
+	} else {
+		color[0] = lethalNess/2.0f;
+		color[1] = (1.0f-lethalNess)/2.0f;
+		color[2] = 0.0;
+		color[3] = 0.4;
 	}
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 		glColor4fv(color);
 		glNormal3f(0.0,1.0,0.0);
-		glVertex3f(g1.y, g1.z, g1.x);
-		glVertex3f(g2.y, g2.z, g2.x);
-		glVertex3f(g4.y, g4.z, g4.x);
+		int offset = 0;
+		if (type == GLOBAL_COSTMAP)
+			offset = -20;
+		glVertex3f(g1.y, g1.z + offset, g1.x);
+		glVertex3f(g2.y, g2.z + offset, g2.x);
+		glVertex3f(g4.y, g4.z + offset, g4.x);
 		glVertex3f(g3.y, g3.z, g3.x);
 	glEnd();
 }
@@ -407,12 +417,18 @@ void SlamView::drawSlamMap() {
 	}
 }
 
-void SlamView::drawCostMap() {
-	Map& map = EngineProxy::getInstance().getCostmap();
 
-	int fullMapSizeX = map.getMapSizeX();
-	int fullMapSizeY = map.getMapSizeY();
-	int gridLength = map.getGridSize();
+void SlamView::drawCostMap(CostmapType type) {
+
+	Map* map = NULL;
+	if (type == GLOBAL_COSTMAP)
+		map = &EngineProxy::getInstance().getGlobalCostmap();
+	else
+		map = &EngineProxy::getInstance().getLocalCostmap();
+
+	int fullMapSizeX = map->getMapSizeX();
+	int fullMapSizeY = map->getMapSizeY();
+	int gridLength = map->getGridSize();
 
 	if ((fullMapSizeX == 0) || (fullMapSizeY == 0) || (gridLength == 0))
 		return;
@@ -439,22 +455,23 @@ void SlamView::drawCostMap() {
 		int xTo = localGridX + gridLength;
 		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
 
-			int costValue = map.getValueByWorld(localGridX,localGridY);
+			int costValue = map->getValueByWorld(localGridX,localGridY);
 			if (costValue > 0) {
 				int yTo = localGridY + gridLength/2;
 				int yFrom = localGridY - gridLength/2;
 
 				int offset = 3;
-				int z = 20;
+				int z = 50;
 				Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 				Point g2(xTo-offset, 	(yFrom+offset),		z);
 				Point g3(xTo-offset, 	(yTo-offset),		z);
 				Point g4(xFrom+offset, 	(yTo-offset),		z);
-				drawCostmapGrid(costValue, g1, g2, g3, g4);
+				drawCostmapGrid(type, costValue, g1, g2, g3, g4);
 			}
 		}
 	}
 }
+
 
 void SlamView::drawMap() {
 
@@ -476,9 +493,9 @@ void SlamView::drawMap() {
 	drawSmallBot(fusedPose);
 	drawNavigationGoal();
 	drawSlamMap();
-	drawCostMap();
+	drawCostMap(GLOBAL_COSTMAP);
+	drawCostMap(LOCAL_COSTMAP);
 	drawLaserScan();
-	// drawTrajectory(EngineProxy::TRAJECTORY);
 	drawTrajectory(EngineProxy::GLOBAL_PLAN);
 	drawTrajectory(EngineProxy::LOCAL_PLAN);
 

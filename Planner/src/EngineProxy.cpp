@@ -163,12 +163,17 @@ void EngineProxy::loop() {
 			}
 		}
 
-		if (UpdateCostmapSampleRate > 0) {
-			if (fetchCostmapTimer.isDue(UpdateCostmapSampleRate)) {
-				updateCostmap();
+		if (UpdateLocalCostmapSampleRate > 0) {
+			if (fetchLocalCostmapTimer.isDue(UpdateLocalCostmapSampleRate)) {
+				updateLocalCostmap();
 			}
 		}
 
+		if (UpdateGlobalCostmapSampleRate > 0) {
+			if (fetchGlobalCostmapTimer.isDue(UpdateGlobalCostmapSampleRate)) {
+				updateGlobalCostmap();
+			}
+		}
 
 		if (UpdateLaserScanSampleRate > 0) {
 			if (fetchLaserScanTimer.isDue(UpdateLaserScanSampleRate)) {
@@ -415,9 +420,14 @@ Map& EngineProxy::getMap() {
 }
 
 
-Map& EngineProxy::getCostmap() {
-	return costmap;
+Map& EngineProxy::getLocalCostmap() {
+	return localCostmap;
 }
+
+Map& EngineProxy::getGlobalCostmap() {
+	return globalCostmap;
+}
+
 LaserScan& EngineProxy::getLaserScan() {
 	return laserScan;
 }
@@ -476,11 +486,11 @@ void EngineProxy::updateMap() {
 	}
 }
 
-void EngineProxy::updateCostmap() {
+void EngineProxy::updateLocalCostmap() {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
-		url << "/costmap/local/get?no=" << costmap.getGenerationNumber();
+		url << "/costmap/local/get?no=" << localCostmap.getGenerationNumber();
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 
@@ -490,8 +500,28 @@ void EngineProxy::updateCostmap() {
 		tmp.deserialize(in, ok);
 
 		if (ok) {
-			newCostmapAvailable = true;
-			costmap = tmp;
+			newLocalCostmapAvailable = true;
+			localCostmap = tmp;
+		}
+	}
+}
+
+void EngineProxy::updateGlobalCostmap() {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+		url << "/costmap/global/get?no=" << globalCostmap.getGenerationNumber();
+		remoteEngine.httpGET(url.str(), responseStr, 20000);
+		std::istringstream in(responseStr);
+
+		bool ok = true;
+		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
+		Map tmp;
+		tmp.deserialize(in, ok);
+
+		if (ok) {
+			newGlobalCostmapAvailable = true;
+			globalCostmap = tmp;
 		}
 	}
 }
@@ -592,8 +622,8 @@ bool EngineProxy::isMapDataAvailable() {
 }
 
 bool EngineProxy::isCostmapDataAvailable() {
-	if (newCostmapAvailable) {
-		newCostmapAvailable = false;
+	if (newLocalCostmapAvailable) {
+		newLocalCostmapAvailable = false;
 		return true;
 	}
 	return false;
