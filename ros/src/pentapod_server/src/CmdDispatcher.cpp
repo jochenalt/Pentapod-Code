@@ -1,17 +1,16 @@
-#include "CmdDispatcher.h"
 
 #include <vector>
-#include "setup.h"
 
+#include <move_base_msgs/MoveBaseAction.h>
+#include "std_srvs/Empty.h"
+
+#include "setup.h"
 #include "core.h"
 #include "Map.h"
 #include "Trajectory.h"
-
 #include "Util.h"
-
-#include <move_base_msgs/MoveBaseAction.h>
-
 #include "DarkHoleFinder.h"
+#include "CmdDispatcher.h"
 
 using namespace std;
 
@@ -54,6 +53,7 @@ CommandDispatcher::CommandDispatcher() {
 	localPlanGenerationNumber = 0;
 	globalPlanGenerationNumber = 0;
 	trajectoryGenerationNumber = 0;
+	lidarIsOn = false;
 }
 
 
@@ -63,7 +63,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	//tell the action client that we want to spin a thread by default and wait until up and running
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
-	// subscribe to the SLAM map
+	// subscribe to the SLAM map coming from hector slamming
 	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the navigation stack topic that delivers the global costmap
@@ -75,11 +75,10 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// string localPlannerName = "EBandPlannerROS";
 	string localPlannerName = "TebLocalPlannerROS";
 
-
-	// subscribe to local path computation
+	// subscribe to path of local planner
 	localPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
 
-	// subscribe to global path computation
+	// subscribe to path of global planner
 	globalPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
@@ -96,6 +95,11 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 
 	// subscribe to the bots state
 	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &CommandDispatcher::listenerBotState,  this);
+
+	// service to start or stop the lidar motor
+	startLidarService = handle.serviceClient<std_srvs::Empty>("/start_motor");
+	stopLidarService = handle.serviceClient<std_srvs::Empty>("/stop_motor");
+
 
 	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
@@ -702,6 +706,15 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 	fusedMapOdomPose += odomDiff;
  	engineState.currentFusedPose = fusedMapOdomPose;
  	engineState.currentMapPose = mapPose;
+
+ 	// check if we need to switch on the lidar
+ 	bool lidarShouldBeOn = ((engineState.engineMode == WalkingMode) || (engineState.engineMode == TerrainMode));
+ 	std_srvs::Empty srv;
+ 	if (lidarShouldBeOn && !lidarIsOn)
+ 		startLidarService.call(srv);
+ 	if (!lidarShouldBeOn && lidarIsOn)
+ 		stopLidarService.call(srv);
+	lidarIsOn = !lidarShouldBeOn;
 }
 
 

@@ -56,7 +56,7 @@ weight_kinematics_forward_drive: 0          # Optimization weight for forcing th
 weight_kinematics_turning_radius: 0
 
 # Homotopy Class Planner
-enable_homotopy_class_planning: False
+enable_homotopy_class_planning: False # true induces much too high cpu load for ODroid 
 #enable_multithreading: True
 #simple_exploration: False
 #max_number_classes: 1

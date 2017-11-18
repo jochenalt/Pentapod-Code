@@ -118,7 +118,6 @@ private:
 	ros::Subscriber localCostmapSubscriber;
 	ros::Subscriber globalPathSubscriber;
 	ros::Subscriber localPathSubscriber;
-
 	ros::Subscriber laserScanSubscriber;
 
 	ros::Subscriber estimatedSLAMPoseSubscriber;
@@ -126,10 +125,15 @@ private:
 	ros::Subscriber stateSubscriber;
 	ros::Subscriber pathSubscriber;
 
+	ros::ServiceClient startLidarService;
+	ros::ServiceClient stopLidarService;
+
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
 
 	DarkHoleFinder holeFinder;
+
+	bool lidarIsOn;
 };
 
 
