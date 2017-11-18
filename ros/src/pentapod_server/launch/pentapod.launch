@@ -6,7 +6,7 @@
   - pentapod_server that coordinates everything and provides results via a mongoose webserver
  -->
 <launch>
-  <include file="$(find pentapod_server)/launch/pentapod_nav.launch" />
+  <include file="$(find pentapod_server)/launch/pentapod_navigation.launch" />
   <include file="$(find pentapod_server)/launch/rplidar.launch" />
 
   <include file="$(find pentapod_server)/launch/pentapod_engine.launch" />
