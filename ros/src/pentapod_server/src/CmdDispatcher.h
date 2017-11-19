@@ -139,6 +139,7 @@ private:
 	DarkHoleFinder holeFinder;
 
 	bool lidarIsOn;
+	bool lastLidarShouldBeOn;
 };
 
 

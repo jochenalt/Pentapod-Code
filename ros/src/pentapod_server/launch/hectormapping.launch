@@ -1,33 +1,5 @@
 <launch>
     <node pkg="hector_mapping" type="hector_mapping" respawn="true" name="hector_height_mapping">
-    <param name="scan_topic" value="scan" />
-    <param name="base_frame" value="base_link" />
-    <param name="odom_frame" value="base_link" />
-
-    <param name="output_timing" value="false"/>
-    <param name="advertise_map_service" value="true"/>
-    <param name="use_tf_scan_transformation" value="true"/>
-    <param name="use_tf_pose_start_estimate" value="false"/>
-    <param name="pub_map_odom_transform" value="false"/>
-    <param name="map_with_known_poses" value="false"/>
-
-    <param name="map_pub_period" value="2.0"/>
-
-    <param name="map_update_distance_thresh" value="0.05"/>
-    <param name="map_update_angle_thresh" value="0.1"/>
-
-    <param name="map_resolution" value="0.05"/>
-    <param name="map_size" value="512"/>
-    <param name="map_start_x" value="0.5"/>
-    <param name="map_start_y" value="0.5"/>
- 
-    <!-- min and max laser distance that is interpreted -->
-    <param name="laser_max_dist" value="8.0"/>
-    
-    <!-- min laser distance that is interpreted, Lidar starts at 0.4m, 
-         but knee can reach 0.45m so in case a knee blocks the sight do
-         not take that into account as obstacle -->
-    <param name="laser_min_dist" value="0.45"/>
-
+        <rosparam file="$(find pentapod_server)/costmaps/hectormapping_params.yaml" command="load" />
   </node>
 </launch>

@@ -49,6 +49,7 @@ CommandDispatcher::CommandDispatcher() {
 	mapGenerationNumber = 0;
 	trajectoryGenerationNumber = 0;
 	lidarIsOn = false;
+	lastLidarShouldBeOn = false;
 }
 
 
@@ -367,15 +368,13 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	if (hasPrefix(uri, "/costmap/global")) {
-		string mapCommand = uri.substr(string("/costmap/global").length());
-		// map/get
-		if (hasPrefix(mapCommand, "get")) {
-			string generationNumberStr ;
+	if (hasPrefix(uri, "/costmap/")) {
+		string mapCommand = uri.substr(string("/costmap/").length());
+		string generationNumberStr ;
+		if (hasPrefix(mapCommand, "global/get")) {
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			int generationNumber;
 			if (ok) {
-				generationNumber = stringToInt(generationNumberStr,ok);
+				int generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < globalCostmapGenerationNumber)) {
 					// passed version is older than ours, deliver map
 					response = globalCostMapSerialized + "," + getResponse(true);
@@ -391,17 +390,10 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			okOrNOk = true;
 			return true;
 		}
-	}
-
-	if (hasPrefix(uri, "/costmap/local")) {
-		string mapCommand = uri.substr(string("/costmap/local").length());
-		// map/get
-		if (hasPrefix(mapCommand, "get")) {
-			string generationNumberStr ;
+		if (hasPrefix(mapCommand, "local/get")) {
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			int generationNumber;
 			if (ok) {
-				generationNumber = stringToInt(generationNumberStr,ok);
+				int generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < localCostmapGenerationNumber)) {
 					// passed version is older than ours, deliver map
 					response = localCostMapSerialized + "," + getResponse(true);
@@ -417,6 +409,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			okOrNOk = true;
 			return true;
 		}
+
 	}
 
 	// delivery the laser scan
@@ -752,19 +745,14 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
  	engineState.currentFusedPose = fusedMapOdomPose;
  	engineState.currentMapPose = mapPose;
 
- 	// check if we need to switch on the lidar
+ 	// turn on the lidar if we wake up
+ 	// turn it off when we fall asleep
  	bool lidarShouldBeOn = ((engineState.engineMode == WalkingMode) || (engineState.engineMode == TerrainMode));
- 	/*
- 	if (lidarShouldBeOn && !lidarIsOn) {
-	    ROS_INFO("Bot is awakened, RPLidar is switched on");
- 		startLidarService.call(srv);
- 	}
- 	if (!lidarShouldBeOn && lidarIsOn) {
-	    ROS_INFO("Bot falls asleep, RPLidar is switched off");
- 		stopLidarService.call(srv);
- 	}
-	lidarIsOn = !lidarShouldBeOn;
-	*/
+ 	if (lidarShouldBeOn != lastLidarShouldBeOn) {
+	    ROS_INFO_STREAM("Bot " << (lidarShouldBeOn?"is awakened":"falls asleep") << ", turn lidar " << (lidarShouldBeOn?"on":"off"));
+    	startLidar(lidarShouldBeOn);
+	}
+ 	lastLidarShouldBeOn = lidarShouldBeOn;
 }
 
 
