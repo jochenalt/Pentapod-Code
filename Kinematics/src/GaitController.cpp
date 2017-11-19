@@ -224,7 +224,7 @@ Point GaitController::interpolateLegMotion(
 					// formally we take the fullsteplength, but this does not yet calculate the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
 					// step length (precisely following the computed step length this is not THAT important)
-					if (crawCreepy)
+					if (crawlCreepy)
 						nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
 					else
 						nextTouchPoint -= diffToePoint*(fullStepLength_mm);
@@ -239,7 +239,7 @@ Point GaitController::interpolateLegMotion(
 					Point corner2 = nextTouchPoint;
 					corner2.z = gaitHeight + gaitRefPoint.z;
 
-					if (crawCreepy)
+					if (crawlCreepy)
 						bezier[legNo].set(prevTouchPoint, (corner1+corner2)*0.5, nextTouchPoint, corner2);
 					else
 						bezier[legNo].set(prevTouchPoint, corner1, nextTouchPoint, corner2);
@@ -267,7 +267,7 @@ Point GaitController::interpolateLegMotion(
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
 					Point bezierPoint;
-					if (crawCreepy)
+					if (crawlCreepy)
 						bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
 					else
 						bezierPoint = bezier[legNo].getCurrent(localPhaseBeat*0.5+0.5);
@@ -281,7 +281,7 @@ Point GaitController::interpolateLegMotion(
 						feetOnGround[legNo] = false;
 
 					// if toe is close to the ground move leg with the ground already when doing the last mm's
-					if (crawCreepy) {
+					if (crawlCreepy) {
 						if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
 							Point nextToe = getNextToePoint(currentToePoint, dT);
 							result.x = nextToe.x;

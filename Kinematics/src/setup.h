@@ -40,24 +40,24 @@ const realnum minBodyHeight = 50.0;				// minimum height of the body (goes along
 const realnum standardBodyHeigh = 120.0;		// default height when walking
 
 // min/max radius of ground touch points
-const realnum minFootTouchPointRadius = 220.0;
-const realnum maxFootTouchPointRadius = 340.0;
-const realnum sleepingFootTouchPointRadius = 305;
-
-// possible acceleration of angualar speed
-const realnum maxAngularSpeedAcceleration = 0.6; //  [rad/s^2]
-const realnum maxAngularSpeed = 0.4; 			 //  [rad/s]
-
-// walking direction cannot be changed immediately but with that angular speed per speed*t
-const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
+const realnum minFootTouchPointRadius = 220.0;   // [mm] radius at body height maxBodyHeight
+const realnum maxFootTouchPointRadius = 340.0;   // [mm] radizs at body height minBodyHeight
+const realnum sleepingFootTouchPointRadius = 275;// [mm] radius when sleeping or standing up
 
 // max speed acceleration
 const realnum maxSpeedAcceleration = 60.0; 		// [mm/s^2]
 
 // maximum speed
-const realnum maxSpeed = 150.0; 				// [mm/s]
+const realnum maxSpeed = 130.0; 				// [mm/s]
 
-// minimum foot speed used in gait � place to reset legs
+// possible acceleration of angular speed
+const realnum maxAngularSpeedAcceleration = 0.6; //  [rad/s^2]
+const realnum maxAngularSpeed = maxSpeed/sleepingFootTouchPointRadius; //  [rad/s]
+
+// walking direction cannot be changed immediately but with that angular speed per speed*t
+const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
+
+// limits of gait frequency (for beautiness of the gait mainly)
 const realnum minGaitFrequency = 0.2; 				// [Hz]
 const realnum maxGaitFrequency = 3.0; 				// [Hz]
 
@@ -65,7 +65,7 @@ const realnum maxGaitFrequency = 3.0; 				// [Hz]
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
 
 // maximum speed of a foot that is in the air during a gait
-const realnum maxFootSpeed = 400; 					// [mm/s]
+const realnum maxFootSpeed = 500; 					// [mm/s]
 
 // maximum speed of a foot that is in the air during a gait
 const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
@@ -73,7 +73,10 @@ const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 
 // below that distance a toe is already moving with the ground
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)
-const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
+const realnum moveWithGroundBelowThisGroundDistance = 10.0; // [mm]
+
+// the zenit of a gait is typically in the middle. For optical reasons we move that slightly back
+const realnum horizontalGaitZenit = 0.5;            // [factor]
 
 // Typically, the top point of the knee in one gait is in the
 // middle of the touch point and the point when the toe leaves the ground.
@@ -81,7 +84,7 @@ const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
 // which leads to a slight breaking effect that reduces the smoothness of a gait.
 // The following factor allows to move this knee-zenit-point towards the walking direction
 const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
-const realnum kneeZenitPointFactor = 1.0;					// [0..1]
+const realnum kneeZenitPointFactor = 1.0;			// [0..1]
 
 
 #endif /* SETUP_H_ */

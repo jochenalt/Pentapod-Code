@@ -66,6 +66,7 @@ public:
 	// get/set target speed. current speed accelerates until this speed is reached
 	void setTargetSpeed ( mmPerSecond newSpeed);
 	mmPerSecond& getTargetSpeed ();
+	mmPerSecond getTargetSpeedLimited(); // in case sum of speed and angular speed is too this is the reduced target speed
 
 	// set walking direction
 	void setTargetWalkingDirection(angle_rad walkingDirection);
@@ -75,6 +76,7 @@ public:
 	// set/get target  turn speed
 	void setTargetAngularSpeed(radPerSecond rotateZ);
 	radPerSecond& getTargetAngularSpeed();
+	radPerSecond getTargetAngularSpeedLimited(); // in case sum of speed and angular speed is too this is the reduced angular target speed
 
 	// switch to another gait type including a switching procedure, which might take some time
 	void setTargetGaitMode(GaitModeType gaitType);

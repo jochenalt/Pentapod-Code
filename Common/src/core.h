@@ -25,7 +25,7 @@ const float angleLimitOffset = 5;
 
 typedef double realnum;
 
-const bool crawCreepy = true;
+const bool crawlCreepy = true;
 
 // CAD dimensions of the pentapod, measured within the CAD model
 namespace CAD {

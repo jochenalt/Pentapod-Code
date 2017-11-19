@@ -167,7 +167,7 @@ bool BodyKinematics::computeKinematics(
 
 			realnum toBeAngle0;
 			// that is the middle point of the toePoint and this point
-			if (crawCreepy) {
+			if (crawlCreepy) {
 				Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
 				toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
 			} else {
