@@ -86,6 +86,7 @@ bool Engine::setupCommon() {
 		lastFeetOnGround[i] = true;
 
 
+	lastGaitStepLength = 0;
 	// impose random foot points. Should be overwritten by first-time sensor read
 	PentaPointType footPoints;
 	for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
@@ -690,43 +691,50 @@ void Engine::computeGaitSpeed() {
 
 	// but conmpute acceleration of speed and angular speed first
 	realnum dT = gaitSpeedSampler.dT();
-	realnum speedAcc = (getTargetSpeedLimited() - getCurrentSpeed())/dT;
-	speedAcc = constrain(speedAcc, -maxSpeedAcceleration, maxSpeedAcceleration);
-	realnum angularSpeedAcc = (getTargetAngularSpeedLimited() - getCurrentAngularSpeed())/dT;
-	angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
+	if (dT > 0.0) {
+		realnum speedAcc = (getTargetSpeedLimited() - getCurrentSpeed())/dT;
+		speedAcc = constrain(speedAcc, -maxSpeedAcceleration, maxSpeedAcceleration);
+		realnum angularSpeedAcc = (getTargetAngularSpeedLimited() - getCurrentAngularSpeed())/dT;
+		angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
 
-	// gait length is 140mm in normal conditions, but is reduced if any disturbance happens
-	// later on, this leads to small steps as long as the disturbance takes
-	realnum gaitStepLength =  125.0
-			                  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
-			                  - 40.0*abs(angularSpeedAcc)/maxAngularSpeed
-							  - 70.0*abs(speedAcc)/maxSpeedAcceleration;
+		// gait length is 130mm in normal conditions, but is reduced if any disturbance happens
+		// later on, this leads to small steps as long as the disturbance takes
+		realnum gaitStepLength =  130.0
+								  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
+								  - 50.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration
+								  - 50.0*abs(speedAcc)/maxSpeedAcceleration;
+		gaitStepLength =  constrain(gaitStepLength, 40.0, 130.0); // take care that there is a minimum gait step length
 
-	gaitStepLength =  constrain(gaitStepLength, 40.0, 140.0); // take care that there is a minimum gait step length
-	const realnum gaitSpeedPerBodySpeed = 1.0/80; // [gaits/(mm/s)] one gait per 80mm/s speed of body
+		realnum gaitStepLengthDiff = gaitStepLength - lastGaitStepLength;
+		gaitStepLengthDiff = constrain(gaitStepLengthDiff, -4.0, 4.0);
+		gaitStepLength = lastGaitStepLength + gaitStepLengthDiff;
 
-	// compute foot speed and body speed
-	realnum fastestFootSpeed = gaitControl.getFastestFootSpeed();
+		lastGaitStepLength = gaitStepLength;
+		const realnum gaitSpeedPerBodySpeed = 1.0/80; // [gaits/(mm/s)] one gait per 80mm/s speed of body
 
-	// moderated body is following the input body position, but limited by max speed
-	realnum bodySpeed = 0;
-	if (dT > 0)
-		bodySpeed = moderatedBodyPose.distance(lastModeratedBodyPose)/dT;
-	lastModeratedBodyPose = moderatedBodyPose;
+		// compute foot speed and body speed
+		realnum fastestFootSpeed = gaitControl.getFastestFootSpeed();
 
-	// gait comes out of biggest speed of any foot or the body.
-	realnum footOntheGroundPercentage = gaitControl.getFootOnTheGroundRatio(fastestFootSpeed);
-	realnum gaitSpeed = max(footOntheGroundPercentage*fastestFootSpeed/gaitStepLength,bodySpeed*gaitSpeedPerBodySpeed);
+		// moderated body is following the input body position, but limited by max speed
+		realnum bodySpeed = 0;
+		if (dT > 0)
+			bodySpeed = moderatedBodyPose.distance(lastModeratedBodyPose)/dT;
+		lastModeratedBodyPose = moderatedBodyPose;
 
-	// there's an lower limit of gaitspeed, slow-motion looks weired
-	gaitSpeed = constrain(gaitSpeed,minGaitFrequency, maxGaitFrequency);
+		// gait comes out of biggest speed of any foot or the body.
+		realnum footOntheGroundPercentage = gaitControl.getFootOnTheGroundRatio(fastestFootSpeed);
+		realnum gaitSpeed = max(footOntheGroundPercentage*fastestFootSpeed/gaitStepLength,bodySpeed*gaitSpeedPerBodySpeed);
 
-	// during startup procedure, move slow
-	if (generalMode == LiftBody) {
-		gaitSpeed = minGaitFrequency;
-	}
+		// limit the gait frequency mainly for optical reasons.
+		gaitSpeed = constrain(gaitSpeed,minGaitFrequency, maxGaitFrequency);
+
+		// during startup procedure, move slow
+		if (generalMode == LiftBody) {
+			gaitSpeed = minGaitFrequency;
+		}
 
 	gaitControl.setGaitSpeed(gaitSpeed);
+	}
 }
 
 void Engine::computeWakeUpProcedure() {

@@ -45,7 +45,7 @@ const realnum maxFootTouchPointRadius = 340.0;   // [mm] radizs at body height m
 const realnum sleepingFootTouchPointRadius = 275;// [mm] radius when sleeping or standing up
 
 // max speed acceleration
-const realnum maxSpeedAcceleration = 60.0; 		// [mm/s^2]
+const realnum maxSpeedAcceleration = 70.0; 		// [mm/s^2]
 
 // maximum speed
 const realnum maxSpeed = 130.0; 				// [mm/s]
@@ -75,16 +75,14 @@ const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)
 const realnum moveWithGroundBelowThisGroundDistance = 10.0; // [mm]
 
-// the zenit of a gait is typically in the middle. For optical reasons we move that slightly back
-const realnum horizontalGaitZenit = 0.5;            // [factor]
-
 // Typically, the top point of the knee in one gait is in the
 // middle of the touch point and the point when the toe leaves the ground.
 // This has the consequence, that during the touch point the leg is bent against the walking direction
 // which leads to a slight breaking effect that reduces the smoothness of a gait.
 // The following factor allows to move this knee-zenit-point towards the walking direction
-const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
-const realnum kneeZenitPointFactor = 1.0;			// [0..1]
+// the closer to 1, the more the knee moves towards the walking direction. 0 is in the middle
+const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
+const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
 
 #endif /* SETUP_H_ */

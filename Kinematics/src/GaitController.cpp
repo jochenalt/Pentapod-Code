@@ -224,10 +224,7 @@ Point GaitController::interpolateLegMotion(
 					// formally we take the fullsteplength, but this does not yet calculate the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
 					// step length (precisely following the computed step length this is not THAT important)
-					if (crawlCreepy)
-						nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
-					else
-						nextTouchPoint -= diffToePoint*(fullStepLength_mm);
+					nextTouchPoint -= diffToePoint*(fullStepLength_mm*0.5)/dDistance;
 				}
 
 				Point prevTouchPoint = lastPhasePosition;
@@ -452,7 +449,7 @@ void GaitController::loop() {
 			else {
 				// special position for the omitted leg. Take passed position.
 				newFootPosition = frontLegPosition;
-				feetOnGround[legNo] = false; // 				(newFootPosition.position.z == distanceSqr(currentGaitRefPoints[legNo]) < floatPrecision);
+				feetOnGround[legNo] = false;
 				if (feetOnGround[legNo]){
 					lastPhase[legNo] = LegOnGround;
 				}
@@ -464,16 +461,7 @@ void GaitController::loop() {
 			currentGaitRefPoints[legNo].moveTo(targetGaitRefPoints[legNo], dT, maxGaitRefPointSpeed);
 
 			// compute point where foot will touch the ground
-			// target = currentGaitrefPoint - diffToePoint*(fullStepLength_mm*0.5/dDistance);
-			// target = currentGaitrefPoint - loopFootMoveVector[legNo]*(((gaitDuration * footOntheGroundPercentage)/dT) *0.5);
-
 			currentWalkingTouchPoints[legNo] = currentGaitRefPoints[legNo] - loopFootMoveVector[legNo] * gaitDuration * footOntheGroundPercentage/dT *0.5;
-
-			/*
-			 if (legNo == 0) {
-				cout << "curr" << currentGaitRefPoints[0] << "vector=" << loopFootMoveVector[0] << " walk=" << currentWalkingTouchPoints[0] << endl;
-			}
-			 */
 		}
 
 		// adapt speed vector accordingly

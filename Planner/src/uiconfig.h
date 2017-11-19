@@ -24,7 +24,6 @@ const int InteractiveWindowHeight=182;			// height of the interactive window
 // macro to define an openGL color array of a RAL color with a specific alpha(transparency) value
 #define GL_COLOR_4v(rgb,alpha) { ((float)(rgb>>16))/255.0, ((float)((rgb>>8) & 0xFF))/255.0, ((float)(rgb & 0xFF))/255.0, alpha }
 
-
 // transarency values
 const float glAlphaSolid = 1.0;
 const float glAlphaTransparent = 0.5;

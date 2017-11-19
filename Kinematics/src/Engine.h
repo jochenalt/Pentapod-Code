@@ -184,8 +184,7 @@ private:
 
 	PentaPointType hipPoints;			// points of all hips in absolute world coordinates
 	PentaPointType groundPoints;		// projection of the toe to the ground in absolute world coordinates
-	PentaPointType warpCompensation;	// correction of all toe pointsprojection of the toe to the ground in absolute world coordinates
-
+	realnum lastGaitStepLength;
 	LegAnglesType legAngles;			// current angles of all legs
 
 	ExclusiveMutex loopMutex;			// loop is running in an own thread. Mutex to synchronize that with commands
@@ -197,7 +196,6 @@ private:
 	TimeSamplerStatic gaitSpeedSampler;
 	TimeSamplerStatic warpingCompensationSampler;
 	TimeSamplerStatic movementSample;
-
 
 	TimeSamplerStatic frontLegSampler;
 	TimeSamplerStatic humpCompensationFilterSampler;
