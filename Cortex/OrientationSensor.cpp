@@ -284,16 +284,8 @@ float OrientationSensor::getZAccel() {
 	return currZAcceleration;
 }
 
-void OrientationSensor::loop(uint32_t now) {
-	// first reading should no happen before one 300s
-
-	static TimePassedBy timer;
-	if (setupOk && timer.isDue_ms(1000, now)) {
-		updateCalibration();
-	}
-
-	static TimePassedBy sensorTimer;
-	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
+void OrientationSensor::fetchData() {
+	if (setupOk) {
 		/* Get a new sensor event */
 		orientationEvent.orientation.x = 0;
 		orientationEvent.orientation.y = 0;
@@ -304,6 +296,9 @@ void OrientationSensor::loop(uint32_t now) {
 		accelerationEvent.acceleration.z = 0;
 
 		bno->getOrientationEvent(&orientationEvent);
+
+		sensorTimer.setDueTime(millis() + sensorTimer.getRate());
+
 		// bno->getAccelerationEvent(&accelerationEvent);
 
 		/*
@@ -345,6 +340,19 @@ void OrientationSensor::loop(uint32_t now) {
 		logger->println();
 
 		*/
+	}
+}
+
+void OrientationSensor::loop(uint32_t now) {
+	// first reading should no happen before one 300s
+
+	static TimePassedBy timer;
+	if (setupOk && timer.isDue_ms(1000, now)) {
+		updateCalibration();
+	}
+
+	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
+		fetchData();
 	}
 }
 

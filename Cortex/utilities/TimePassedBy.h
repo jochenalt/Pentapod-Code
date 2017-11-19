@@ -73,6 +73,7 @@ class TimePassedBy {
 	void setDueTime (uint32_t due_ms) {
 		mLastCall_ms = due_ms-mRate;
 	}
+
 	// returns when the timer fires the next time [ms]
 	int32_t getDueTime () {
 		return int32_t(mLastCall_ms + mRate);

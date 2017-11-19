@@ -31,6 +31,7 @@ public:
 	void reset();
 	void updateCalibration();
 	void loop(uint32_t now);
+	void fetchData();
 	void nullify();
 	void saveCalibration();
 	void readCalibrationFromEprom();
@@ -52,6 +53,8 @@ private:
 	float avrZAcceleration = 0;
 	float currZAcceleration = 0;
 	TimePassedBy accelSampler;
+	TimePassedBy sensorTimer;
+
 	sensors_event_t orientationEvent;
 	sensors_event_t accelerationEvent;
 

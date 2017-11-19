@@ -35,6 +35,8 @@ class Controller {
 		uint32_t looptime() { return loopTime_ms; };
 		TimePassedBy& getTimer();
 		void adaptSynchronisation();
+		void sendCommandToServos();
+
 
 	private:
 
