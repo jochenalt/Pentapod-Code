@@ -258,7 +258,7 @@ void HerkulexServoDrive::loop(uint32_t now) {
 		float toBeAngle = movement.getCurrentAngle(now+(int)CORTEX_SAMPLE_RATE);
 
 		currentUserAngle = toBeAngle;
-		moveToAngle(toBeAngle, HERKULEX_MIN_SAMPLE);
+		moveToAngle(toBeAngle, 0);
 	} else {
 		currentUserAngle = readCurrentAngle();
 	}

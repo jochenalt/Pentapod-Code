@@ -115,11 +115,18 @@ void Controller::loop(uint32_t now) {
 		// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
 		// Each loop just sends a fire-and-forget command with the to-be position,
 		// we do not wait for a reply, which takes around 10ms for 25 servos
-		// additionally, there's a low level loop running with 1 Hz requesting the servos status
+		// send command to Thigh, Hip, Foot, Knee in order to be more reactive
 		for (int limb = 0;limb<NumberOfLimbs;limb++) {
+			int actLimb = limb;
+			switch (actLimb) {
+			case 0: actLimb = THIGH;break;
+			case 1: actLimb = HIP;break;
+			case 2: actLimb = FOOT;break;
+			case 3: actLimb = KNEE;break;
+			}
 			uint32_t now = millis();
 			for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
-				legs[leg].servos[limb].loop(now);
+				legs[leg].servos[actLimb].loop(now);
 			}
 		}
 
@@ -143,6 +150,10 @@ void Controller::loop(uint32_t now) {
 
 
 void Controller::adaptSynchronisation() {
+	// take care that loop sending commands to servos is executed immediately
+	servoLoopTimer.setDueTime(millis());
+
+	/*
 	// Synchronize receiving commands and loop
 	// regardless how punctual this request comes in,
 	// in the long run it has a constant frequency.
@@ -172,6 +183,7 @@ void Controller::adaptSynchronisation() {
 	if (asIsDueTime  < toBeDueTime - servoLoopTimer.getRate()/4) {
 		servoLoopTimer.delayNextFire(+1);
 	}
+	*/
 	/*
 	cmdSerial->print("ctrl due t=");
 	cmdSerial->print( now);

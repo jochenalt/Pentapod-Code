@@ -64,8 +64,8 @@ void OrientationSensorData::setDefault () {
 	calib.accel_radius = 1000;
 	calib.mag_radius = 645;
 
-	nullX = -0.94;
-	nullY = -12.38;
+	nullX = 2.19;
+	nullY = -9.31;
 }
 
 void OrientationSensorData::clear () {
@@ -97,11 +97,11 @@ void OrientationSensor::reset() {
 	// reset IMU but putting LO/HI/LO on reset PIN
 	pinMode(IMU_RESET_PIN, OUTPUT);
 	digitalWrite(IMU_RESET_PIN, LOW);
-	delay(5);
+	delay(1);
 	digitalWrite(IMU_RESET_PIN, HIGH);
-	delay(5);
+	delay(1);
 	digitalWrite(IMU_RESET_PIN, LOW);
-	delay(5);
+	delay(1);
 	pinMode(IMU_RESET_PIN, INPUT);
 }
 
@@ -155,10 +155,21 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 		// turn the data according to the position of the IMU
 		newXAngle = normDegree(orientationEvent.orientation.y - memory.persMem.imuCalib.nullX) 		 ;
 		newYAngle = normDegree(180.0-orientationEvent.orientation.z - memory.persMem.imuCalib.nullY) ;
+		if (newYAngle < -150)
+			newYAngle += 180;
+		if (newYAngle > 150)
+			newYAngle -= 180;
+
 		newZAccel = getZAccel();
 
 		// plausibility check, maybe bot is on its back or IMU delivers rubbish
 		if ((abs(newXAngle) > 30) || (abs(newYAngle)>30)) {
+			logger->print("IMU switched off due to xy=(");
+			logger->print(newXAngle);
+			logger->print(',');
+			logger->print(newYAngle);
+			logger->print(")");
+
 			newXAngle = 0;
 			newYAngle = 0;
 			setupOk = false;

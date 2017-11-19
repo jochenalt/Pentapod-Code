@@ -458,8 +458,9 @@ void cmdBIN() {
 		}
 		else {
 			// we could not parse the package, clear input buffer and try next time
-			while (Serial.available() > 0)
+			while (Serial.available() > 0) {
 				Serial.read();
+			}
 		}
 	}
 }

@@ -41,11 +41,11 @@ const realnum standardBodyHeigh = 120.0;		// default height when walking
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 220.0;   // [mm] radius at body height maxBodyHeight
-const realnum maxFootTouchPointRadius = 340.0;   // [mm] radizs at body height minBodyHeight
+const realnum maxFootTouchPointRadius = 340.0;   // [mm] radius at body height minBodyHeight
 const realnum sleepingFootTouchPointRadius = 275;// [mm] radius when sleeping or standing up
 
-// max speed acceleration
-const realnum maxSpeedAcceleration = 70.0; 		// [mm/s^2]
+// max acceleration
+const realnum maxAcceleration = 70.0; 		     // [mm/s^2]
 
 // maximum speed
 const realnum maxSpeed = 130.0; 				// [mm/s]

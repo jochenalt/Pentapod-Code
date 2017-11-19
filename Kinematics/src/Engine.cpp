@@ -492,7 +492,7 @@ void Engine::computeBodyPose() {
 		Pose imuCompensation;
 		if (legController.isIMUValueValid() && (generalMode == WalkingMode)) {
 			// small PID controller on orientation of x/y axis only
-			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
+			Rotation maxError (radians(20.0), radians(20.0), 0);
 			Rotation error = toBePose.orientation - imu ;
 			imuCompensation.orientation = imuPID.getPID(error, 1.0, .5, 0.00, maxError);
 		} else {
@@ -693,7 +693,7 @@ void Engine::computeGaitSpeed() {
 	realnum dT = gaitSpeedSampler.dT();
 	if (dT > 0.0) {
 		realnum speedAcc = (getTargetSpeedLimited() - getCurrentSpeed())/dT;
-		speedAcc = constrain(speedAcc, -maxSpeedAcceleration, maxSpeedAcceleration);
+		speedAcc = constrain(speedAcc, -maxAcceleration, maxAcceleration);
 		realnum angularSpeedAcc = (getTargetAngularSpeedLimited() - getCurrentAngularSpeed())/dT;
 		angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
 
@@ -702,7 +702,7 @@ void Engine::computeGaitSpeed() {
 		realnum gaitStepLength =  130.0
 								  - 40.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
 								  - 50.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration
-								  - 50.0*abs(speedAcc)/maxSpeedAcceleration;
+								  - 50.0*abs(speedAcc)/maxAcceleration;
 		gaitStepLength =  constrain(gaitStepLength, 40.0, 130.0); // take care that there is a minimum gait step length
 
 		realnum gaitStepLengthDiff = gaitStepLength - lastGaitStepLength;
@@ -942,7 +942,7 @@ void Engine::computeAcceleration() {
 		realnum newSpeed = getCurrentSpeed();
 		if (abs(getCurrentSpeed() - limitedTargetSpeed) > floatPrecision) {
 			realnum speedAcc= (limitedTargetSpeed - getCurrentSpeed())/dT;
-			speedAcc = constrain(speedAcc, -maxSpeedAcceleration, maxSpeedAcceleration);
+			speedAcc = constrain(speedAcc, -maxAcceleration, maxAcceleration);
 			newSpeed += speedAcc*dT;
 			newSpeed = constrain(newSpeed, -maxSpeed, maxSpeed);
 

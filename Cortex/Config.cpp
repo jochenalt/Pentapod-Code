@@ -44,30 +44,30 @@ void LegConfigType::setDefaults() {
 	// foot: put it flat on the ground
 
 
-	memory.persMem.legs[0].limbs[HIP].nullAngle		= 2.0;
-	memory.persMem.legs[0].limbs[THIGH].nullAngle	= 5.1;
-	memory.persMem.legs[0].limbs[KNEE].nullAngle	= 1.4;
-	memory.persMem.legs[0].limbs[FOOT].nullAngle	= -2.3;
+	memory.persMem.legs[0].limbs[HIP].nullAngle		= 5.2;
+	memory.persMem.legs[0].limbs[THIGH].nullAngle	= 2.1;
+	memory.persMem.legs[0].limbs[KNEE].nullAngle	= 0.9;
+	memory.persMem.legs[0].limbs[FOOT].nullAngle	= -7.8;
 
-	memory.persMem.legs[1].limbs[HIP].nullAngle		=-2.0;
-	memory.persMem.legs[1].limbs[THIGH].nullAngle	=1.3;
+	memory.persMem.legs[1].limbs[HIP].nullAngle		=-4.0;
+	memory.persMem.legs[1].limbs[THIGH].nullAngle	= 4.3;
 	memory.persMem.legs[1].limbs[KNEE].nullAngle	= 11.9;
-	memory.persMem.legs[1].limbs[FOOT].nullAngle	=-13.3;
+	memory.persMem.legs[1].limbs[FOOT].nullAngle	=-10.7;
 
-	memory.persMem.legs[2].limbs[HIP].nullAngle		= 0.7;
-	memory.persMem.legs[2].limbs[THIGH].nullAngle	= 6.0;
+	memory.persMem.legs[2].limbs[HIP].nullAngle		= 1.6;
+	memory.persMem.legs[2].limbs[THIGH].nullAngle	= 7.0;
 	memory.persMem.legs[2].limbs[KNEE].nullAngle	=-4.4;
-	memory.persMem.legs[2].limbs[FOOT].nullAngle	= 5.2;
+	memory.persMem.legs[2].limbs[FOOT].nullAngle	= 9.75;
 
 	memory.persMem.legs[3].limbs[HIP].nullAngle		= 4.8;
-	memory.persMem.legs[3].limbs[THIGH].nullAngle	= -28.2;
+	memory.persMem.legs[3].limbs[THIGH].nullAngle	= -31.2;
 	memory.persMem.legs[3].limbs[KNEE].nullAngle	= -3.5;
-	memory.persMem.legs[3].limbs[FOOT].nullAngle	= -2.5;
+	memory.persMem.legs[3].limbs[FOOT].nullAngle	= -6.82;
 
-	memory.persMem.legs[4].limbs[HIP].nullAngle		= -12.3;
-	memory.persMem.legs[4].limbs[THIGH].nullAngle	= 4.1;
+	memory.persMem.legs[4].limbs[HIP].nullAngle		= -13.3;
+	memory.persMem.legs[4].limbs[THIGH].nullAngle	= 1.0;
 	memory.persMem.legs[4].limbs[KNEE].nullAngle	= 2.2;
-	memory.persMem.legs[4].limbs[FOOT].nullAngle	= -4.5;
+	memory.persMem.legs[4].limbs[FOOT].nullAngle	= -8.13;
 
 	// each legs gets one serial line.
 	// Teensy has 6 uarts. Serial0 is USB, Serial1 is used as CLI interface2.
