@@ -3,20 +3,20 @@
    <node pkg="move_base" type="move_base" name="move_base" respawn="true" output="screen">
 
        <!-- common parameters for local and global costmap -->
-       <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
-       <rosparam file="$(find pentapod_server)/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" /> 
+       <rosparam file="$(find pentapod_server)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+       <rosparam file="$(find pentapod_server)/config/costmap_common_params.yaml" command="load" ns="local_costmap" /> 
 
        <!-- separate parameters valid for local costmap -->
-       <rosparam file="$(find pentapod_server)/costmaps/local_costmap_params.yaml" command="load" /> 
+       <rosparam file="$(find pentapod_server)/config/local_costmap_params.yaml" command="load" /> 
 
        <!-- separate parameters valid for global costmap  -->
-       <rosparam file="$(find pentapod_server)/costmaps/global_costmap_params.yaml" command="load" /> 
+       <rosparam file="$(find pentapod_server)/config/global_costmap_params.yaml" command="load" /> 
 
        <!-- common parameters for local planner-->
-       <rosparam file="$(find pentapod_server)/costmaps/base_local_planner_params.yaml" command="load" />
+       <rosparam file="$(find pentapod_server)/config/base_local_planner_params.yaml" command="load" />
 
        <!-- special parameters valid for local planner (TEB Local Planner) -->
-       <rosparam file="$(find pentapod_server)/costmaps/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
+       <rosparam file="$(find pentapod_server)/config/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
 	   <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
    </node>
 </launch>

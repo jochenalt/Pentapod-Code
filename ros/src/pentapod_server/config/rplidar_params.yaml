@@ -1,0 +1,9 @@
+serial_port: /dev/ttyUSB0  
+serial_baudrate: 115200
+frame_id: laser
+inverted: false
+angle_compensate: true
+
+# new parameter: do not start motor after startup of the node. 
+# Instead, service start_motor has to be called 
+start_motor: False

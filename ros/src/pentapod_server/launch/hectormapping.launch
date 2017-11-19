@@ -1,5 +1,5 @@
 <launch>
     <node pkg="hector_mapping" type="hector_mapping" respawn="true" name="hector_height_mapping">
-        <rosparam file="$(find pentapod_server)/costmaps/hectormapping_params.yaml" command="load" />
+        <rosparam file="$(find pentapod_server)/config/hectormapping_params.yaml" command="load" />
   </node>
 </launch>
