@@ -342,7 +342,7 @@ void SlamView::drawTrajectory(EngineProxy::TrajectoryType type) {
 	for (unsigned int i = 0;i<pathLength; i++) {
 		StampedPose sp = trajectory[i];
 		if (!sp.isNull()) {
-			sp.pose.position.z = 20;
+			sp.pose.position.z = 10;
 			if (i>0) {
 				glBegin(GL_LINES);
 					glVertex3f(sp.pose.position.y, sp.pose.position.z, sp.pose.position.x);

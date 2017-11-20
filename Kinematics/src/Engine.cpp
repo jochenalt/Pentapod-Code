@@ -110,6 +110,7 @@ void Engine::wakeUp() {
 	ROS_DEBUG_STREAM("wake up");
 	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
 		generalMode = LiftBody;
+		gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius);
 		bodyKinematics.startupPhase(true);
 	}
 }
@@ -476,7 +477,7 @@ void Engine::computeBodyPose() {
 		// move towards the target body pose
 		// but: if we are in lift mode, wait until all legs are on the ground
 		if ((generalMode != LiftBody)
-			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 5.0))) {
+			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 4.0))) {
 			realnum bodySpeed = maxBodyPositionSpeed;
 			if (generalMode == LiftBody)
 				bodySpeed = maxLiftBodyPositionSpeed;
@@ -659,6 +660,8 @@ void Engine::computeGaitRefPointRadius() {
 			gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius);
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
+			// if (getCurrentBodyPose().position.z < minBodyHeight + floatPrecision)
+			//	gaitControl.setTargetGaitRefPointsRadius (minFootTouchPointRadius);
 			break;
 		default: {
 				if (generalMode != LiftBody) {
@@ -942,7 +945,10 @@ void Engine::computeAcceleration() {
 		realnum newSpeed = getCurrentSpeed();
 		if (abs(getCurrentSpeed() - limitedTargetSpeed) > floatPrecision) {
 			realnum speedAcc= (limitedTargetSpeed - getCurrentSpeed())/dT;
-			speedAcc = constrain(speedAcc, -maxAcceleration, maxAcceleration);
+			realnum allowedAcceleration = maxAcceleration;
+			if (sgn(speedAcc) != sgn(getCurrentSpeed()))
+				allowedAcceleration *= 6.0;
+			speedAcc = constrain(speedAcc, -allowedAcceleration, allowedAcceleration);
 			newSpeed += speedAcc*dT;
 			newSpeed = constrain(newSpeed, -maxSpeed, maxSpeed);
 
