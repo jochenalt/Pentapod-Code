@@ -1,8 +1,12 @@
 local_costmap:
+   # circular footprint radius of the pentapod
+  # in the local map we use a smaller radius than in the global to prevent that the robot is stuck in lethal locations close to a wall.  
+  robot_radius: 0.30
+  
   global_frame: odom
   robot_base_frame: base_link
-  update_frequency: 5.0    
-  publish_frequency: 5.0   # publish that often, that the local plan is updated frequently
+  update_frequency: 5.0    # lidar delivers scans with 10Hz
+  publish_frequency: 5.0 
   static_map: false
   # Setting the "rolling_window" parameter to true means that the costmap 
   # will remain centered around the robot as the robot moves through the world

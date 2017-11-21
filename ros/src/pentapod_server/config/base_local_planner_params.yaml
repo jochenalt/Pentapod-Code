@@ -13,8 +13,13 @@ TrajectoryPlannerROS:
   max_vel_y: 0.100      # max strafing speed
   min_vel_y: -0.100     # 
   acc_lim_theta: 0.06
-  acc_lim_x: 0.06
-  acc_lim_y: 0.06
-
+  acc_lim_x: 0.04
+  acc_lim_y: 0.04
   
 controller_frequency: 5 # same like publish frequency of local planner
+
+# Default recover behaviour is rotating a lot, which is quite useless for a holonomic robot
+clearing_rotation_allowed: false
+recovery_behaviors: [{name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery}]
+#                   [{name: rotate_recovery, type: rotate_recovery/RotateRecovery}, 
+#                   [{name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}]

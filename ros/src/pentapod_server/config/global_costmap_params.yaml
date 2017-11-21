@@ -1,10 +1,13 @@
 global_costmap:
-  global_frame: /map
+  # circular footprint radius of the pentapod
+  # In the global costmap we take a bigger radius than on the local costmap 
+  # in order to be sure that a computed trajectory is easily feasable
+  robot_radius: 0.400
+
+  global_frame: map
   robot_base_frame: base_link
-  update_frequency: 1.0   # slam map is published with 2Hz
-  publish_frequency: 1.0  # global cost map is used only when a new navigation goal is set. No need to go higher than 1Hz
+  update_frequency: 5.0   # slam map is published with 2Hz
+  publish_frequency: 5.0  # global cost map is used only when a new navigation goal is set. No need to go higher than 2Hz
   static_map: true
   rolling_window: false
   always_send_full_costmap: true
-
- 

@@ -1,6 +1,6 @@
 <launch>
    <!-- start navigation stack via move_base node -->
-   <node pkg="move_base" type="move_base" name="move_base" output="screen">
+   <node pkg="move_base" type="move_base" name="move_base" respawn="true" output="screen">
        <!-- global parameters -->
        <rosparam file="$(find pentapod_server)/config/base_local_planner_params.yaml" command="load" />
 

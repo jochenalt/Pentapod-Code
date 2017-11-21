@@ -1,5 +1,5 @@
 # circular footprint radius of the pentapod
-robot_radius: 0.35
+robot_radius: 0.350
 # timing tolerance of transformation in [s] 
 transform_tolerance: 0.30
 map_type: costmap
