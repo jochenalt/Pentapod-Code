@@ -34,12 +34,35 @@ class DarkHoleFinder {
 public:
 	DarkHoleFinder();
 	virtual ~DarkHoleFinder();
-
-	void setMaxLaserRange (millimeter maxRange);
-
+	void setup(ros::NodeHandle handle);
 	void feed(const Map& slamMap, const Map& globalCostmap, const Pose& pose);
+
+
+	void findHole();
+	void getDarkScaryHoles(std::vector<Point>& holes);
+
 private:
-	millimeter maxLaserRange;
+	void removeIfBetterHoleInNeighbourhood(millimeter x, millimeter y);
+	void removeLighterHole(int hashIdx);
+
+	void addDarkScaryHole(millimeter x, millimeter y, realnum s);
+	realnum getScariness(millimeter x, millimeter y);
+	realnum getScariness(int hashIdx);
+
+	int getHashIdx(millimeter x, millimeter y);
+	void getCoordByHashIdx(int hashIdx, millimeter& x, millimeter& y);
+
+	bool isCandidate(millimeter x, millimeter y);
+	realnum computeScariness(millimeter x, millimeter y);
+
+
+	double width;
+	double height;
+	Map slamMap;
+	Map costMap;
+	Pose pose;
+
+	std::map<int, realnum> foundDarkHoles;
 };
 
 #endif /* PENTAPOD_SERVER_SRC_DARKHOLEFINDER_H_ */

@@ -111,10 +111,8 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// publish initial position (required by navigation
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
 
-	// tell the hole finder the maximum laser range (that's the window where it tries to find new holes
-	float maxLaserDistance;
-	handle.param<float>("laser_max_dist", maxLaserDistance, 5.0); // defined in hectormapping.launch
-	holeFinder.setMaxLaserRange(maxLaserDistance);
+	// initialoze the dark hole finder
+	holeFinder.setup(handle);
 
     // wait for the action server to come up
 	while(!moveBaseClient->waitForServer(ros::Duration(5.0))){
@@ -535,6 +533,17 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		return okOrNOk;
 	}
 
+
+	if (hasPrefix(uri, "/holes/get")) {
+		string command = uri.substr(string("/holes/get").length());
+		vector<Point> holes;
+		holeFinder.getDarkScaryHoles(holes);
+		std::stringstream out;
+		serializeVectorOfSerializable(holes,out);
+		response = out.str() + "," + getResponse(true);
+		okOrNOk = true;
+		return true;
+	}
 
 	if (hasPrefix(uri, "/lidar/")) {
 		string command = uri.substr(string("/lidar/").length());
