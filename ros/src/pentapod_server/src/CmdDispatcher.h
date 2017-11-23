@@ -76,10 +76,14 @@ public:
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
 	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
-	void startLidar(bool on);
+
 	void initNavigation();
 	void setupNavigationStackTopics(ros::NodeHandle& handle);
 
+	// call a service to start/stop the motor of the lidar
+	void startLidar(bool on);
+	// call the move_base servcie to clear all costmaps.
+	void clearCostmaps();
 
 private:
 
@@ -132,7 +136,7 @@ private:
 
 	ros::ServiceClient startLidarService;
 	ros::ServiceClient stopLidarService;
-
+	ros::ServiceClient clearCostmapService;
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
 

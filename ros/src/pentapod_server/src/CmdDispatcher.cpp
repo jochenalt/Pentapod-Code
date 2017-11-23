@@ -101,6 +101,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// service to start or stop the lidar motor
 	startLidarService = handle.serviceClient<std_srvs::Empty>("/start_motor");
 	stopLidarService = handle.serviceClient<std_srvs::Empty>("/stop_motor");
+	clearCostmapService = handle.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
 
 	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
@@ -521,7 +522,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			okOrNOk = true;
 			return true;
 		}
-		else if (hasPrefix(command,"get")) {
+		else if (hasPrefix(command,"goal/get")) {
 			std::ostringstream out;
 			int navStatus = NavigationStatusType::NavPending;
 			if (!navigationGoal.isNull()) {
@@ -724,6 +725,12 @@ void CommandDispatcher::startLidar(bool on) {
 	}
 }
 
+
+void CommandDispatcher::clearCostmaps() {
+ 	std_srvs::Empty srv;
+    ROS_INFO("clear costmaps");
+		 clearCostmapService.call(srv);
+}
 
 // ugly thing: if the lidar is not on during startup of the navigation stack, and
 // therefore not slam map is generated, the navigation stack gives up and does not
