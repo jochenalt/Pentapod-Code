@@ -148,14 +148,14 @@ int  Map::getValueByWorld(int x,int y) {
 	int gridY = (y/gridSize + gridHeight/2);
 
 	unsigned  pos = gridX + gridWidth*gridY;
-	if (pos < occupancy.size())
+	if ((pos >= 0) && (pos < occupancy.size()))
 		return occupancy[pos];
 	return -1;
 };
 
 void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 	unsigned pos = gridHeight*gridX + gridY;
-	if (pos < occupancy.size())
+	if ((pos >= 0) && (pos < occupancy.size()))
 		occupancy[pos] = p;
 	else
 		pos = 0;
@@ -163,7 +163,7 @@ void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 
 Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
 	unsigned pos = gridHeight*gridX + gridY;
-	if (pos < occupancy.size())
+	if ((pos >= 0) && (pos < occupancy.size()))
 		return (GridState)occupancy[pos];
 
 	return FREE;
@@ -172,7 +172,7 @@ Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
 
 int Map::getValueByGridCoord(int gridX,int gridY) {
 	unsigned pos = gridHeight*gridX + gridY;
-	if (pos < occupancy.size())
+	if ((pos >= 0) && (pos < occupancy.size()))
 		return occupancy[pos];
 
 	return -1;

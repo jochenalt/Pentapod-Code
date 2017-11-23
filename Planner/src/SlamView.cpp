@@ -189,20 +189,20 @@ void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,con
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
-		color[3] = 0.2;
+		color[3] = 0.4;
 	} else {
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
-		color[3] = 0.5;
+		color[3] = 0.3;
 	}
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 		glColor4fv(color);
 		glNormal3f(0.0,1.0,0.0);
-		int offset = 5;
+		int offset = 10;
 		if (type == GLOBAL_COSTMAP)
-			offset = -20;
+			offset = 5;
 		glVertex3f(g1.y, g1.z + offset, g1.x);
 		glVertex3f(g2.y, g2.z + offset, g2.x);
 		glVertex3f(g4.y, g4.z + offset, g4.x);
@@ -344,10 +344,21 @@ void SlamView::drawTrajectory(EngineProxy::TrajectoryType type) {
 		if (!sp.isNull()) {
 			sp.pose.position.z = 10;
 			if (i>0) {
+				Point relativePiece = sp.pose.position-prevPose.pose.position;
+				glPushMatrix();
+				glLoadIdentity();
+
+				glTranslatef(prevPose.pose.position.y,  15.0, prevPose.pose.position.x);
+				glRotatef(-degrees(atan2(relativePiece.x, relativePiece.y))+90,0,1,0);
+				GLUquadricObj *quadratic = gluNewQuadric();
+				gluCylinder(quadratic, 10, 5, relativePiece.length(), 6, 1);
+				glPopMatrix();
+				/*
 				glBegin(GL_LINES);
 					glVertex3f(sp.pose.position.y, sp.pose.position.z, sp.pose.position.x);
 					glVertex3f(prevPose.pose.position.y, prevPose.pose.position.z, prevPose.pose.position.x);
 				glEnd();
+				*/
 			}
 		}
 		prevPose = sp;
@@ -404,7 +415,7 @@ void SlamView::drawSlamMap() {
 				int offset = 3;
 
 				if (occupancy == Map::GridState::FREE) {
-					int z = 2;
+					int z = 1;
 					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 					Point g2(xTo-offset, 	(yFrom+offset),		z);
 					Point g3(xTo-offset, 	(yTo-offset),		z);
@@ -475,7 +486,7 @@ void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 					int yFrom = yTo - gridLength;
 
 					int offset = 3;
-					int z = 50;
+					int z = 10;
 					Point g1(xFrom+offset, 	(yFrom+offset), 	z);
 					Point g2(xTo-offset, 	(yFrom+offset),		z);
 					Point g3(xTo-offset, 	(yTo-offset),		z);

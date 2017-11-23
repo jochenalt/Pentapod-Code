@@ -947,7 +947,7 @@ void Engine::computeAcceleration() {
 			realnum speedAcc= (limitedTargetSpeed - getCurrentSpeed())/dT;
 			realnum allowedAcceleration = maxAcceleration;
 			if (sgn(speedAcc) != sgn(getCurrentSpeed()))
-				allowedAcceleration *= 6.0;
+				allowedAcceleration *= 4.0;
 			speedAcc = constrain(speedAcc, -allowedAcceleration, allowedAcceleration);
 			newSpeed += speedAcc*dT;
 			newSpeed = constrain(newSpeed, -maxSpeed, maxSpeed);

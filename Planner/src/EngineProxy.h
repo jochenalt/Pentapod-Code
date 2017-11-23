@@ -26,11 +26,11 @@ public:
 
 class EngineProxy {
 	const int BotTrajectorySampleRate = 100; 	// [ms] update rate of fetching the kinematic
-	const int UpdateMapSampleRate = 500;		// [ms] update rate of map fetching (if no map is there, nothing happens)
+	const int UpdateMapSampleRate = 1000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
 	const int UpdateLocalCostmapSampleRate = 1000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
-	const int UpdateGlobalCostmapSampleRate = 2000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
+	const int UpdateGlobalCostmapSampleRate = 1000;		// [ms] update rate of map fetching (if no map is there, nothing happens)
 	const int UpdateLaserScanSampleRate = 1000;	// [ms] update rate of laser scan
-	const int UpdateTrajectorySampleRate = 500;	// [ms] update rate of laser scan
+	const int UpdateTrajectorySampleRate =1000;	// [ms] update rate of laser scan
 
 public:
 	EngineProxy();
