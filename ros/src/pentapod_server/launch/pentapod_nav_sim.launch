@@ -21,5 +21,11 @@
    	   -->
        <rosparam file="$(find pentapod_server)/config/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
        <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+       <param name="move_base/NavfnROS/use_grid_path" type="bool" value="true" />
+       <param name="move_base/NavfnROS/use_dijkstra" type="bool" value="false" />
+
+
    </node>
+
+   
 </launch>

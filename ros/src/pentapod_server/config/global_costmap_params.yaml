@@ -2,7 +2,7 @@ global_costmap:
   # circular footprint radius of the pentapod
   # In the global costmap we take a bigger radius than on the local costmap 
   # in order to be sure that a computed trajectory is easily feasable
-  robot_radius: 0.400
+  robot_radius: 0.40
 
   global_frame: map
   robot_base_frame: base_link

@@ -81,7 +81,7 @@ int main(int argc, char * argv[]) {
 	string cortexSerialPort;
 	int cortexBaudRate;
 	int webserverPort;
-	rosNode.param<int>("pentapod_server_node/webserver_port", webserverPort, 7000);
+	rosNode.param<int>("pentapod_server_node/webserver_port", webserverPort, 8000);
 	ROS_INFO_STREAM("pentapod server runs on port" << webserverPort);
 
 	// initialize mongoose webserver
