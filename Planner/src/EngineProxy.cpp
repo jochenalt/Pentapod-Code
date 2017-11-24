@@ -172,6 +172,7 @@ void EngineProxy::loop() {
 		if (UpdateGlobalCostmapSampleRate > 0) {
 			if (fetchGlobalCostmapTimer.isDue(UpdateGlobalCostmapSampleRate)) {
 				updateGlobalCostmap();
+				updateDarkScaryHoles();
 			}
 		}
 
@@ -506,6 +507,25 @@ void EngineProxy::updateLocalCostmap() {
 	}
 }
 
+void EngineProxy::updateDarkScaryHoles() {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+		url << "/holes/get";
+		remoteEngine.httpGET(url.str(), responseStr, 20000);
+		std::istringstream in(responseStr);
+
+		bool ok = true;
+		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
+		vector<Point> tmp;
+		deserializeVectorOfSerializable(in, tmp,ok);
+
+		if (ok) {
+			darkScaryHoles = tmp;
+		}
+	}
+}
+
 void EngineProxy::updateGlobalCostmap() {
 	if (callRemoteEngine) {
 		string responseStr;
@@ -667,3 +687,6 @@ const Pose& EngineProxy::getOdomPose() {
 	return data.currentOdomPose;
 }
 
+vector<Point>& EngineProxy::getDarkScaryHoles() {
+	return darkScaryHoles;
+}

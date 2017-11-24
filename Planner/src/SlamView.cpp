@@ -161,6 +161,33 @@ void SlamView::drawNavigationGoal() {
 
 }
 
+void SlamView::drawDarkScaryHoles() {
+	glPushMatrix();
+
+	vector<Point> darkScaryHoles = EngineProxy::getInstance().getDarkScaryHoles();
+	for (unsigned int i = 0;i<darkScaryHoles.size(); i++) {
+		Point hole = darkScaryHoles[i];
+		glLoadIdentity();
+
+		glTranslatef(hole.y, hole.z, hole.x);
+		glRotatef(-90, 1,0,0);
+		GLUquadricObj *quadratic = gluNewQuadric();
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glScaryHoleMarkerColor4v);
+		glColor3fv(glScaryHoleMarkerColor4v);
+
+		gluCylinder(quadratic, 5, 30, 200, 12, 1);
+		glRotatef(90, 1,0,0);
+
+		glTranslatef(0, 200, 0);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glScaryHoleSphereColor4v);
+		glColor3fv(glScaryHoleSphereColor4v);
+		glutSolidSphere(50, 12, 12);
+	}
+
+	glPopMatrix();
+
+}
+
 void SlamView::drawFreeSlamGrid( const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
 	glBegin(GL_TRIANGLE_STRIP);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glSlamFreeTopColor4v);
@@ -399,19 +426,19 @@ void SlamView::drawSlamMap() {
 	lookAtPosition.y = gridLength*2*((int)(lookAtPosition.y/gridLength/2));
 
 	int minX = constrain(- mapSizeX/2 + (int)lookAtPosition.x, -fullMapSizeX/2, fullMapSizeX/2);
-	int maxX = constrain(+ mapSizeX/2 + (int)lookAtPosition.x,-fullMapSizeX/2, fullMapSizeX/2);
-	int minY = constrain(- mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
-	int maxY = constrain(+ mapSizeY/2 + (int)lookAtPosition.y,-fullMapSizeY/2, fullMapSizeY/2);
+	int maxX = constrain(+ mapSizeX/2 + (int)lookAtPosition.x, -fullMapSizeX/2, fullMapSizeX/2);
+	int minY = constrain(- mapSizeY/2 + (int)lookAtPosition.y, -fullMapSizeY/2, fullMapSizeY/2);
+	int maxY = constrain(+ mapSizeY/2 + (int)lookAtPosition.y, -fullMapSizeY/2, fullMapSizeY/2);
 
 	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
-		int xFrom = localGridX;
-		int xTo = localGridX + gridLength;
+		int xFrom = localGridX-0*gridLength;
+		int xTo = xFrom + gridLength;
 		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
-			Map::GridState  occupancy = map.getOccupancyByWorld(localGridX,localGridY);
+			Map::GridState occupancy = map.getOccupancyByWorld(localGridX,localGridY);
 
 			if (occupancy != Map::GridState::UNKNOWN) {
-				int yTo = localGridY + gridLength/2;
-				int yFrom = localGridY - gridLength/2;
+				int yFrom = localGridY-0*gridLength;
+				int yTo = yFrom  + gridLength;
 				int offset = 3;
 
 				if (occupancy == Map::GridState::FREE) {
@@ -475,15 +502,15 @@ void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 
 	Point null;
 	for (int localGridX = minX;localGridX < maxX ;localGridX += gridLength) {
-		int xFrom = localGridX + origin.x;
+		int xFrom = localGridX + origin.x-0*gridLength;
 		int xTo = xFrom + gridLength;
 		for (int localGridY = minY;localGridY < maxY;localGridY += gridLength) {
 
 			if (Point(localGridX, localGridY).length() <= fullMapSizeX/2.0 + gridLength/2.0) {
 				int costValue = costmap->getValueByWorld(localGridX,localGridY);
 				if (costValue > 0) {
-					int yTo = localGridY + gridLength/2 + origin.y;
-					int yFrom = yTo - gridLength;
+					int yFrom = localGridY + origin.y -0*gridLength;
+					int yTo = yFrom + gridLength;
 
 					int offset = 3;
 					int z = 10;
@@ -524,6 +551,7 @@ void SlamView::drawMap() {
 	drawLaserScan();
 	drawTrajectory(EngineProxy::GLOBAL_PLAN);
 	drawTrajectory(EngineProxy::LOCAL_PLAN);
+	drawDarkScaryHoles();
 
 	drawCoordSystem();
 

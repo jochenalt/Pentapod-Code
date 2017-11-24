@@ -53,6 +53,8 @@ static const GLfloat glSlamGridColor4v[]		    	= GL_COLOR_4v( ConcreteGrey, glAl
 static const GLfloat glSlamFreeTopColor4v[]		    	= GL_COLOR_4v( LightIvory, glAlphaTransparent);
 static const GLfloat glMapMarkerColor4v[]		    	= GL_COLOR_4v( OxideRed, glAlphaSolid);
 static const GLfloat glMapSphereMarkerColor4v[]		    = GL_COLOR_4v( SalmonPink, glAlphaSolid);
+static const GLfloat glScaryHoleMarkerColor4v[]		    = GL_COLOR_4v( ClaretViolet, glAlphaSolid);
+static const GLfloat glScaryHoleSphereColor4v[]		    = GL_COLOR_4v( PebbleGrey, glAlphaSolid);
 
 static const GLfloat glSlamOccupiedAroundTopColor4v[] 	= GL_COLOR_4v( CapriBlue, glAlphaSolid );
 static const GLfloat glSlamOccupiedTopColor4v[] 		= GL_COLOR_4v( BlackBlue, glAlphaSolid );

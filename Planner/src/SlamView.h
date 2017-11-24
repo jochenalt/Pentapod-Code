@@ -49,6 +49,8 @@ private:
 	void drawCostmapGrid( CostmapType type, int value, const Point &g1,const Point &g2, const Point &g3, const Point &g4 );
 
 	void drawSmallBot(const Pose& pose);
+	void drawDarkScaryHoles();
+
 	string title;
 
 	int lastMouseX = 0;

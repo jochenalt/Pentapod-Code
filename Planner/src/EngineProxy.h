@@ -161,6 +161,8 @@ public:
 	// get last navigation goal(gets nulled once it has been reached)
 	NavigationStatusType getCurrentNavigationStatus();
 
+	vector<Point>& getDarkScaryHoles();
+
 	// flags if new data from server is available
 	bool isBotDataAvailable();
 	bool isMapDataAvailable();
@@ -181,6 +183,8 @@ private:
 	void updateTrajectory();
 
 	void updateNavigation();
+	void updateDarkScaryHoles();
+
 
 	bool newLaserScanAvailable = false;
 	bool newBotDataAvailable = false;
@@ -215,6 +219,8 @@ private:
 	Trajectory trajectory;
 	Trajectory localPlan;
 	Trajectory globalPlan;
+	vector<Point> darkScaryHoles;
+
 
 	Pose navigationGoal;
 	NavigationStatusType navigationStatus;
