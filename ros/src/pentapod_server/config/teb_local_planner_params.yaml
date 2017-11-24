@@ -3,8 +3,8 @@ map_frame: /map
 
 # Trajectory
 # global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
-max_global_plan_lookahead_dist: 2.0
-costmap_obstacles_behind_robot_dist: 2.0    # Don't know why, but default of 1.0 gives strange behaviour 
+max_global_plan_lookahead_dist: 3.0
+costmap_obstacles_behind_robot_dist: 3.0    # Don't know why, but default of 1.0 gives strange behaviour 
 
 
 # Robot acceleration and speed limits
@@ -13,11 +13,11 @@ max_vel_x_backwards: 0.100
 max_vel_y: 0.100
 max_vel_y_backwards: 0.100
 
-max_vel_theta: 0.2
-min_vel_theta: -0.2 
-acc_lim_x: 0.04
-acc_lim_y: 0.04
-acc_lim_theta: 0.06
+max_vel_theta: 0.3
+min_vel_theta: -0.3 
+acc_lim_x: 0.05
+acc_lim_y: 0.05
+acc_lim_theta: 0.05
 min_in_place_vel_theta: 0.0
 
 # Footprint model is a point in order to save CPU, distance is kept min_obstacle_dist
@@ -35,8 +35,8 @@ yaw_goal_tolerance: 0.02
 #gdist_scale: 0.8       # goal distance. default 0.8
   
 # Obstacles
-min_obstacle_dist: 0.30            # minumum distance from outer shape of robot to any obstacle.
-inflation_dist: 0.45               # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
+min_obstacle_dist: 0.35            # minumum distance from outer shape of robot to any obstacle.
+inflation_dist: 0.55               # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
 include_costmap_obstacles: True
 costmap_converter_plugin: ""
 costmap_converter_spin_thread: True
