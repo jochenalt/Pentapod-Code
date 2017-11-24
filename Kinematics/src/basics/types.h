@@ -19,6 +19,7 @@ typedef realnum mmPerMillisecond;				// speed
 typedef realnum mmPerSecond;					// speed
 typedef realnum radPerSecond;					// angualar speed
 
+typedef int millimeter_int;					// distance
 typedef realnum millimeter;						// distance
 typedef realnum mmPerMillisecondPerMillisecond;	// acceleration
 typedef int int_millimeter;						// distance

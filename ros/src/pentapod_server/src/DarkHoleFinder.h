@@ -42,18 +42,18 @@ public:
 	void getDarkScaryHoles(std::vector<Point>& holes);
 
 private:
-	void removeIfBetterHoleInNeighbourhood(millimeter x, millimeter y);
+	void removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y);
 	void removeLighterHole(int hashIdx);
 
-	void addDarkScaryHole(millimeter x, millimeter y, realnum s);
-	realnum getScariness(millimeter x, millimeter y);
+	void addDarkScaryHole(millimeter_int x, millimeter_int y, realnum s);
+	realnum getScariness(millimeter_int x, millimeter_int y);
 	realnum getScariness(int hashIdx);
 
-	int getHashIdx(millimeter x, millimeter y);
-	void getCoordByHashIdx(int hashIdx, millimeter& x, millimeter& y);
+	int getHashIdx(millimeter_int x, millimeter_int y);
+	void getCoordByHashIdx(int hashIdx, millimeter_int& x, millimeter_int& y);
 
-	bool isCandidate(millimeter x, millimeter y);
-	realnum computeScariness(millimeter x, millimeter y);
+	bool isCandidate(millimeter_int x, millimeter_int y);
+	realnum computeScariness(millimeter_int x, millimeter_int y);
 
 
 	double width;
