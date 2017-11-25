@@ -17,10 +17,17 @@ DarkHoleFinder::~DarkHoleFinder() {
 
 void DarkHoleFinder::setup(ros::NodeHandle handle) {
 	handle.param<double>("dark_hole_finder/width", width, 6.0);
-	handle.param<double>("dark_hole_finder/height", height, 6.0);
+	handle.param<double>("pentapod_server_node/dark_hole_finder/height", height, 6.0);
+	handle.param<double>("pentapod_server_node/dark_hole_finder/ray_min_distance", rayMinDistance, 0.35);
+	handle.param<double>("pentapod_server_node/dark_hole_finder/ray_max_distance", rayMaxDistance, 8.00);
+	handle.param<double>("pentapod_server_node/dark_hole_finder/scaryness_threshold", scarynessthreshold,0.50);
+
+
 	// convert to mm
 	width *= 1000;
 	height *= 1000;
+	rayMinDistance *= 1000;
+	rayMaxDistance *= 1000;
 
 }
 
@@ -57,7 +64,25 @@ bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
 }
 
 realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
-	return 0.8;
+	// send out 16 rays and measure the distance to the next wall
+	const int numberOfRays = 32;
+	int gridSize = slamMap.getGridSize();
+	realnum scaryness = 0.0;
+	for (realnum alpha = 0; alpha < 2.0*M_PI;alpha += M_PI*2.0/numberOfRays) {
+		realnum s = sin(alpha);
+		realnum c = cos(alpha);
+		realnum gridDistance = sqrt(s*s + c*c)*gridSize;
+		bool found = false;
+		for (realnum distance = rayMinDistance+gridDistance;distance < rayMaxDistance;distance += gridDistance) {
+			if (slamMap.getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
+				scaryness += 1000.0/(1000.0 + distance-rayMinDistance);
+				found = true;
+				break;
+			}
+		}
+
+	}
+	return (scaryness/numberOfRays);
 }
 
 
@@ -163,7 +188,7 @@ void DarkHoleFinder::findHole() {
 				// compute scaryness
 				realnum s = computeScariness(xGrid,yGrid);
 
-				if (s > 0.7) {
+				if (s > scarynessthreshold) {
 					// dark hole is found, store in map and keep in temporary list as well
 					foundDarkHoles[hashIdx] = s;
 					holes.push_back(hashIdx);

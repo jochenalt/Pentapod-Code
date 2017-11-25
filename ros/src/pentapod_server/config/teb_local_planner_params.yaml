@@ -5,7 +5,7 @@ map_frame: /map
 # global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
 max_global_plan_lookahead_dist: 3.0
 costmap_obstacles_behind_robot_dist: 3.0    # Don't know why, but default of 1.0 gives strange behaviour 
-
+feasibility_check_no_poses: 0
 
 # Robot acceleration and speed limits
 max_vel_x: 0.100
