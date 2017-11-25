@@ -81,8 +81,9 @@ void OrientationSensorData::clear () {
 	calib.mag_offset_z = 0;
 	calib.accel_radius = 0;
 	calib.mag_radius = 0;
-	nullX = 0;
-	nullY = 0;
+
+	nullX = -2.4;
+	nullY = -10.1;
 }
 
 OrientationSensor::OrientationSensor() {
@@ -134,6 +135,8 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	accelerationEvent.orientation.x = 0;
 	accelerationEvent.orientation.y = 0;
 	accelerationEvent.orientation.z = 0;
+
+	upgradeCalibrationTimer.setDueTime(millis()-5000);
 
 }
 
@@ -348,8 +351,7 @@ void OrientationSensor::fetchData() {
 void OrientationSensor::loop(uint32_t now) {
 	// first reading should no happen before one 300s
 
-	static TimePassedBy timer;
-	if (setupOk && timer.isDue_ms(5000, now)) {
+	if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
 		updateCalibration();
 	}
 

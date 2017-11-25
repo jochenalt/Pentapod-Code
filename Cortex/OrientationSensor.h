@@ -54,6 +54,7 @@ private:
 	float currZAcceleration = 0;
 	TimePassedBy accelSampler;
 	TimePassedBy sensorTimer;
+	TimePassedBy upgradeCalibrationTimer;;
 
 	sensors_event_t orientationEvent;
 	sensors_event_t accelerationEvent;

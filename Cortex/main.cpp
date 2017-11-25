@@ -235,11 +235,15 @@ void headlessSetup() {
 	while (millis() - servoOnTime < 500)
 		delay(50);
 
+	// now IMU had enough time to settle, read calibration
+	orientationSensor.updateCalibration();
+	orientationSensor.fetchData();
+
 	// controller for all serial lines with the servos behind
 	controller.setup();
 
-	// now IMU had enozugh time to settle, read calibration
-	orientationSensor.updateCalibration();
+	// IMU needs that to get first value
+	delay(100);
 }
 
 void setup() {
