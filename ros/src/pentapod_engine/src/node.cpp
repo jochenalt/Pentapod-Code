@@ -42,10 +42,10 @@ int main(int argc, char * argv[]) {
 	int cortexI2CAdr;
 	int cortexBaudRate;
 
-	rosNode.param<string>("pentapod_engine_node/cortex_serial_port", cortexSerialPort, CORTEX_CLI_SERIAL_PORT);
-	rosNode.param<int>("pentapod_engine_node/cortex_serial_baudrate", cortexBaudRate, CORTEX_CLI_SERIAL_BAUDRATE);
-	rosNode.param<string>("pentapod_engine_node/cortex_i2c_port", cortexI2CPort, CORTEX_I2C_PORT);
-	rosNode.param<int>("pentapod_engine_node/cortex_i2c_address", cortexI2CAdr, CORTEX_I2C_ADDRESS);
+	rosNode.param<string>("pentapod_engine/cortex_serial_port", cortexSerialPort, CORTEX_CLI_SERIAL_PORT);
+	rosNode.param<int>("pentapod_engine/cortex_serial_baudrate", cortexBaudRate, CORTEX_CLI_SERIAL_BAUDRATE);
+	rosNode.param<string>("pentapod_engine/cortex_i2c_port", cortexI2CPort, CORTEX_I2C_PORT);
+	rosNode.param<int>("pentapod_engine/cortex_i2c_address", cortexI2CAdr, CORTEX_I2C_ADDRESS);
 
 	Engine engine;
 	OdomPublisher odomPublisher;

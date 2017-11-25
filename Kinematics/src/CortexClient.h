@@ -27,6 +27,7 @@ class CortexClient {
 public:
 	CortexClient();
 
+	void setup();
 	// initialize a safe communication. uC's setup is not called, bot remains silent
 	bool setupCortexCommunication(string i2cPort, int i2cadr, string serialPort, int baudRate);
 
@@ -84,7 +85,7 @@ private:
 	bool retry(bool replyOk);
 
 	bool callMicroController(string& cmd, string& response, int timeout_ms);
-	bool binaryCallMicroController(uint8_t request[], int size, uint8_t response[], int responseSize, int timeout_ms);
+	bool binaryCallMicroController(uint8_t request[], int size, uint8_t response[], int responseSize, int delayTime_ms, int timeout_ms);
 	bool readResponse(const Cortex::ResponsePackageData& response);
 
 	bool receive(string& str, int timeout_ms);

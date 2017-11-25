@@ -4,11 +4,7 @@
 
 <launch>
 
-  <node name="pentapod_server_node" 		pkg="pentapod_server"  type="pentapod_server_node" output="screen">
-  	<param name="webserver_port"     		type="int"    value="8000"/>
-  	<param name="dark_hole_finder/ray_min_distance" type="double" value="0.35" />
-    <param name="dark_hole_finder/ray_max_distance" type="double" value="8.0" />
-    <param name="dark_hole_finder/scaryness_threshold" type="double" value="0.58" />
-  	
+  <node name="pentapod_server" 		pkg="pentapod_server"  type="pentapod_server_node" output="screen">
+    <rosparam file="$(find pentapod_server)/config/pentapod_server_params.yaml" command="load"/>
   </node>
 </launch>

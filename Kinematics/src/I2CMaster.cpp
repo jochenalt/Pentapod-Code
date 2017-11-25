@@ -91,7 +91,7 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
-        	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        	std::this_thread::sleep_for(std::chrono::milliseconds(1));
     	}
     	if (bytesRead > 0) {
             totalBytesRead += bytesRead;

@@ -17,10 +17,10 @@ DarkHoleFinder::~DarkHoleFinder() {
 
 void DarkHoleFinder::setup(ros::NodeHandle handle) {
 	handle.param<double>("dark_hole_finder/width", width, 6.0);
-	handle.param<double>("pentapod_server_node/dark_hole_finder/height", height, 6.0);
-	handle.param<double>("pentapod_server_node/dark_hole_finder/ray_min_distance", rayMinDistance, 0.35);
-	handle.param<double>("pentapod_server_node/dark_hole_finder/ray_max_distance", rayMaxDistance, 8.00);
-	handle.param<double>("pentapod_server_node/dark_hole_finder/scaryness_threshold", scarynessthreshold,0.50);
+	handle.param<double>("pentapod_server/dark_hole_finder/height", height, 6.0);
+	handle.param<double>("pentapod_server/dark_hole_finder/ray_min_distance", rayMinDistance, 0.35);
+	handle.param<double>("pentapod_server/dark_hole_finder/ray_max_distance", rayMaxDistance, 8.00);
+	handle.param<double>("pentapod_server/dark_hole_finder/scaryness_threshold", scarynessthreshold,0.50);
 
 
 	// convert to mm
