@@ -103,8 +103,6 @@ void I2CSlave::executeRequest() {
 		Cortex::Command cmd;
 		float angles[NumberOfLimbs*NumberOfLegs];
 		int duration_ms;
-		uint32_t start = millis();
-
 		ok = Cortex::ComPackage::readRequest(request, cmd, angles, duration_ms);
 		if (ok) {
 			switch (cmd) {
@@ -118,93 +116,15 @@ void I2CSlave::executeRequest() {
 				controller.disable();
 				break;
 			case Cortex::MOVE: {
-				cmdSerial->print(" t0=");
-				cmdSerial->print(millis()-start);
-
 				controller.adaptSynchronisation();
-				for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
-					LimbAnglesType legAngles;
-					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-						float angle = angles[limbNo + legNo*NumberOfLimbs];
-						legAngles[limbNo] = angle;
-					}
-					Leg& leg = controller.getLeg(legNo);
-					leg.setAngles(legAngles, duration_ms);
-				}
-
-				// send this command to servos
-				controller.sendCommandToServos();
-
-				cmdSerial->print(" t1=");
-				cmdSerial->print(millis()-start);
-
-				break;
-			}
-			case Cortex::GET:
-				// do nothing, just return current state
-				break;
-			}
-
-			Cortex::Status status;
-			if (controller.isEnabled())
-				status = Cortex::ENABLED;
-			else
-				status = Cortex::DISABLED;
-
-			// check servo status
-			uint8_t servoStatus[NumberOfLegs*NumberOfLimbs];
-			uint8_t distance[NumberOfLegs];
-			for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
-				Leg& leg = controller.getLeg(legNo);
-				distance[legNo] = leg.getDistance();
-				for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
-					float angle = leg.servos[limbNo].getCurrentAngle();
-					angles[limbNo + legNo*NumberOfLimbs] = angle;
-					ServoStatusType stat = leg.getStatus(limbNo);
-					servoStatus[limbNo + legNo*NumberOfLimbs] = stat;
-					if (stat != SERVO_STAT_OK) {
-						cmdSerial->print("servo ");
-						cmdSerial->print(limbNo);
-						cmdSerial->print(" of leg ");
-						cmdSerial->print(legNo);
-						cmdSerial->print(" failed with status ");
-						cmdSerial->println(stat);
-					}
-				}
-			}
-
-			// create response with fresh IMU and distance sensor data
-			ok = Cortex::ComPackage::createResponse(
-					status, angles, distance, servoStatus,
-					imuX, imuY, imuStatus,
-					voltage.getHighVoltage(),
-					controller.looptime(),
-					response);
-
-			// set semaphore to indicate that response can be sent within main loop
-			responsePending = true;
-			// from now on, the I2C interrupt gives a response
-			// when the response is sent, responePending becomes false
-			cmdSerial->print(" t3=");
-			cmdSerial->print(millis()-start);
-
-			// wait until response has been grabbed
-			while (responsePending && (millis() <  start + CORTEX_SAMPLE_RATE)) {
-				delay(1);
-			}
-
-			if (responsePending)
-				cmdSerial->println("reponse not grabbed!");
-			cmdSerial->print(" t4=");
-			cmdSerial->print(millis()-start);
-
-			if (cmd == Cortex::MOVE) {
+				LimbAnglesType legAngles;
 				cmdSerial->print("MOVE ");
 				for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 					Leg& leg = controller.getLeg(legNo);
 					cmdSerial->print('(');
 					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
 						float angle = angles[limbNo + legNo*NumberOfLimbs];
+						legAngles[limbNo] = angle;
 						if (limbNo > 0)
 							cmdSerial->print(' ');
 						cmdSerial->print(angle,1);
@@ -213,8 +133,9 @@ void I2CSlave::executeRequest() {
 					cmdSerial->print(leg.getDistance());
 					cmdSerial->print("mm");
 					cmdSerial->print(")");
-				}
 
+					leg.setAngles(legAngles, duration_ms);
+				}
 				cmdSerial->print("IMU(");
 				cmdSerial->print(imuX,1);
 				cmdSerial->print(',');
@@ -244,7 +165,53 @@ void I2CSlave::executeRequest() {
 					}
 					cmdSerial->println(')');
 				}
+
+				break;
 			}
+			case Cortex::GET:
+				// do nothing, just return current state
+				break;
+			}
+
+			Cortex::Status status;
+			if (controller.isEnabled())
+				status = Cortex::ENABLED;
+			else
+				status = Cortex::DISABLED;
+
+			uint8_t servoStatus[NumberOfLegs*NumberOfLimbs];
+			uint8_t distance[NumberOfLegs];
+			for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
+				Leg& leg = controller.getLeg(legNo);
+				distance[legNo] = leg.getDistance();
+				for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
+					float angle = leg.servos[limbNo].getCurrentAngle();
+					angles[limbNo + legNo*NumberOfLimbs] = angle;
+					ServoStatusType stat = leg.getStatus(limbNo);
+					servoStatus[limbNo + legNo*NumberOfLimbs] = stat;
+					if (stat != SERVO_STAT_OK) {
+						cmdSerial->print("servo ");
+						cmdSerial->print(limbNo);
+						cmdSerial->print(" of leg ");
+						cmdSerial->print(legNo);
+						cmdSerial->print(" failed with status ");
+						cmdSerial->println(stat);
+					}
+				}
+			}
+
+
+
+			// create response
+			ok = Cortex::ComPackage::createResponse(
+					status, angles, distance, servoStatus,
+					imuX, imuY, imuStatus,
+					voltage.getHighVoltage(),
+					controller.looptime(),
+					response);
+
+			// set semaphore to indicate that response can be sent within main loop
+			responsePending = true;
 		} else {
 			cmdSerial->print("invalid I2C request(");
 			cmdSerial->print(getLastError());
