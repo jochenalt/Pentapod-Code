@@ -34,6 +34,7 @@ void logLegName(int id);
 
 class LimbConfigType {
 public:
+	int leg;
 	LimbIdentifier id;
 	uint8_t herkulexMotorId;
 	ServoType type;
@@ -47,7 +48,8 @@ public:
 	void print();
 	void println();
 
-	void set(LimbIdentifier limbId, ServoType newType, int newHerkulexId, bool newClockwise, float newNullAngle, float newMinAngle, float newMaxAngle, float newGearRatio ) {
+	void set(int legId, LimbIdentifier limbId, ServoType newType, int newHerkulexId, bool newClockwise, float newNullAngle, float newMinAngle, float newMaxAngle, float newGearRatio ) {
+		leg = legId;
 		id = limbId;
 		herkulexMotorId = newHerkulexId;
 		type = newType;

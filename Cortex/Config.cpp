@@ -15,19 +15,19 @@ void LegConfigType::setDefaults() {
 
 		// the stops are given by the construction
 		//                  limb-id 		herkulex-id 	clkwse null min max
-		leg.limbs[HIP].set(HIP, HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, HIP),
+		leg.limbs[HIP].set(legId, HIP, HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, HIP),
 									false, 0,
 									degrees(actuatorConfigType[HIP].minAngle),
 									degrees(actuatorConfigType[HIP].maxAngle), 1.0);
-		leg.limbs[THIGH].set(THIGH, HERKULEX_DRS_0401, HerkulexServoDrive::getHerkulexId(legId, THIGH),
+		leg.limbs[THIGH].set(legId, THIGH, HERKULEX_DRS_0401, HerkulexServoDrive::getHerkulexId(legId, THIGH),
 				                    true, 0,
 									degrees(actuatorConfigType[THIGH].minAngle),
 									degrees(actuatorConfigType[THIGH].maxAngle), 1.0);
-		leg.limbs[KNEE].set(KNEE, 	HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, KNEE),
+		leg.limbs[KNEE].set(legId, KNEE, 	HERKULEX_DRS_0101, HerkulexServoDrive::getHerkulexId(legId, KNEE),
 								    false, 0,
 									degrees(actuatorConfigType[KNEE].minAngle),
 									degrees(actuatorConfigType[KNEE].maxAngle), 34.0/21.0);
-		leg.limbs[FOOT].set(FOOT, 	HERKULEX_DRS_0201, HerkulexServoDrive::getHerkulexId(legId, FOOT),
+		leg.limbs[FOOT].set(legId, FOOT, 	HERKULEX_DRS_0201, HerkulexServoDrive::getHerkulexId(legId, FOOT),
 									false, 0,
 									degrees(actuatorConfigType[FOOT].minAngle),
 									degrees(actuatorConfigType[FOOT].maxAngle), 1.0);

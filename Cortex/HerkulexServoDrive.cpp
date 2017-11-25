@@ -269,7 +269,7 @@ void HerkulexServoDrive::loop(uint32_t now) {
 }
 
 void HerkulexServoDrive::syncStatusTimer(uint32_t syncTime) {
-	int legId = configData->herkulexMotorId/10;
+	int legId = configData->leg;
 	int limbId = configData->id;
 
 	// synchronize the timer such that with every loop a different servo is reading its status

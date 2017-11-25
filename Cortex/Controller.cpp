@@ -141,9 +141,12 @@ void Controller::sendCommandToServos() {
 	if (logTimer.isDue()) {
 		cmdSerial->print("TIME(");
 		cmdSerial->print(loopTime);
-		cmdSerial->print("(");
+		cmdSerial->print("+");
 		cmdSerial->print(distanceTime);
-		cmdSerial->println(")ms");
+		cmdSerial->print(")=");
+		cmdSerial->print(loopTime+distanceTime);
+		cmdSerial->println("ms");
+
 	}
 
 	// set timer such that next loop happens with designated rate unless another I2C request kicks in

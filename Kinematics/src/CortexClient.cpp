@@ -341,7 +341,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 200);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 100);
     } while (retry(ok));
 
 	if (ok)
@@ -354,7 +354,7 @@ bool CortexClient::cmdBinaryMOVE(
 			<< " leg2=(" << degrees(legAngles[2][0]) << ","<< degrees(legAngles[2][1]) << "," << degrees(legAngles[2][2]) << ","<< degrees(legAngles[2][3]) << ")"
 			<< " leg3=(" << degrees(legAngles[3][0]) << ","<< degrees(legAngles[3][1]) << "," << degrees(legAngles[3][2]) << ","<< degrees(legAngles[3][3]) << ")"
 			<< " leg4=(" << degrees(legAngles[4][0]) << ","<< degrees(legAngles[4][1]) << "," << degrees(legAngles[4][2]) << ","<< degrees(legAngles[4][3]) << ")"
-			<< " duration=" << duration_ms << "ms" << "t=" << endTime-startTime);
+			<< " duration=" << duration_ms << "ms" << "t=" << millis() << " / " << endTime-startTime);
 
 
     if (!ok)
@@ -619,6 +619,7 @@ void CortexClient::setMovement(const LegAnglesType& legAngles, realnum duration_
 
 
 bool CortexClient::moveSync(const LegAnglesType& legAngles, realnum duration_ms) {
+
 	bool ok = cmdMOVE(legAngles, duration_ms);
 	delay_ms(duration_ms-HERKULEX_MIN_SAMPLE);
 
@@ -677,13 +678,10 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		requestStream << (int)request[i] << ' ';
 	}
 
-	// ROS_DEBUG_STREAM("binaryCallMicroController(" << requestStream.str() << ")");
-
 	i2cPort.sendArray(request,requestSize);
 	uint32_t sendDuration = millis() - start;
-
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - sendDuration);
-	// uint32_t receiveDuration = millis() - start - sendDuration;
+	uint32_t receiveDuration = millis() - start - sendDuration;
 	bool ok = true;
 	if (bytesRead  == responseSize) {
 	    stringstream responseStream;
@@ -696,7 +694,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
 
-	// ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> {" << responseStream.str() << "}" << " t=" << sendDuration + receiveDuration << " (" << getLastError() << ")");
+	ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> t=" << sendDuration << "/" << receiveDuration << " (" << getLastError() << ")");
 	return ok;
 }
 
