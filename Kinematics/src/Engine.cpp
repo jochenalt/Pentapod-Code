@@ -61,11 +61,13 @@ bool Engine::setupCommon() {
 	kinematics.setup(*this);
 	bodyKinematics.setup(*this);
 	gaitControl.setup(*this);
+	legController.setup();
 
     frontLegPose.position = Point(280,1,80);
 
     // assume that touches is on the ground
 	inputBodyPose.position.z = minBodyHeight;
+	inputBodyPose.orientation.null();
 	moderatedBodyPose = inputBodyPose;
 	currentBodyPose = inputBodyPose;
 
@@ -86,7 +88,6 @@ bool Engine::setupCommon() {
 		lastFeetOnGround[i] = true;
 
 
-	lastGaitStepLength = 0;
 	// impose random foot points. Should be overwritten by first-time sensor read
 	PentaPointType footPoints;
 	for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
@@ -110,7 +111,6 @@ void Engine::wakeUp() {
 	ROS_DEBUG_STREAM("wake up");
 	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
 		generalMode = LiftBody;
-		gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius);
 		bodyKinematics.startupPhase(true);
 	}
 }
@@ -263,6 +263,7 @@ void Engine::loop() {
 		if (!turnedOn) {
 			bool ok = legController.fetchAngles(allLegAngles);
 			Rotation imuOrientation = legController.getIMUOrientation();
+			cout << "startup IMU" << legController.getIMUOrientation() << " " << legController.isIMUValueValid(1000) << endl;
 			imuOrientation.z = 0;
 			if (ok) {
 				// compute leg pose out of angles, estimate body pose
@@ -282,7 +283,6 @@ void Engine::loop() {
 
 	if (isTurnedOn()) {
 		computeBodyPose();
-		computeBodySwing();
 		computeGaitRefPointRadius();
 		computeGaitSpeed();
 		computeGaitHeight();
@@ -477,7 +477,7 @@ void Engine::computeBodyPose() {
 		// move towards the target body pose
 		// but: if we are in lift mode, wait until all legs are on the ground
 		if ((generalMode != LiftBody)
-			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 4.0))) {
+			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 5.0))) {
 			realnum bodySpeed = maxBodyPositionSpeed;
 			if (generalMode == LiftBody)
 				bodySpeed = maxLiftBodyPositionSpeed;
@@ -491,9 +491,9 @@ void Engine::computeBodyPose() {
 		Rotation imu = legController.getIMUOrientation();
 		imu.z = 0; // z coordnate is not used
 		Pose imuCompensation;
-		if (legController.isIMUValueValid() && (generalMode == WalkingMode)) {
+		if (legController.isIMUValueValid() && ((generalMode == WalkingMode) || (generalMode == TerrainMode))) {
 			// small PID controller on orientation of x/y axis only
-			Rotation maxError (radians(20.0), radians(20.0), 0);
+			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
 			imuCompensation.orientation = imuPID.getPID(error, 1.0, .5, 0.00, maxError);
 		} else {
@@ -502,7 +502,10 @@ void Engine::computeBodyPose() {
 		}
 		currentBodyPose = toBePose;
 		currentBodyPose.orientation += imuCompensation.orientation;
-		ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y) << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")" << " before=(" << degrees(toBePose.orientation.x) << "," << degrees(toBePose.orientation.y) << ") after=(" << degrees(currentBodyPose.orientation.x) << "," << degrees(currentBodyPose.orientation.y) << ")");
+		ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y)
+				         << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")"
+				         << " before=(" << degrees(toBePose.orientation.x) << "," << degrees(toBePose.orientation.y)
+				         << ") after=(" << degrees(currentBodyPose.orientation.x) << "," << degrees(currentBodyPose.orientation.y) << ")");
 	}
 }
 
@@ -660,8 +663,6 @@ void Engine::computeGaitRefPointRadius() {
 			gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius);
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
-			// if (getCurrentBodyPose().position.z < minBodyHeight + floatPrecision)
-			//	gaitControl.setTargetGaitRefPointsRadius (minFootTouchPointRadius);
 			break;
 		default: {
 				if (generalMode != LiftBody) {

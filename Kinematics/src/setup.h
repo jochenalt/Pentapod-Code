@@ -40,9 +40,9 @@ const realnum minBodyHeight = 50.0;				// minimum height of the body (goes along
 const realnum standardBodyHeigh = 120.0;		// default height when walking
 
 // min/max radius of ground touch points
-const realnum minFootTouchPointRadius = 220.0;   // [mm] radius at body height maxBodyHeight
-const realnum maxFootTouchPointRadius = 340.0;   // [mm] radius at body height minBodyHeight
-const realnum sleepingFootTouchPointRadius = 275;// [mm] radius when sleeping or standing up
+const realnum minFootTouchPointRadius = 220.0;
+const realnum maxFootTouchPointRadius = 340.0;
+const realnum sleepingFootTouchPointRadius = 305;
 
 // max acceleration
 const realnum maxAcceleration = 70.0; 		     // [mm/s^2]
@@ -80,9 +80,8 @@ const realnum moveWithGroundBelowThisGroundDistance = 10.0; // [mm]
 // This has the consequence, that during the touch point the leg is bent against the walking direction
 // which leads to a slight breaking effect that reduces the smoothness of a gait.
 // The following factor allows to move this knee-zenit-point towards the walking direction
-// the closer to 1, the more the knee moves towards the walking direction. 0 is in the middle
-const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
-const realnum kneeZenitPointFactor = 0.8;			// [0..1]
+const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
+const realnum kneeZenitPointFactor = 1.0;					// [0..1]
 
 
 #endif /* SETUP_H_ */
