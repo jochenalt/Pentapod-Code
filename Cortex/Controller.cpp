@@ -80,9 +80,11 @@ bool Controller::setup() {
 		}
 		legs[i].setup(i, serialId);
 	}
+
+	uint32_t syncTime = millis();
 	for (int legId = 0;legId<NUMBER_OF_LEGS;legId++) {
 		for (int limbId = 0;limbId<NumberOfLimbs;limbId++) {
-			legs[legId].servos[limbId].syncStatusTimer();
+			legs[legId].servos[limbId].syncStatusTimer(syncTime);
 		}
 	}
 
@@ -111,13 +113,13 @@ void Controller::sendCommandToServos() {
 	for (int limb = 0;limb<NumberOfLimbs;limb++) {
 		int actLimb = limb;
 		switch (actLimb) {
-		case 0: actLimb = THIGH;break;
-		case 1: actLimb = HIP;break;
-		case 2: actLimb = FOOT;break;
-		case 3: actLimb = KNEE;break;
+			case 0: actLimb = THIGH;break;
+			case 1: actLimb = HIP;break;
+			case 2: actLimb = FOOT;break;
+			case 3: actLimb = KNEE;break;
 		}
-		uint32_t now = millis();
 		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
+			uint32_t now = millis();
 			legs[leg].servos[actLimb].loop(now);
 		}
 	}

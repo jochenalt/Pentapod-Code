@@ -31,7 +31,7 @@ const bool crawlCreepy = true;
 namespace CAD {
 	constexpr static realnum HipNickAngle  = 19.29; 			// angle each hip goes down against the xy pane
 	constexpr static realnum HipCentreDistance  = 52.601+0.1;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
-	constexpr static realnum HipLength= 35.527;				// distance between hip mounting point and hip joint axis (Hip040x)
+	constexpr static realnum HipLength= 35.527;                 // distance between hip mounting point and hip joint axis (Hip040x)
 
 	constexpr static realnum HipJointLength = 45.249;
 
@@ -156,7 +156,7 @@ std::string getServoStatusTypeName(ServoStatusType stat);
 
 // there is a low prio loop running in the cortex (1Hz) that checks the
 // voltage, the servo status and other stuff
-#define LOW_PRIO_LOOP_RATE_MS 1000
+#define LOW_PRIO_LOOP_RATE_MS ((int)CORTEX_SAMPLE_RATE*20)
 
 
 // The cortex has two types of interfaces: The regular ascii terminal and the binary interface.

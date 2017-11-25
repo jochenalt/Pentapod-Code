@@ -335,6 +335,10 @@ bool CortexClient::cmdBinaryMOVE(
 
     }
 
+    long startTime = millis();
+    ok = Cortex::ComPackage::createMoveRequest(flatDegAngles, duration_ms, request);
+    long endTime = millis();
+
 	ROS_DEBUG_STREAM("MOVEBIN"
 			<< std::fixed << std::setprecision(1)
 			<< " leg0=(" << degrees(legAngles[0][0]) << ","<< degrees(legAngles[0][1]) << "," << degrees(legAngles[0][2]) << ","<< degrees(legAngles[0][3]) << ")"
@@ -342,9 +346,9 @@ bool CortexClient::cmdBinaryMOVE(
 			<< " leg2=(" << degrees(legAngles[2][0]) << ","<< degrees(legAngles[2][1]) << "," << degrees(legAngles[2][2]) << ","<< degrees(legAngles[2][3]) << ")"
 			<< " leg3=(" << degrees(legAngles[3][0]) << ","<< degrees(legAngles[3][1]) << "," << degrees(legAngles[3][2]) << ","<< degrees(legAngles[3][3]) << ")"
 			<< " leg4=(" << degrees(legAngles[4][0]) << ","<< degrees(legAngles[4][1]) << "," << degrees(legAngles[4][2]) << ","<< degrees(legAngles[4][3]) << ")"
-			<< " duration=" << duration_ms << "ms");
+			<< " duration=" << duration_ms << "ms" << "t=" << endTime-startTime);
 
-    ok = Cortex::ComPackage::createMoveRequest(flatDegAngles, duration_ms, request);
+
     cortexCommRetryCounter = 0;
     do {
         ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 200);
