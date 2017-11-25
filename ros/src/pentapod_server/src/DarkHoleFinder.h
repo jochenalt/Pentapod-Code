@@ -58,6 +58,9 @@ private:
 
 	double width;
 	double height;
+	double rayMinDistance;
+	double rayMaxDistance;
+	double scarynessthreshold;
 	Map slamMap;
 	Map costMap;
 	Pose pose;
