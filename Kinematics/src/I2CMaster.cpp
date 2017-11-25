@@ -91,6 +91,7 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
+        	// ROS_DEBUG_STREAM ("receive_array" << bytesRead <<i2CPort::receive({" << str.str() << "}, len=" << totalBytesRead << ")");
         	std::this_thread::sleep_for(std::chrono::milliseconds(1));
     	}
     	if (bytesRead > 0) {

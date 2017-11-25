@@ -136,14 +136,6 @@ void I2CSlave::executeRequest() {
 
 					leg.setAngles(legAngles, duration_ms);
 				}
-
-				// send this command to servos
-				controller.sendCommandToServos();
-
-
-				// fetch data from IMU
-				orientationSensor.fetchData();
-
 				cmdSerial->print("IMU(");
 				cmdSerial->print(imuX,1);
 				cmdSerial->print(',');
@@ -209,7 +201,8 @@ void I2CSlave::executeRequest() {
 			}
 
 
-			// create response with fresh IMU and distance sensor data
+
+			// create response
 			ok = Cortex::ComPackage::createResponse(
 					status, angles, distance, servoStatus,
 					imuX, imuY, imuStatus,

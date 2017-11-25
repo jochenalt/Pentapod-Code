@@ -258,24 +258,25 @@ void HerkulexServoDrive::loop(uint32_t now) {
 		float toBeAngle = movement.getCurrentAngle(now+(int)CORTEX_SAMPLE_RATE);
 
 		currentUserAngle = toBeAngle;
-		moveToAngle(toBeAngle, CORTEX_SAMPLE_RATE);
+		moveToAngle(toBeAngle, HERKULEX_MIN_SAMPLE);
 	} else {
 		currentUserAngle = readCurrentAngle();
 	}
+
+	// run the low level loop of 1Hz returning the status of the servo
+	// take care that we request the status equally distributed
+
 
 	if (statusReadTimer.isDue()) {
 		readStatus();
 	}
 }
 
-void HerkulexServoDrive::syncStatusTimer(uint32_t syncTime) {
-	int legId = configData->herkulexMotorId/10;
+void HerkulexServoDrive::syncStatusTimer(uint32_t now) {
+	int legId = configData->leg;
 	int limbId = configData->id;
-
-	// synchronize the timer such that with every loop a different servo is reading its status
-	// gives a rate of status checks of 1.5 Hz
-	statusReadTimer.setDueTime(syncTime+(legId*5 + limbId) * CORTEX_SAMPLE_RATE);
-	statusReadTimer.setRate(LOW_PRIO_LOOP_RATE_MS);
+	statusReadTimer.setDueTime(now + (legId*5 + limbId) * CORTEX_SAMPLE_RATE);
+	statusReadTimer.setRate(CORTEX_SAMPLE_RATE*20);
 }
 
 

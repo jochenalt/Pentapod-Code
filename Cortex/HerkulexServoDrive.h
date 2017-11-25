@@ -56,7 +56,7 @@ public:
 	float getVoltage() { return voltage; };
 	static int getHerkulexId(int legId, int limbId);
 
-	void syncStatusTimer(uint32_t syncTime);
+	void syncStatusTimer(uint32_t now);
 private:	
 	void readStatus();
 	float readServoTorque();

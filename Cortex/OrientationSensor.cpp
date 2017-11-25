@@ -64,8 +64,8 @@ void OrientationSensorData::setDefault () {
 	calib.accel_radius = 1000;
 	calib.mag_radius = 645;
 
-	nullX = 0.6;
-	nullY = -12.1;
+	nullX = -2.4;
+	nullY = -10.1;
 }
 
 void OrientationSensorData::clear () {
@@ -194,6 +194,8 @@ void OrientationSensor::updateCalibration()
   /* Get the four calibration values (0..3) */
   /* Any sensor data reporting 0 should be ignored, */
   /* 3 means 'fully calibrated" */
+
+  logger->println("IMU: updateCalibration");
 
   uint8_t magCalibStatus;
   bno->getCalibration(&systemCalibStatus, &gyroCalibStatus, &accelCalibStatus, &magCalibStatus);
@@ -347,7 +349,7 @@ void OrientationSensor::loop(uint32_t now) {
 	// first reading should no happen before one 300s
 
 	static TimePassedBy timer;
-	if (setupOk && timer.isDue_ms(1000, now)) {
+	if (setupOk && timer.isDue_ms(5000, now)) {
 		updateCalibration();
 	}
 
