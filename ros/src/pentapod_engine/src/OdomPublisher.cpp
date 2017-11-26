@@ -178,6 +178,7 @@ void OdomPublisher::broadcastTransformation() {
 
 
 	// constant transformation from map to odom
+
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::Quaternion(0, 0, 0, 1),

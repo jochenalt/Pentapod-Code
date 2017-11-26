@@ -1,5 +1,5 @@
 webserver_port: 8000
 dark_hole_finder:
-   ray_min_distance: 0.35
-   ray_max_distance: 8.0
-   scaryness_threshold: 0.58
+  ray_min_distance: 0.35
+  ray_max_distance: 8.0
+  scaryness_threshold: 0.58

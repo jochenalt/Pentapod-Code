@@ -699,7 +699,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
 
-	ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> t=" << sendDuration << "/" << receiveDuration << " (" << getLastError() << ")");
+	// ROS_DEBUG_STREAM("send -> timeout=" << timeout_ms << "-> t=" << sendDuration << "/" << receiveDuration << " (" << getLastError() << ")");
 	return ok;
 }
 

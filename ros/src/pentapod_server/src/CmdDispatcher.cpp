@@ -115,7 +115,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	holeFinder.setup(handle);
 
     // wait for the action server to come up
-	moveBaseClient->waitForServer(ros::Duration(5.0));
+	moveBaseClient->waitForServer(ros::Duration(10.0));
 
 	if (moveBaseClient->isServerConnected())
 		setupNavigationStackTopics(handle);

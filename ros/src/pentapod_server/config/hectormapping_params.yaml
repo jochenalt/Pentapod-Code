@@ -1,6 +1,6 @@
 scan_topic: scan
 base_frame: base_link
-odom_frame: base_link
+odom_frame: odom
 
 output_timing: false
 advertise_map_service: true
