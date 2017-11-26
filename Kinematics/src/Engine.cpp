@@ -217,7 +217,7 @@ void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 		inputBodyPose = newBodyPose;
 	if (immediately) {
 		currentBodyPose = newBodyPose;
-		moderatedBodyPose = newBodyPose - bodySwing;
+		moderatedBodyPose = newBodyPose;
 	}
 }
 
@@ -485,7 +485,7 @@ void Engine::computeBodyPose() {
 		}
 
 		// add the swing and IMU correction
-		Pose toBePose = moderatedBodyPose + bodySwing;
+		Pose toBePose = moderatedBodyPose;
 
 		// compensate according to IMU measurement (only when walking)
 		Rotation imu = legController.getIMUOrientation();
@@ -495,7 +495,7 @@ void Engine::computeBodyPose() {
 			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 1.0, .5, 0.00, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
 			imuPID.reset();
@@ -621,40 +621,6 @@ void Engine::computeGaitMode() {
 		}
 	}
 }
-
-void Engine::computeBodySwing() {
-	realnum dT = bodySwingSampler.dT();
-	Pose newBodySwing;
-	realnum angle;
-
-	realnum gaitRatio = gaitControl.getGaitRatio();
-	GaitModeType gaitMode = gaitControl.getCurrentGaitMode();
-
-	if (NumberOfLegs % 2 == 0)
-		angle = fmod(gaitRatio * (M_PI*2.0) + 1.25*M_PI, M_PI*2.0 );
-	else
-		angle = fmod(gaitRatio * (M_PI*2.0) + 1.25*M_PI + M_PI/float(NumberOfLegs), M_PI*2.0);
-
-	if (gaitMode == SexyWalk) {
-		newBodySwing.position.y = 15.0*cos(-angle);
-		newBodySwing.orientation.x = radians(5.0)*sin(angle+M_PI*0.5);
-	}
-
-	if ((gaitMode == FourLegWalk) || (targetGaitMode == FourLegWalk)) {
-		realnum angle = fmod(gaitRatio * (M_PI*2.0) + 0*.5*M_PI, M_PI*2.0 );
-		newBodySwing.position.y = 30.0*sin(angle);
-		newBodySwing.position.x = 30.0*cos(angle);
-		newBodySwing.position.z = 0; // dont breath, too hectic
-	}
-
-	// moderate the body swing
-	const realnum maxBodySwingSpeed = 100.0; // [mm / gait]
-	const realnum maxBodyRotateSpeed = 3.0; // [RAD / gait]
-
-	// gaitSpeed is gaits/s
-	bodySwing.moveTo(newBodySwing, dT, maxBodySwingSpeed*gaitControl.getGaitSpeed(), maxBodyRotateSpeed*gaitControl.getGaitSpeed());
-}
-
 
 void Engine::computeGaitRefPointRadius() {
 	switch (generalMode) {

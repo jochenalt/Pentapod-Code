@@ -148,7 +148,6 @@ private:
 	LegKinematics& getLegKinematics() { return kinematics; };
 
 	void computeBodyPose();				// moderates the set body pose
-	void computeBodySwing();			// computes breathing and the sexy walk
 	void computeGaitRefPointRadius();	// compute the radius of the points where the feet touch the ground
 	void computeGaitSpeed();			// compute the gait speed depending on the body speed
 	void computeGaitHeight();			// computes and moderates the height of the body
@@ -175,8 +174,7 @@ private:
 	Pose inputBodyPose;					// input pose, which is moderated afterwards and gets additional breathing
 	GaitModeType targetGaitMode;		// gait mode (5-leg, 4-leg,...)
 	Pose moderatedBodyPose;				// pose after limiting acceleration
-	Pose currentBodyPose;				// current real pose including body swing
-	Pose bodySwing;						// add on to bodypose simulating sexy walk and breathing
+	Pose currentBodyPose;				// current real pose
 	realnum humpsCompensation;  		// if any humps are on the ground,  adapt the body height accordingly
 
 	Point targetFrontLeg;				// target position of the front leg
@@ -192,7 +190,6 @@ private:
 	TimeSamplerStatic mainLoopTimeSample;
 	TimeSamplerStatic bodyPoseSampler;
 	TimeSamplerStatic gaitModeSampler;
-	TimeSamplerStatic bodySwingSampler;
 	TimeSamplerStatic gaitSpeedSampler;
 	TimeSamplerStatic warpingCompensationSampler;
 	TimeSamplerStatic movementSample;

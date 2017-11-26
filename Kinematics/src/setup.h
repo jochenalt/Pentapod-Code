@@ -37,11 +37,11 @@ const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 // maximum and minimum body height
 const realnum maxBodyHeight = 260.0;			// maximum height of the body (goes along with minFootTouchPointRadius)
 const realnum minBodyHeight = 50.0;				// minimum height of the body (goes along with maxFootTouchPointRadius)
-const realnum standardBodyHeigh = 120.0;		// default height when walking
+const realnum standardBodyHeigh = 140.0;		// default height when walking
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 220.0;
-const realnum maxFootTouchPointRadius = 340.0;
+const realnum maxFootTouchPointRadius = 300.0;
 const realnum sleepingFootTouchPointRadius = 305;
 
 // max acceleration
@@ -65,7 +65,7 @@ const realnum maxGaitFrequency = 3.0; 				// [Hz]
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
 
 // maximum speed of a foot that is in the air during a gait
-const realnum maxFootSpeed = 500; 					// [mm/s]
+const realnum maxFootSpeed = 600; 					// [mm/s]
 
 // maximum speed of a foot that is in the air during a gait
 const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
@@ -73,15 +73,15 @@ const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 
 // below that distance a toe is already moving with the ground
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)
-const realnum moveWithGroundBelowThisGroundDistance = 10.0; // [mm]
+const realnum moveWithGroundBelowThisGroundDistance = 20.0; // [mm]
 
 // Typically, the top point of the knee in one gait is in the
 // middle of the touch point and the point when the toe leaves the ground.
 // This has the consequence, that during the touch point the leg is bent against the walking direction
 // which leads to a slight breaking effect that reduces the smoothness of a gait.
 // The following factor allows to move this knee-zenit-point towards the walking direction
-const realnum kneeZenitPointOffset = 0.5;			// [0.0..1.0]
-const realnum kneeZenitPointFactor = 1.0;					// [0..1]
+const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
+const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
 
 #endif /* SETUP_H_ */
