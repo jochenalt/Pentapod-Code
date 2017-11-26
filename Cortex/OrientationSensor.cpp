@@ -51,7 +51,8 @@ void OrientationSensorData::print() {
 }
 
 void OrientationSensorData::setDefault () {
-	sensorID= glbSensorID;
+	clear();
+	sensorID = glbSensorID;
 	calib.accel_offset_x = 0;
 	calib.accel_offset_y = 0;
 	calib.accel_offset_z = 0;
@@ -69,7 +70,7 @@ void OrientationSensorData::setDefault () {
 }
 
 void OrientationSensorData::clear () {
-	sensorID= glbSensorID;
+	sensorID = glbSensorID;
 	calib.accel_offset_x = 0;
 	calib.accel_offset_y = 0;
 	calib.accel_offset_z = 0;
@@ -198,8 +199,6 @@ void OrientationSensor::updateCalibration()
   /* Any sensor data reporting 0 should be ignored, */
   /* 3 means 'fully calibrated" */
 
-  logger->println("IMU: updateCalibration");
-
   uint8_t magCalibStatus;
   bno->getCalibration(&systemCalibStatus, &gyroCalibStatus, &accelCalibStatus, &magCalibStatus);
 
@@ -217,7 +216,7 @@ void OrientationSensor::updateCalibration()
   }
 
   // if not yet in epprom but we are fully calibrated, store calibration
-  if ((memory.persMem.imuCalib.sensorID != glbSensorID) && bno->isFullyCalibrated()) {
+  if ((memory.persMem.imuCalib.sensorID != glbSensorID) && (gyroCalibStatus == 3) && (accelCalibStatus == 3)) {
 	  logger->println("IMU: save calibration to eeprom");
 	  saveCalibration();
   }
@@ -225,7 +224,11 @@ void OrientationSensor::updateCalibration()
 
 
 bool OrientationSensor::isFullyCalibrated() {
-	return bno->isFullyCalibrated();
+  uint8_t magCalibStatus;
+  bno->getCalibration(&systemCalibStatus, &gyroCalibStatus, &accelCalibStatus, &magCalibStatus);
+  systemCalibStatus = 3;
+  printData();
+  return ( (systemCalibStatus == 3) && (gyroCalibStatus == 3) && (accelCalibStatus == 3));
 }
 
 void OrientationSensor::saveCalibration() {

@@ -864,7 +864,6 @@ void HerkulexClass::moveOne(int servoID, int Goal, int pTime, int iLed)
   dataEx[11] = data[3];
 
   sendData(dataEx, pSize, false);
-
 }
 
 // move one servo to an angle between -160 and 160

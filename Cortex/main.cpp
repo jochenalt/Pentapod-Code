@@ -235,7 +235,7 @@ void headlessSetup() {
 	while (millis() - servoOnTime < 500)
 		delay(50);
 
-	// now IMU had enough time to settle, read calibration and first data
+	// now IMU had enough time to settle, read calibration and first (rubbish) data
 	orientationSensor.updateCalibration();
 	orientationSensor.fetchData();
 

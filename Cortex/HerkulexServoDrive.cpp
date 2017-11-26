@@ -265,8 +265,6 @@ void HerkulexServoDrive::loop(uint32_t now) {
 
 	// run the low level loop of 1Hz returning the status of the servo
 	// take care that we request the status equally distributed
-
-
 	if (statusReadTimer.isDue()) {
 		readStatus();
 	}
@@ -275,8 +273,8 @@ void HerkulexServoDrive::loop(uint32_t now) {
 void HerkulexServoDrive::syncStatusTimer(uint32_t now) {
 	int legId = configData->leg;
 	int limbId = configData->id;
-	statusReadTimer.setDueTime(now + (legId*5 + limbId) * CORTEX_SAMPLE_RATE);
 	statusReadTimer.setRate(CORTEX_SAMPLE_RATE*20);
+	statusReadTimer.setDueTime(now + (legId*5 + limbId) * CORTEX_SAMPLE_RATE);
 }
 
 
