@@ -8,6 +8,8 @@
 #include "DarkHoleFinder.h"
 
 const int LethalThreshold = 99;
+const int CandidateThreshold = 80;
+
 DarkHoleFinder::DarkHoleFinder() {
 }
 
@@ -39,14 +41,22 @@ void DarkHoleFinder::feed(const Map& newSlamMap, const Map& newCostMap, const Po
 	findHole();
 }
 
+// find candidate by xoring each grid cell against the pattern and taking all cells with a result of at least 5 as candidates
+//    111
+//   1   1
+//   1 0 1
+//   1   1
+//    111
+
 bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
 	int pivotValue = costMap.getValueByWorld(x,y);
 	realnum holeValue = 0;
 	int wallCounter = 0;
-	if ((pivotValue < LethalThreshold ) && (pivotValue >= 0) && (slamMap.getOccupancyByWorld(x,y) ==  Map::FREE)) {
-		for (int xc = -1;xc <= 1; xc++) {
-			for (int yc = -1;yc <= 1; yc++) {
-				if ((xc != 0) || (yc != 0)) {
+	const int radius = 2;
+	if ((pivotValue < CandidateThreshold ) && (pivotValue >= 0) && (slamMap.getOccupancyByWorld(x,y) ==  Map::FREE)) {
+		for (int xc = -radius;xc <= radius; xc++) {
+			for (int yc = -radius;yc <= radius; yc++) {
+				if (((abs(xc) == radius) || (abs(yc) == radius)) && (abs(yc) != abs(xc))) {
 					int value = costMap.getValueByWorld(x+xc*slamMap.getGridSize(),y+yc*slamMap.getGridSize());
 					if (value > pivotValue) {
 						if (value > LethalThreshold)
@@ -58,7 +68,7 @@ bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
 			}
 		}
 	}
-	if (wallCounter > 4)
+	if (wallCounter >= 5)
 		return true;
 	return false;
 }
