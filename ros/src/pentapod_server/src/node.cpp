@@ -14,6 +14,9 @@
 // Pentapod/Server
 #include "CmdDispatcher.h"
 
+// basic ROS
+#include <ros/ros.h>
+
 // messages and services
 #include "std_msgs/String.h"
 #include "std_msgs/Int8.h"
@@ -26,12 +29,14 @@
 #include "ros/ros.h"
 #include "mongoose.h" 
 
+// used for publishing map->odom
+#include <tf/transform_broadcaster.h>
+
 using namespace std;
 
 static struct mg_serve_http_opts s_http_server_opts;
-CommandDispatcher cmdDispatcher;
 
-
+CommandDispatcher* dispatcher_ptr = NULL;
 // define an mongoose event handler function that is called whenever a request comes in
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
@@ -47,7 +52,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     			string response;
     			// if our dispatcher knows the command, it creates a response and returns true.
     			// Otherwise assume that we deliver static content.
-    			bool processed = cmdDispatcher.dispatch(uri, query, body, response, ok);
+    			bool processed = dispatcher_ptr->dispatch(uri, query, body, response, ok);
     			if (processed) {
     				if (ok) {
     					mg_printf(nc, "HTTP/1.1 200 OK\r\n"
@@ -70,12 +75,13 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     }
 }
 
-
 int main(int argc, char * argv[]) {
 
 	ROS_INFO_STREAM("starting pentapod_server node");
 
 	ros::init(argc, argv, "pentapod_server_node");
+	CommandDispatcher cmdDispatcher;
+	dispatcher_ptr = &cmdDispatcher;
 
 	ros::NodeHandle rosNode;
 	string cortexSerialPort;
@@ -117,10 +123,18 @@ int main(int argc, char * argv[]) {
 	cmdDispatcher.setup(rosNode);
 
 	// main loop that takes care of the webserver as well as ROS
+	TimeSamplerStatic odomTimer;
 	while (rosNode.ok()) {
-
 		// pump callbacks of topics
 		ros::spinOnce();
+
+
+		// broadcast map -> odom transformation at 10 Hz
+		if (odomTimer.isDue(1000/10)) {
+			cmdDispatcher.broadcastTransformationMapToOdom();
+			cmdDispatcher.initNavigation(rosNode);
+		}
+
 
 		// check and dispatch incoming http requests (dispatched by CommandDispatcher) and wait for 10ms max.
 		mg_mgr_poll(&mgr, 10);

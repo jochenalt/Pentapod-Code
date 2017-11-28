@@ -69,7 +69,6 @@ int main(int argc, char * argv[]) {
 	// main loop that takes care of the engine
 	// by sending move commands with approx. 45Hz
 	TimeSamplerStatic lowPrioLoopTimer;
-	TimeSamplerStatic odomTimer;
 
 	ROS_INFO_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
 	while (rosNode.ok()) {
@@ -77,16 +76,12 @@ int main(int argc, char * argv[]) {
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
 		// so call engine.loop() right after sleep
 		mainLoopRate.sleep();
+
 		engine.loop(); // send move commands to cortex
 
-		// broadcast the bots state to webserver at 10Hz
+		// now we have some time to publish odom and odom->base_link
 		if (lowPrioLoopTimer.isDue(1000/10)) {
 			odomPublisher.broadcastState();
-		}
-
-		// broadcast odom and transformations for Hector SLAM and navigation at 20Hz
-		// since that is the navigation controller frequency
-		if (odomTimer.isDue(1000/20)) {
 			odomPublisher.broadcastTransformation();
 			odomPublisher.broadcastOdom();
 		}

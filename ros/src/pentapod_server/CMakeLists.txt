@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   pentapod_library
   actionlib
   move_base_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions

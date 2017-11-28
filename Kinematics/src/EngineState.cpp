@@ -13,8 +13,8 @@ std::ostream& EngineState::serialize(std::ostream &out) const {
 	currentOdomPose.serialize(out);
 	out << ",\"map\":";
 	currentMapPose.serialize(out);
-	out << ",\"fused\":";
-	currentFusedPose.serialize(out);
+	out << ",\"baselink\":";
+	currentBaselinkPose.serialize(out);
 	out << ",\"hp\":";
 	hipPoseWorld.serialize(out);
 	out << ",\"gp\":";
@@ -73,9 +73,9 @@ std::istream& EngineState::deserialize(std::istream &in) {
     	currentMapPose.deserialize(in, ok);
     	parseCharacter(in, ',', ok);
 
-    	parseString(in, ok); // "fused"
+    	parseString(in, ok); // "baselink"
     	parseCharacter(in, ':', ok);
-    	currentFusedPose.deserialize(in, ok);
+    	currentBaselinkPose.deserialize(in, ok);
     	parseCharacter(in, ',', ok);
 
 

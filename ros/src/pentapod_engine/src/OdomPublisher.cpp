@@ -56,7 +56,7 @@ void OdomPublisher::listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& 
 	if (!engine->isListeningToMovements()) {
 		// waking up the bot takes probably 10s
 		ROS_WARN_STREAM_THROTTLE(10,
-				"received cmd_vel, but engine is currently not yet listening to movements. Engine is woken up, please wait");
+				"received cmd_vel, but engine is currently not yet listening to movements. Please wait until Engine is awake");
 	} else {
 		ROS_INFO_STREAM_THROTTLE(1,"cmd_vel=(x,y|z)=(" << vel_msg->linear.x*1000.0 << "[mm]," << vel_msg->linear.y*1000.0 << "[mm],"
 				<< degrees(vel_msg->angular.z) << "[deg/s])-> (v,direction)=" << fullspeed << "[mm/s], " << degrees(newWalkingDirection) << "[deg]");
@@ -104,9 +104,7 @@ void OdomPublisher::listenToMoveMode (const pentapod_engine::engine_command_mode
 
 
 void OdomPublisher::broadcastOdom() {
-
 	// publish tranformation odom->base_link
-	// (consumed by whom? )
 	// This transformation is continous but drifting and works on base of the bots encoders only
 	// no slam pose is used here
 
@@ -176,58 +174,14 @@ void OdomPublisher::broadcastTransformation() {
 									  engine->getCurrentBodyPose().position.z/1000.0 + CAD::LaserSensorHeight/1000.0)),
 			ros::Time::now(),"base_link", "laser"));
 
-
-	// constant transformation from map to odom
+	/*
 
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::Quaternion(0, 0, 0, 1),
 					      tf::Vector3(0,0,0)),
 			ros::Time::now(),"map", "odom"));
-
-	/*
-	// in case the bot is running across hills, the base_footprint is different from the
-	// base_link. We do not do that, so we have a neutral transformation
-	broadcaster.sendTransform(
-			  tf::StampedTransform(
-				tf::Transform(tf::Quaternion(0, 0, 0, 1),
-						      tf::Vector3(0,0,0)),
-				ros::Time::now(),"base_footprint", "base_link"));
-
-	// in case the bot is running across hills, the base_footprint is different from the
-	// base_link. We do not do that, so we have a neutral transformation
-	broadcaster.sendTransform(
-			  tf::StampedTransform(
-				tf::Transform(tf::Quaternion(0, 0, 0, 1),
-						      tf::Vector3(0,0,0)),
-				ros::Time::now(),"odom", "base_footprint"));
-
-	// in case the bot is running across hills, the base_link is different from base_stablized, which
-	// is actually base_link but horizontally to the ground
-	// we do not consider that, so use neutral transformation
-	broadcaster.sendTransform(
-			  tf::StampedTransform(
-				tf::Transform(tf::Quaternion(0, 0, 0, 1),
-						      tf::Vector3(0,0,0)),
-				ros::Time::now(),"base_link", "base_stabilized"));
-
-
-
-	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"odom", "base_footprint"));
-
-
-
-	broadcaster.sendTransform(
-		  tf::StampedTransform(
-			tf::Transform(tf::Quaternion(0, 0, 0, 1),
-					      tf::Vector3(0,0,0)),
-			ros::Time::now(),"base_frame", "laser"));
-*/
-
+			*/
 }
 
 

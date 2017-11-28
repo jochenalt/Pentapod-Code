@@ -114,11 +114,18 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// initialoze the dark hole finder
 	holeFinder.setup(handle);
 
-    // wait for the action server to come up
-	moveBaseClient->waitForServer(ros::Duration(10.0));
+    // wait for the action server to come up. Do this in a 10Hz loop while producing the
+	// identical map->odom trasformation which is required by the navigation stack.
+	// After this method, this transformation will be taken up by the main loop
+	ros::Time now = ros::Time::now();
+	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - ros::Duration(10) > now)) {
+		ROS_INFO_THROTTLE(2, "waiting for move base to come up");
+		broadcastTransformationMapToOdom();
+	}
 
-	if (moveBaseClient->isServerConnected())
+	if (moveBaseClient->isServerConnected()) {
 		setupNavigationStackTopics(handle);
+	}
 	else {
 	    ROS_ERROR("move_base did not come up!!!");
 	}
@@ -138,8 +145,8 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 
 	// advertise the initial position for the navigation stack anytime the navigation goal is set
 	geometry_msgs::PoseWithCovarianceStamped initialPosition;
-	initialPosition.pose.pose.position.x = engineState.currentFusedPose.position.x/1000.0;
-	initialPosition.pose.pose.position.y = engineState.currentFusedPose.position.y/1000.0;
+	initialPosition.pose.pose.position.x = engineState.currentBaselinkPose.position.x/1000.0;
+	initialPosition.pose.pose.position.y = engineState.currentBaselinkPose.position.y/1000.0;
 	initialPosition.pose.pose.position.z = 0;
 	geometry_msgs::Quaternion initialPose_quat  =
 			tf::createQuaternionMsgFromYaw(
@@ -149,12 +156,11 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 	initialPosition.pose.pose.orientation = initialPose_quat;
 	initialPosition.header.stamp = ros::Time::now();
 	initialPosition.header.frame_id = "map";
-	ROS_INFO_STREAM("publishing initial pose " << engineState.currentFusedPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
+	ROS_INFO_STREAM("publishing initial pose " << engineState.currentBaselinkPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
 					engineState.currentNoseOrientation) << "");
 
 	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
-	navigationGoal.position = goalPose_world.position - engineState.currentFusedPose.position;
-	// navigationGoal = goalPose_world - engineState.currentFusedPose.position;
+	navigationGoal.position = goalPose_world.position - engineState.currentBaselinkPose.position;
 
 	navigationGoal.position.rotateAroundZ(- (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation));
 	navigationGoal.orientation.null();
@@ -589,7 +595,7 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 			newScan.push_back(-1);
 	}
 
-	laserScan.setLaserScan(engineState.currentFusedPose, newScan, startAngle, angleIncrement, endAngle);
+	laserScan.setLaserScan(engineState.currentBaselinkPose, newScan, startAngle, angleIncrement, endAngle);
 	std::stringstream out;
 	laserScan.serialize(out);
 	serializedLaserScan = out.str();
@@ -635,7 +641,7 @@ void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::Co
 void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
-	holeFinder.feed(slamMap, globalCostMap, fusedMapOdomPose);
+	holeFinder.feed(slamMap, globalCostMap, odomFrame);
 }
 
 void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
@@ -676,13 +682,23 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	mapPose.position.x = og->pose.position.x*1000.0;
 	mapPose.position.y = og->pose.position.y*1000.0;
 	mapPose.position.z = og->pose.position.z*1000.0;
-
 	Quaternion q(og->pose.orientation.x, og->pose.orientation.y, og->pose.orientation.z, og->pose.orientation.w);
 	mapPose.orientation = EulerAngles(q);
-	fusedMapOdomPose = mapPose;
+
+	// compute odomFrame for map->odom transformation
+	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(odomPose.orientation.z-mapPose.orientation.z);
+	odomFrame.orientation.z = odomPose.orientation.z-mapPose.orientation.z;
+
+	// check this
+ 	Pose test;
+ 	test.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
+ 	test.orientation = odomFrame.orientation  + odomPose.orientation;
+ 	if ((test.position.distance(mapPose.position) > floatPrecision) || (abs(test.orientation.z - mapPose.orientation.z) > floatPrecision))
+ 		ROS_ERROR_STREAM("map->odom transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
+
 
 	engineState.currentMapPose = mapPose;
-	engineState.currentFusedPose = fusedMapOdomPose; // reset pose that is fused of map and odom
+	engineState.currentBaselinkPose = odomPose; // reset pose that is fused of map and odom
 }
 
 // subscription to path
@@ -743,7 +759,8 @@ void CommandDispatcher::clearCostmaps() {
 // therefore not slam map is generated, the navigation stack gives up and does not
 // recover when the SLAM map is there.
 
-void CommandDispatcher::initNavigation() {
+void CommandDispatcher::initNavigation(ros::NodeHandle& handle) {
+
 }
 
 // subscription to bots state
@@ -753,10 +770,10 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 	std::istringstream in(fullStateStr->data);
 	engineState.deserialize(in);
 
-	// update fused pose of map and odom (map pose is discrete, odom pose is continously)
-	Point odomDiff = (engineState.currentOdomPose.position - previousOdom.position);
-	fusedMapOdomPose += odomDiff;
- 	engineState.currentFusedPose = fusedMapOdomPose;
+	// update baselink pose and slam pose which does not come from pentapod engine
+ 	engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
+ 	engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
+
  	engineState.currentMapPose = mapPose;
 
  	// turn on the lidar if we wake up
@@ -769,4 +786,14 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
  	lastLidarShouldBeOn = lidarShouldBeOn;
 }
 
+
+void CommandDispatcher::broadcastTransformationMapToOdom() {
+	Pose baselink = getBaselink();
+
+	broadcaster.sendTransform(
+		  tf::StampedTransform(
+			tf::Transform(tf::createQuaternionFromYaw(baselink.orientation.z),
+					      tf::Vector3(baselink.position.x/1000.0,baselink.position.y/1000.0,0)),
+			ros::Time::now(),"map", "odom"));
+}
 

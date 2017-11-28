@@ -77,7 +77,7 @@ public:
 
 	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
 
-	void initNavigation();
+	void initNavigation(ros::NodeHandle& handle);
 	void setupNavigationStackTopics(ros::NodeHandle& handle);
 
 	// call a service to start/stop the motor of the lidar
@@ -85,8 +85,12 @@ public:
 	// call the move_base servcie to clear all costmaps.
 	void clearCostmaps();
 
-private:
+	Pose getBaselink() { engineState.currentBaselinkPose; };
 
+	void broadcastTransformationMapToOdom();
+
+private:
+	tf::TransformBroadcaster broadcaster;
 	std::string serializedLaserScan;
 
 	Map slamMap;
@@ -99,6 +103,7 @@ private:
 
 	Trajectory localPlan;
 	std::string localPlanSerialized;
+
 	Trajectory globalPlan;
 	std::string globalPlanSerialized;
 
@@ -114,7 +119,7 @@ private:
 	std::string serializedTrajectory;
 	EngineState engineState;
 	Pose mapPose;
-	Pose fusedMapOdomPose;
+	Pose odomFrame;
 	Pose odomPose;
 
 	ros::Publisher cmdVel;

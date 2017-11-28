@@ -1,9 +1,8 @@
-serial_port: /dev/ttyUSB0  
-serial_baudrate: 115200
-frame_id: laser
-inverted: false
-angle_compensate: true
+serial_port: /dev/ttyUSB0      # serial port where RPLidar A2 is connected
+serial_baudrate: 115200        # RLidar A2 supports this baudrate only 
+frame_id: laser                # frame name
+inverted: false                # laser is mounted in upright position
+angle_compensate: true         
 
-# new parameter: do not start motor after startup of the node. 
-# Instead, service start_motor has to be called 
-start_motor: False
+# new parameter, not implemented in original RPLidar code
+start_motor: False             # do not start the motor when the lidar node comes up. Use /start_motor service to turn on. 

@@ -889,7 +889,7 @@ void Engine::getState(EngineState &data) {
 	data.toePointsWorld = gaitControl.getToePointsWorld();
 	data.hipPoseWorld = getHipPoseWorld();
 	data.groundPoints = getGroundPoints();
-	data.currentFusedPose = getOdomPose();
+	data.currentBaselinkPose = getOdomPose();
 
 	for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 		data.footOnGroundFlag[legNo] = getFootOnGround()[legNo];

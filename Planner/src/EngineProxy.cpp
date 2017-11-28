@@ -154,7 +154,7 @@ void EngineProxy::loop() {
 		if (remoteEngineCallTimer.isDue(BotTrajectorySampleRate)) {
 			updateEngineState(data);
 			newBotDataAvailable  = (data != lastData);
-			newMapPoseDataAvailable =  (data.currentFusedPose != lastData.currentFusedPose);
+			newMapPoseDataAvailable =  (data.currentBaselinkPose != lastData.currentBaselinkPose);
 		}
 
 		if (UpdateMapSampleRate > 0) {
