@@ -102,44 +102,58 @@ TimePassedBy& Controller::getTimer() {
 }
 
 
+void Controller::sendCommandToServos() {
+	uint32_t now = millis();
+
+	// important: iterate over all legs limb-wise, such
+	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
+	// Each loop just sends a fire-and-forget command with the to-be position,
+	// we do not wait for a reply, which takes around 10ms for 25 servos
+	// send command to Thigh, Hip, Foot, Knee in order to be more reactive
+	for (int limb = 0;limb<NumberOfLimbs;limb++) {
+		int actLimb = limb;
+		switch (actLimb) {
+			case 0: actLimb = THIGH;break;
+			case 1: actLimb = HIP;break;
+			case 2: actLimb = FOOT;break;
+			case 3: actLimb = KNEE;break;
+		}
+		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
+			legs[leg].servos[actLimb].loop(now);
+		}
+	}
+
+	uint32_t middle = millis();
+
+	for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
+		legs[leg].fetchDistance();
+	}
+	uint32_t end = millis();
+
+	static uint32_t distanceTime = 0;
+	static uint32_t loopTime = 0;
+	static TimePassedBy logTimer(5000);
+
+	distanceTime = (end - middle + distanceTime)/2;
+	loopTime = ((end - now) + loopTime)/2;
+
+	if (logTimer.isDue()) {
+		cmdSerial->print("TIME(");
+		cmdSerial->print(loopTime);
+		cmdSerial->print("(");
+		cmdSerial->print(distanceTime);
+		cmdSerial->println(")ms");
+	}
+
+	// set timer such that next loop happens with designated rate unless another I2C request kicks in
+	servoLoopTimer.setDueTime(now + servoLoopTimer.getRate());
+}
+
 void Controller::loop(uint32_t now) {
 	// update the servo position
 	if (servoLoopTimer.isDue_ms(CORTEX_SAMPLE_RATE,now))
 	{
-
-		uint32_t start = millis();
-		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
-			legs[leg].fetchDistance();
-		}
-		uint32_t middle = millis();
-
-		// important: iterate over all legs limb-wise, such
-		// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
-		// Each loop just sends a fire-and-forget command with the to-be position,
-		// we do not wait for a reply, which takes around 10ms for 25 servos
-		// additionally, there's a low level loop running with 1 Hz requesting the servos status
-		for (int limb = 0;limb<NumberOfLimbs;limb++) {
-			uint32_t now = millis();
-			for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
-				legs[leg].servos[limb].loop(now);
-			}
-		}
-
-		static uint32_t distanceTime = 0;
-		static uint32_t loopTime = 0;
-		static TimePassedBy logTimer(5000);
-
-		uint32_t end = millis();
-		distanceTime = (middle - start + distanceTime)/2;
-		loopTime = ((end - start) + loopTime)/2;
-
-		if (logTimer.isDue()) {
-			cmdSerial->print("TIME(");
-			cmdSerial->print(loopTime);
-			cmdSerial->print("(");
-			cmdSerial->print(distanceTime);
-			cmdSerial->println(")ms");
-		}
+		sendCommandToServos();
 	}
 }
 
@@ -156,7 +170,6 @@ void Controller::adaptSynchronisation() {
 	// filter the measurements to have a constant frequency.
 
 	uint32_t now = millis();
-
 
 	// get the time when the controller will fire the next loop
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
