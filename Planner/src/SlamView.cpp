@@ -212,29 +212,35 @@ void SlamView::drawCostmapGrid( CostmapType type, int value, const Point &g1,con
 	// show lethal points in red, and harmless grid cells in green
 	GLfloat color[] = { 0,0,0, glAlphaTransparent};
 
+	bool display = true;
 	if (type == GLOBAL_COSTMAP) {
-		color[0] = lethalNess/2.0f;
-		color[1] = (1.0f-lethalNess)/2.0f;
-		color[2] = 0.0;
-		color[3] = 0.4;
+		if (value <= 99) {
+			color[0] = lethalNess/2.0f;
+			color[1] = (1.0f-lethalNess)/2.0f;
+			color[2] = 0.0;
+			color[3] = 0.4;
+		} else
+			display = false;
 	} else {
 		color[0] = lethalNess/2.0f;
 		color[1] = (1.0f-lethalNess)/2.0f;
 		color[2] = 0.0;
 		color[3] = 0.3;
 	}
-	glBegin(GL_TRIANGLE_STRIP);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
-		glColor4fv(color);
-		glNormal3f(0.0,1.0,0.0);
-		int offset = 10;
-		if (type == GLOBAL_COSTMAP)
-			offset = 5;
-		glVertex3f(g1.y, g1.z + offset, g1.x);
-		glVertex3f(g2.y, g2.z + offset, g2.x);
-		glVertex3f(g4.y, g4.z + offset, g4.x);
-		glVertex3f(g3.y, g3.z + offset, g3.x);
-	glEnd();
+	if (display) {
+		glBegin(GL_TRIANGLE_STRIP);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
+			glColor4fv(color);
+			glNormal3f(0.0,1.0,0.0);
+			int offset = 10;
+			if (type == GLOBAL_COSTMAP)
+				offset = 5;
+			glVertex3f(g1.y, g1.z + offset, g1.x);
+			glVertex3f(g2.y, g2.z + offset, g2.x);
+			glVertex3f(g4.y, g4.z + offset, g4.x);
+			glVertex3f(g3.y, g3.z + offset, g3.x);
+		glEnd();
+	}
 }
 
 void SlamView::drawOccupiedSlamGrid(bool onlyTop,  const Point &g1,const Point &g2, const Point &g3, const Point &g4 ) {
@@ -466,6 +472,8 @@ void SlamView::drawSlamMap() {
 void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 
 	Map map = EngineProxy::getInstance().getGlobalCostmap();
+	Map slamMap = EngineProxy::getInstance().getMap();
+
 	Point origin = odom.position;
 
 	Map* costmap = NULL;
@@ -508,7 +516,8 @@ void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 
 			if (Point(localGridX, localGridY).length() <= fullMapSizeX/2.0 + gridLength/2.0) {
 				int costValue = costmap->getValueByWorld(localGridX,localGridY);
-				if (costValue > 0) {
+				if ((costValue > 0) &&
+				    (slamMap.getValueByWorld(localGridX,localGridY) != Map::UNKNOWN)) {
 					int yFrom = localGridY + origin.y -0*gridLength;
 					int yTo = yFrom + gridLength;
 

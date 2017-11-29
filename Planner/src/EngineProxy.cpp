@@ -197,7 +197,7 @@ void EngineProxy::loop() {
 			engine.getState(data);
 
 			newBotDataAvailable  = (data != lastData);
-			newMapPoseDataAvailable =  (data.currentFusedPose != lastData.currentFusedPose);
+			newMapPoseDataAvailable =  (data.currentBaselinkPose != lastData.currentBaselinkPose);
 			lastData = data;
 		}
 	}
@@ -368,7 +368,7 @@ Pose EngineProxy::getBodyPose() {
 }
 
 const Pose& EngineProxy::getFusedPose() {
-	return data.currentFusedPose;
+	return data.currentBaselinkPose;
 }
 
 const Pose& EngineProxy::getMapPose() {
