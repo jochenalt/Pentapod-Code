@@ -1,20 +1,21 @@
-# TRAJECTORY CONTROL
-differential_drive: true
+differential_drive: false
 
 # velocity limits
-max_vel_lin: 0.100
-max_vel_th: 0.2
-min_vel_lin: 0.0
-min_in_place_vel_th: 0.2
+max_vel_lin: 0.800
+min_vel_lin: 0.000
 
+max_vel_th: 0.7
+min_vel_th: 0.0
+
+min_in_place_vel_th: 0.0
 max_acceleration: 0.06
 max_translational_acceleration: 0.06
-max_rotational_acceleration: 0.06
-  
+#rotational_threshold_multiplier: 50.0
+
 # goal tolerance
 xy_goal_tolerance: 0.05
 yaw_goal_tolerance: 0.05
 
-# angular velocity PID
 
-#eband parameters
+# frequency with that velocity commands are sent to pentapod_engine
+Ctrl_Rate: 5

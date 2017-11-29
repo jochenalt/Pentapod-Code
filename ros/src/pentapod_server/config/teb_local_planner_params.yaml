@@ -2,23 +2,23 @@ odom_topic: /odom
 map_frame: /map
 
 # Trajectory
-# global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
-max_global_plan_lookahead_dist: 3.0
+global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
+max_global_plan_lookahead_dist: 10.0
 costmap_obstacles_behind_robot_dist: 3.0    # Don't know why, but default of 1.0 gives strange behaviour 
 feasibility_check_no_poses: 10
 
 # Robot acceleration and speed limits
-max_vel_x: 0.080
-max_vel_x_backwards: 0.080
-max_vel_y: 0.080
-max_vel_y_backwards: 0.080
+max_vel_x: 0.100
+max_vel_x_backwards: 0.100
+max_vel_y: 0.100
+max_vel_y_backwards: 0.100
 
 max_vel_theta: 0.3
 min_vel_theta: -0.3 
 acc_lim_x: 0.05
 acc_lim_y: 0.05
 acc_lim_theta: 0.05
-min_in_place_vel_theta: 0.0
+min_in_place_vel_theta: 0.3
 
 # Footprint model is a point in order to save CPU, distance is kept min_obstacle_dist
 # change that to a proper insect modelling without turning radius
@@ -26,8 +26,8 @@ footprint_model:
   type: point            # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
 
 # GoalTolerance is smaller than a grid cell 
-xy_goal_tolerance: 0.02
-yaw_goal_tolerance: 0.02
+xy_goal_tolerance: 0.05
+yaw_goal_tolerance: 0.1
 
 # Trajectory scoring parameters  
 #occdist_scale: 1.0     # The weighting for how much the controller should attempt to avoid obstacles. default 0.5. Increased
@@ -35,12 +35,9 @@ yaw_goal_tolerance: 0.02
 #gdist_scale: 0.8       # goal distance. default 0.8
   
 # Obstacles
-min_obstacle_dist: 0.35            # minumum distance from outer shape of robot to any obstacle.
+min_obstacle_dist: 0.30            # minumum distance from outer shape of robot to any obstacle.
 inflation_dist: 0.55               # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
 include_costmap_obstacles: True
-costmap_converter_plugin: ""
-costmap_converter_spin_thread: True
-costmap_converter_rate: 5
 
 # Optimization
 optimization_activate: True
@@ -52,10 +49,10 @@ exact_arc_length: true # takes more cpu, but gives smoother movement. Default Fa
 weight_acc_lim_x: 3.0     
 weight_acc_lim_theta: 3.0
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
-weight_kinematics_nh: 0                     # do not create trajectories for car-like robots
-weight_kinematics_forward_drive: 0          # do not try to drive forward
+weight_kinematics_nh: 1.0                   # do not create trajectories for car-like robots
+weight_kinematics_forward_drive: 0.0        # do not try to drive forward
 weight_kinematics_turning_radius: 0         # do not try to optimize the turning radius
-weight_inflation: 0.5                       # weight how much the inflation_dist is considered (pretty much to avoid lurking too close too walls)
+weight_inflation: 0.8                       # weight how much the inflation_dist is considered (pretty much to avoid lurking too close too walls)
 
 # Homotopy Class Planner
-enable_homotopy_class_planning: False # would induce explosive cpu load 
+enable_homotopy_class_planning: True # would induce explosive cpu load 
