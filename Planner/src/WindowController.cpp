@@ -248,25 +248,36 @@ void idleCallback( void )
 	bool newMapPoseData = EngineProxy::getInstance().isEstimatedPoseAvailable();
 
 	static milliseconds lastDisplayRefreshCall = millis();
+	bool doSomething = false;
 	// update all screens once a second in case of refresh issues (happens)
 	if (newBotData || (now - lastDisplayRefreshCall > emergencyRefreshRate)) {
 		copyMovementToView();
 		copyBodyPositionToView();
 		copySingleLegPoseToView();
 		WindowController::getInstance().mainBotView.postRedisplay();
+		doSomething = true;
 	}
-	if (newMapData || newMapPoseData || (now - lastDisplayRefreshCall > emergencyRefreshRate))
+	if (newMapData || newMapPoseData || (now - lastDisplayRefreshCall > emergencyRefreshRate)) {
 		WindowController::getInstance().slamView.postRedisplay();
+		doSomething = true;
+	}
 
-	if ((now - lastDisplayRefreshCall > emergencyRefreshRate) || newMapData || newBotData)
+	if ((now - lastDisplayRefreshCall > emergencyRefreshRate) || newMapData || newBotData) {
+		doSomething = true;
 		lastDisplayRefreshCall = now;
+	}
 
 
 	static milliseconds lastGaitCall = millis();
 	if (now - lastGaitCall > gaitLoopTime) {
 		imposeGroundDistance();
 		lastGaitCall = now;
+		doSomething = true;
 	}
+
+	// be cpu friendly
+	if (!doSomething)
+		delay_ms(1);
 }
 
 void singleLegActiveCallback(int buttonNo) {

@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
 
 	while (true) {
 		EngineProxy::getInstance().loop();
-		delay_ms(1);
+		delay_ms(10);
 	}
 
     cout << "no dwim running. Try -h" << endl;

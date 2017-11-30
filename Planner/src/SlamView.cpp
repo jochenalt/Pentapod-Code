@@ -132,7 +132,7 @@ void SlamView::drawNavigationGoal() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapMarkerColor4v);
 	glColor3fv(glMapMarkerColor4v);
 
-	if (!navigationGoal.isNull())
+	if (!navigationGoal.isNull() || !EngineProxy::getInstance().getCurrentNavigationGoal().isNull())
 	{
 		glTranslatef(navigationGoal.position.y, navigationGoal.position.z, navigationGoal.position.x);
 		glRotatef(-90, 1,0,0);
@@ -140,12 +140,28 @@ void SlamView::drawNavigationGoal() {
 		gluCylinder(quadratic, 20, 10, 1000, 12, 1);
 		glRotatef(90, 1,0,0);
 
+		// draw the sphere in the color of the status
+		NavigationStatusType navStatus = EngineProxy::getInstance().getCurrentNavigationStatus();
+		int sphereRGBColor;
+		switch (navStatus) {
+			case NavPending:   sphereRGBColor = YellowGrey;break;
+			case NavActive:    sphereRGBColor = TrafficGreen;break;
+			case NavPreempted: sphereRGBColor = GreenBrown;break;
+			case NavSucceeded: sphereRGBColor = TurquoiseGreen;break;
+			case NavAborted:   sphereRGBColor = RedBrown;break;
+			case NavRejected:  sphereRGBColor = RedLilac;break;
+			case NavLost:      sphereRGBColor = RedOrange;break;
+			case NavRecalled:  sphereRGBColor = BlackRed;break;
+
+		}
+		GLfloat sphereColor[4] = GL_COLOR_4v( sphereRGBColor, glAlphaSolid);
+
 		glTranslatef(0, 1000, 0);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapSphereMarkerColor4v);
-		glColor3fv(glMapSphereMarkerColor4v);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, sphereColor);
+		glColor3fv(sphereColor);
 		glutSolidSphere(50, 12, 12);
 
-		// draw the small
+		// draw the small flag on top
 		glRotatef(degrees(navigationGoal.orientation.z), 0, 1,0);
 		glBegin(GL_TRIANGLE_STRIP);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapSphereMarkerColor4v);

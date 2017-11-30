@@ -178,9 +178,8 @@ private:
 	void updateLocalCostmap();
 	void updateGlobalCostmap();
 
-	void updateTrajectory(TrajectoryType type);
 	void updateTrajectory();
-
+	void updatePlan();
 	void updateNavigation();
 
 
