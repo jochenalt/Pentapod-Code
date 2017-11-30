@@ -360,7 +360,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	// deliver the slam and costmaps map
+	// deliver all global data like slam map, cost map, and dark holes computed out of cost map
 	if (hasPrefix(uri, "/map/")) {
 		string mapCommand = uri.substr(string("/map/").length());
 		// map/get
@@ -372,7 +372,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 				generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < mapGenerationNumber)) {
 					// passed version is older than ours, deliver map
-					response = serializedMap + "," + getResponse(true);
+					response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -380,7 +380,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 				}
 			} else {
 				// deliver map without version check
-				response = serializedMap + "," + getResponse(true);
+				response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 			}
 			okOrNOk = true;
 			return true;
@@ -390,26 +390,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	if (hasPrefix(uri, "/costmap/")) {
 		string mapCommand = uri.substr(string("/costmap/").length());
 		string generationNumberStr ;
-		if (hasPrefix(mapCommand, "global/get")) {
-			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			if (ok) {
-				int generationNumber = stringToInt(generationNumberStr,ok);
-				if (!ok || (generationNumber < globalCostmapGenerationNumber)) {
-					// passed version is older than ours, deliver map
-					response = globalCostMapSerialized + "," + getResponse(true);
-				}
-				else {
-					// client has already the current map version, dont deliver it again
-					response = getResponse(true);
-				}
-			} else {
-				// deliver map without version check
-				response = globalCostMapSerialized + "," + getResponse(true);
-			}
-			okOrNOk = true;
-			return true;
-		}
-		if (hasPrefix(mapCommand, "local/get")) {
+			if (hasPrefix(mapCommand, "local/get")) {
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 			if (ok) {
 				int generationNumber = stringToInt(generationNumberStr,ok);
@@ -553,18 +534,6 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		return okOrNOk;
 	}
 
-
-	if (hasPrefix(uri, "/holes/get")) {
-		string command = uri.substr(string("/holes/get").length());
-		vector<Point> holes;
-		holeFinder.getDarkScaryHoles(holes);
-		std::stringstream out;
-		serializeVectorOfSerializable(holes,out);
-		response = out.str() + "," + getResponse(true);
-		okOrNOk = true;
-		return true;
-	}
-
 	if (hasPrefix(uri, "/lidar/")) {
 		string command = uri.substr(string("/lidar/").length());
 		// map/get
@@ -658,6 +627,13 @@ void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::Con
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
 	holeFinder.feed(slamMap, globalCostMap, odomFrame);
+
+	vector<Point> holes;
+	holeFinder.getDarkScaryHoles(holes);
+	std::stringstream out;
+	serializeVectorOfSerializable(holes,out);
+	darkScaryHolesSerialized = out.str();
+
 }
 
 void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
