@@ -15,17 +15,14 @@
        <rosparam file="$(find pentapod_server)/config/global_costmap_params.yaml" command="load" /> 
 
        <!-- separate parameters valid for local planner -->       
-       <!-- give EBand Planner a try
-	     <rosparam file="$(find pentapod_server)/config/eband_planner_params.yaml" command="load" ns="EBandPlannerROS" />
-         <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS"/>
-   	   -->
-       <rosparam file="$(find pentapod_server)/config/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
-       <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
-       <param name="move_base/NavfnROS/use_grid_path" type="bool" value="true" />
-       <param name="move_base/NavfnROS/use_dijkstra" type="bool" value="false" />
-
-
+      <rosparam file="$(find pentapod_server)/config/eband_planner_params.yaml" command="load" ns="EBandPlannerROS" />
+      <rosparam file="$(find pentapod_server)/config/dwa_planner_params.yaml" command="load" ns="DWAPlannerROS" />
+      <rosparam file="$(find pentapod_server)/config/teb_local_planner_params.yaml" command="load" ns="TebLocalPlannerROS" />
+      
+      <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+      <!--
+      <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS"/>
+      <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+-->
    </node>
-
-   
 </launch>

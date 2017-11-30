@@ -1,0 +1,29 @@
+#differential_drive: false
+
+# velocity limits
+acc_lim_x: 0.07
+acc_lim_y: 0.07
+acc_lim_th: 0.07
+
+max_trans_vel: 0.100
+min_trans_vel: -0.100
+max_vel_x: 0.100
+max_vel_y: 0.100
+min_vel_x: -0.100
+min_vel_y: -0.100
+
+max_rot_vel: 0.3
+min_rot_vel: -0.3
+
+# goal tolerance
+yaw_goal_tolerance: 0.1
+xy_goal_tolerance: 0.03
+latch_xy_goal_tolerance: true
+
+vx_sample: 20
+vth_samples: 40
+
+sim_time: 5.0
+
+controller_frequency: 5
+

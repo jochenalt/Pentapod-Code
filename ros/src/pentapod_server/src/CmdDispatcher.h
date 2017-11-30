@@ -146,9 +146,10 @@ private:
 	Pose navigationGoal;
 
 	DarkHoleFinder holeFinder;
-
+	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;
+
 };
 
 

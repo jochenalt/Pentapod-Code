@@ -48,7 +48,7 @@ const realnum sleepingFootTouchPointRadius = 305;
 const realnum maxAcceleration = 70.0; 		     // [mm/s^2]
 
 // maximum speed
-const realnum maxSpeed = 130.0; 				// [mm/s]
+const realnum maxSpeed = 100.0; 				// [mm/s]
 
 // possible acceleration of angular speed
 const realnum maxAngularSpeedAcceleration = 0.6; //  [rad/s^2]

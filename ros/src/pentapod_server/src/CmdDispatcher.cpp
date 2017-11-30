@@ -60,19 +60,29 @@ void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 	globalPlanGenerationNumber = -1;
 
 	// subscribe to the navigation stack topic that delivers the global costmap
+    ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
 	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
 
 	// subscribe to the navigation stack topic that delivers the local costmap
+    ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
 	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &CommandDispatcher::listenerLocalCostmap, this);
 
-	// string localPlannerName = "EBandPlannerROS";
-	string localPlannerName = "TebLocalPlannerROS";
+	// subscribe to the right topic of the local planner used
+	std::string base_local_planner;
+	std::string local_plan_topic_name;
+	std::string global_plan_topic_name;
+
+	ros::param::get("/move_base/base_local_planner", base_local_planner);
+	local_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/local_plan";
+	global_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/global_plan";
 
 	// subscribe to path of local planner
-	localPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
+    ROS_INFO_STREAM("subscribe to local plan from " << local_plan_topic_name);
+	localPathSubscriber = handle.subscribe(local_plan_topic_name, 1000, &CommandDispatcher::listenerLocalPlan, this);
 
 	// subscribe to path of global planner
-	globalPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
+	ROS_INFO_STREAM("subscribe to global plan from " << global_plan_topic_name);
+	globalPathSubscriber = handle.subscribe(global_plan_topic_name, 1000, &CommandDispatcher::listenerGlobalPlan, this);
 }
 
 void CommandDispatcher::setup(ros::NodeHandle& handle) {
@@ -81,21 +91,27 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
 	// subscribe to the SLAM map coming from hector slamming
+	ROS_INFO_STREAM("subscribe to /map");
 	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
+	ROS_INFO_STREAM("subscribe to /scan");
 	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
 
 	// subscribe to the SLAM topic that deliveres the etimated position
+	ROS_INFO_STREAM("subscribe to /slam_out_pose");
 	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &CommandDispatcher::listenerSLAMout,  this);
 
 	// subscribe to the path
+	ROS_INFO_STREAM("subscribe to /trajectory");
 	pathSubscriber = handle.subscribe("/trajectory", 1000, &CommandDispatcher::listenToTrajectory,  this);
 
 	// subscribe to the bots odom (without being fused with SLAM)
+	ROS_INFO_STREAM("subscribe to /odom");
 	odomSubscriber = handle.subscribe("odom", 1000, &CommandDispatcher::listenerOdometry, this);
 
 	// subscribe to the bots state
+	ROS_INFO_STREAM("subscribe to /engine/get_state");
 	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &CommandDispatcher::listenerBotState,  this);
 
 	// service to start or stop the lidar motor
@@ -118,7 +134,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// identical map->odom trasformation which is required by the navigation stack.
 	// After this method, this transformation will be taken up by the main loop
 	ros::Time now = ros::Time::now();
-	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - ros::Duration(10) > now)) {
+	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - now < ros::Duration(10.0))) {
 		ROS_INFO_THROTTLE(2, "waiting for move base to come up");
 		broadcastTransformationMapToOdom();
 	}
@@ -344,7 +360,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	// deliver the slam and costmaps map
+	// deliver all global data like slam map, cost map, and dark holes computed out of cost map
 	if (hasPrefix(uri, "/map/")) {
 		string mapCommand = uri.substr(string("/map/").length());
 		// map/get
@@ -356,7 +372,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 				generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < mapGenerationNumber)) {
 					// passed version is older than ours, deliver map
-					response = serializedMap + "," + getResponse(true);
+					response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -364,7 +380,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 				}
 			} else {
 				// deliver map without version check
-				response = serializedMap + "," + getResponse(true);
+				response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 			}
 			okOrNOk = true;
 			return true;
@@ -374,26 +390,7 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 	if (hasPrefix(uri, "/costmap/")) {
 		string mapCommand = uri.substr(string("/costmap/").length());
 		string generationNumberStr ;
-		if (hasPrefix(mapCommand, "global/get")) {
-			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-			if (ok) {
-				int generationNumber = stringToInt(generationNumberStr,ok);
-				if (!ok || (generationNumber < globalCostmapGenerationNumber)) {
-					// passed version is older than ours, deliver map
-					response = globalCostMapSerialized + "," + getResponse(true);
-				}
-				else {
-					// client has already the current map version, dont deliver it again
-					response = getResponse(true);
-				}
-			} else {
-				// deliver map without version check
-				response = globalCostMapSerialized + "," + getResponse(true);
-			}
-			okOrNOk = true;
-			return true;
-		}
-		if (hasPrefix(mapCommand, "local/get")) {
+			if (hasPrefix(mapCommand, "local/get")) {
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 			if (ok) {
 				int generationNumber = stringToInt(generationNumberStr,ok);
@@ -537,18 +534,6 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		return okOrNOk;
 	}
 
-
-	if (hasPrefix(uri, "/holes/get")) {
-		string command = uri.substr(string("/holes/get").length());
-		vector<Point> holes;
-		holeFinder.getDarkScaryHoles(holes);
-		std::stringstream out;
-		serializeVectorOfSerializable(holes,out);
-		response = out.str() + "," + getResponse(true);
-		okOrNOk = true;
-		return true;
-	}
-
 	if (hasPrefix(uri, "/lidar/")) {
 		string command = uri.substr(string("/lidar/").length());
 		// map/get
@@ -642,6 +627,13 @@ void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::Con
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
 	holeFinder.feed(slamMap, globalCostMap, odomFrame);
+
+	vector<Point> holes;
+	holeFinder.getDarkScaryHoles(holes);
+	std::stringstream out;
+	serializeVectorOfSerializable(holes,out);
+	darkScaryHolesSerialized = out.str();
+
 }
 
 void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
