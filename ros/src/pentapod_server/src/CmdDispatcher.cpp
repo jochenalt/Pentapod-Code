@@ -60,23 +60,29 @@ void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 	globalPlanGenerationNumber = -1;
 
 	// subscribe to the navigation stack topic that delivers the global costmap
-    ROS_INFO_STREAM("subscribe to ove_base/global_costmap/costmap");
+    ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
 	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
 
 	// subscribe to the navigation stack topic that delivers the local costmap
     ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
 	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &CommandDispatcher::listenerLocalCostmap, this);
 
-	// string localPlannerName = "EBandPlannerROS";
-	string localPlannerName = "TebLocalPlannerROS";
+	// subscribe to the right topic of the local planner used
+	std::string base_local_planner;
+	std::string local_plan_topic_name;
+	std::string global_plan_topic_name;
+
+	ros::param::get("/move_base/base_local_planner", base_local_planner);
+	local_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/local_plan";
+	global_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/global_plan";
 
 	// subscribe to path of local planner
-    ROS_INFO_STREAM("subscribe to /move_base/*/local_plan");
-	localPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/local_plan", 1000, &CommandDispatcher::listenerLocalPlan, this);
+    ROS_INFO_STREAM("subscribe to local plan from " << local_plan_topic_name);
+	localPathSubscriber = handle.subscribe(local_plan_topic_name, 1000, &CommandDispatcher::listenerLocalPlan, this);
 
 	// subscribe to path of global planner
-	ROS_INFO_STREAM("subscribe to /move_base/*/global_plan");
-	globalPathSubscriber = handle.subscribe("/move_base/" + localPlannerName + "/global_plan", 1000, &CommandDispatcher::listenerGlobalPlan, this);
+	ROS_INFO_STREAM("subscribe to global plan from " << global_plan_topic_name);
+	globalPathSubscriber = handle.subscribe(global_plan_topic_name, 1000, &CommandDispatcher::listenerGlobalPlan, this);
 }
 
 void CommandDispatcher::setup(ros::NodeHandle& handle) {

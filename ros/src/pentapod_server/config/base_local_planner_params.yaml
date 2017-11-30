@@ -17,6 +17,7 @@ TrajectoryPlannerROS:
   acc_lim_y: 0.05
   
 controller_frequency: 5 # same like publish frequency of local planner
+dwa: false
 
 # Default recover behaviour is rotating a lot, which is quite useless for a holonomic robot
 clearing_rotation_allowed: false
