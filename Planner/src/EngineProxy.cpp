@@ -159,20 +159,13 @@ void EngineProxy::loop() {
 
 		if (UpdateMapSampleRate > 0) {
 			if (fetchMapTimer.isDue(UpdateMapSampleRate)) {
-				updateMap();
+				updateGlobalMaps();
 			}
 		}
 
 		if (UpdateLocalCostmapSampleRate > 0) {
 			if (fetchLocalCostmapTimer.isDue(UpdateLocalCostmapSampleRate)) {
 				updateLocalCostmap();
-			}
-		}
-
-		if (UpdateGlobalCostmapSampleRate > 0) {
-			if (fetchGlobalCostmapTimer.isDue(UpdateGlobalCostmapSampleRate)) {
-				updateGlobalCostmap();
-				updateDarkScaryHoles();
 			}
 		}
 
@@ -467,7 +460,7 @@ void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
 	};
 }
 
-void EngineProxy::updateMap() {
+void EngineProxy::updateGlobalMaps() {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
@@ -477,12 +470,22 @@ void EngineProxy::updateMap() {
 
 		bool ok = true;
 		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
-		Map tmp;
-		tmp.deserialize(in, ok);
+		Map tmpSlamMap;
+		tmpSlamMap.deserialize(in, ok);
+		parseCharacter(in, ',', ok);
+		Map tmpCostmap;
+		tmpCostmap.deserialize(in, ok);
+		parseCharacter(in, ',', ok);
+		vector<Point> tmpHoles;
+		deserializeVectorOfSerializable(in, tmpHoles,ok);
 
 		if (ok) {
 			newMapDataAvailable = true;
-			map = tmp;
+			map = tmpSlamMap;
+			globalCostmap = tmpCostmap;
+			newGlobalCostmapAvailable = true;
+			darkScaryHoles = tmpHoles;
+
 		}
 	}
 }
@@ -507,24 +510,6 @@ void EngineProxy::updateLocalCostmap() {
 	}
 }
 
-void EngineProxy::updateDarkScaryHoles() {
-	if (callRemoteEngine) {
-		string responseStr;
-		std::ostringstream url;
-		url << "/holes/get";
-		remoteEngine.httpGET(url.str(), responseStr, 20000);
-		std::istringstream in(responseStr);
-
-		bool ok = true;
-		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
-		vector<Point> tmp;
-		deserializeVectorOfSerializable(in, tmp,ok);
-
-		if (ok) {
-			darkScaryHoles = tmp;
-		}
-	}
-}
 
 void EngineProxy::updateGlobalCostmap() {
 	if (callRemoteEngine) {
