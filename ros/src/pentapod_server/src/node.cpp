@@ -132,7 +132,6 @@ int main(int argc, char * argv[]) {
 		// broadcast map -> odom transformation at 10 Hz
 		if (odomTimer.isDue(1000/10)) {
 			cmdDispatcher.broadcastTransformationMapToOdom();
-			cmdDispatcher.initNavigation(rosNode);
 		}
 
 

@@ -1,7 +1,7 @@
 local_costmap:
   # circular footprint radius of the pentapod
   # in the local map we use a smaller radius than in the global to prevent that the robot is stuck in lethal locations close to a wall.  
-  robot_radius: 0.30
+  robot_radius: 0.20
   
   global_frame: map
   robot_base_frame: base_link

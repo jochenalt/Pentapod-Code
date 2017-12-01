@@ -6,4 +6,4 @@ webserver_port: 8000
 dark_hole_finder:
   ray_min_distance: 0.35            # min length of rays that are used for computation of scariness, use min laser range 
   ray_max_distance: 8.0             # max length of rays that are used for computation of scariness, use max laser range 
-  scaryness_threshold: 0.57         # minimum scariness to consider a hole as dark and scary (scariness=[0..1], a hole with 1 is completely tight 
+  scaryness_threshold: 0.57         # minimum scariness to consider a hole as dark and scary (scariness=[0..1], a hole with scariness=1 is surrounded completely 

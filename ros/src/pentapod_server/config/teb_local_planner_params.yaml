@@ -2,9 +2,9 @@ odom_topic: /odom
 map_frame: /map
 
 # Trajectory
-global_plan_overwrite_orientation: True    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
-max_global_plan_lookahead_dist: 10.0
-costmap_obstacles_behind_robot_dist: 3.0    # Don't know why, but default of 1.0 gives strange behaviour 
+global_plan_overwrite_orientation: False    # global plan has not orientation but xy only, so local plan needs to adapt the orientation to the goal. Default: True
+max_global_plan_lookahead_dist: 5.0
+costmap_obstacles_behind_robot_dist: 5.0    # should be equal to max_global_plan_lookahead_dist, since we do not really have a direction
 feasibility_check_no_poses: 10
 
 # Robot acceleration and speed limits
@@ -29,11 +29,6 @@ footprint_model:
 # GoalTolerance is smaller than a grid cell 
 xy_goal_tolerance: 0.02
 yaw_goal_tolerance: 0.1
-
-# Trajectory scoring parameters  
-#occdist_scale: 1.0     # The weighting for how much the controller should attempt to avoid obstacles. default 0.5. Increased
-#pdist_scale: 0.7       # The weighting for how much the controller should stay close to the path it was given. default 0.6
-#gdist_scale: 0.8       # goal distance. default 0.8
   
 # Obstacles
 min_obstacle_dist: 0.30            # minumum distance from outer shape of robot to any obstacle.
@@ -49,10 +44,11 @@ exact_arc_length: true # takes more cpu, but gives smoother movement. Default Fa
 # do not acclerate faster than allowed, so increase the weight for that
 weight_acc_lim_x: 3.0     
 weight_acc_lim_theta: 3.0
+
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
 weight_kinematics_nh: 1.0                   # do not create trajectories for car-like robots but for small pentapods with strifing. I feel that a factor below 1.0 more osscilations 
-weight_kinematics_forward_drive: 0.0        # do not try to drive forward
-weight_kinematics_turning_radius: 10         # do not try to optimize the turning radius
+weight_kinematics_forward_drive: 0.0        # do not try to drive forward.
+weight_kinematics_turning_radius: 0.0       # do not try to optimize the turning radius
 weight_inflation: 0.8                       # weight how much the inflation_dist is considered (pretty much to avoid lurking too close too walls)
 
 # Homotopy Class Planner

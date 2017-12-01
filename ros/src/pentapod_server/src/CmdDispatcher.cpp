@@ -39,6 +39,7 @@ void compileURLParameter(string uri, vector<string> &names, vector<string> &valu
 		if (equalsIdx > 0) {
 			string name = token.substr(0,equalsIdx);
 			string value = token.substr(equalsIdx+1);
+
 			names.insert(names.end(), name);
 			values.insert(values.end(), urlDecode(value));
 		};
@@ -50,6 +51,7 @@ CommandDispatcher::CommandDispatcher() {
 	trajectoryGenerationNumber = 0;
 	lidarIsOn = false;
 	lastLidarShouldBeOn = false;
+	latchedGoalOrientationToPath = false;
 }
 
 
@@ -131,8 +133,8 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	holeFinder.setup(handle);
 
     // wait for the action server to come up. Do this in a 10Hz loop while producing the
-	// identical map->odom trasformation which is required by the navigation stack.
-	// After this method, this transformation will be taken up by the main loop
+	// identical map->odom transformation which is required by the navigation stack.
+	// After this method, the map->odom transformation will be taken up by the main loop
 	ros::Time now = ros::Time::now();
 	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - now < ros::Duration(10.0))) {
 		ROS_INFO_THROTTLE(2, "waiting for move base to come up");
@@ -153,13 +155,16 @@ actionlib::SimpleClientGoalState CommandDispatcher::getNavigationGoalStatus() {
 }
 
 Pose CommandDispatcher::getNavigationGoal() {
-	return navigationGoal;
+	return navigationGoal_world;
 }
 
 
-void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
+void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
 
-	// advertise the initial position for the navigation stack anytime the navigation goal is set
+	// advertise the initial position for the navigation stack everytime the navigation goal is set
+	navigationGoal_world = goalPose_world;
+	cout << "set goal:" << navigationGoal_world <<endl;
+
 	geometry_msgs::PoseWithCovarianceStamped initialPosition;
 	initialPosition.pose.pose.position.x = engineState.currentBaselinkPose.position.x/1000.0;
 	initialPosition.pose.pose.position.y = engineState.currentBaselinkPose.position.y/1000.0;
@@ -172,19 +177,17 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 	initialPosition.pose.pose.orientation = initialPose_quat;
 	initialPosition.header.stamp = ros::Time::now();
 	initialPosition.header.frame_id = "map";
-	ROS_INFO_STREAM("publishing initial pose " << engineState.currentBaselinkPose.position << " nose=" << degrees(engineState.currentBodyPose.orientation.z +
-					engineState.currentNoseOrientation) << "");
+	ROS_INFO_STREAM("publishing initial pose " << engineState.currentBaselinkPose.position <<
+					" nose=" << degrees(engineState.currentBodyPose.orientation.z +
+					engineState.currentNoseOrientation));
 
 	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
 	navigationGoal.position = goalPose_world.position - engineState.currentBaselinkPose.position;
 
 	navigationGoal.position.rotateAroundZ(- (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation));
-	navigationGoal.orientation.null();
 	navigationGoal.orientation.z = goalPose_world.orientation.z - (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation);
 
 	move_base_msgs::MoveBaseGoal goal;
-
-	//we'll send a goal to the robot to move 1 meter forward
 	goal.target_pose.header.frame_id = "base_link";
 	goal.target_pose.header.stamp = ros::Time::now();
 
@@ -195,29 +198,35 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world) {
 	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(navigationGoal.orientation.z);
 	goal.target_pose.pose.orientation = goalPoseQuat;
 
-	if (navigationGoal.isNull())
+	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
+		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
 		moveBaseClient->cancelGoal();
+	}
 	moveBaseClient->sendGoal(goal);
 
-	ROS_INFO_STREAM("setting navigation goal " << navigationGoal.position);
+	ROS_INFO_STREAM("setting navigation goal " << navigationGoal.position << string(setOrientationToPath?" (latched orientation)":""));
+
+	// latch the flag indicating that once the global path has been computed by navigation stack, set the orientation
+	latchedGoalOrientationToPath = setOrientationToPath;
 }
 
 
+// retrurns a standardized response
 string getResponse(bool ok) {
 	std::ostringstream s;
 	if (ok) {
-		s << "\"ok\"=true";
+		s << "\"ok\":true";
 	} else {
-		s << "\"ok\"=false, \"error\":" << getLastError() << ", \"errormessage\":" << stringToJSonString(getErrorMessage(getLastError()));
+		s << "\"ok\":false, \"error\":" << getLastError() << ", \"errormessage\":" << stringToJSonString(getErrorMessage(getLastError()));
 	}
 	string response = s.str();
 	return response;
 }
 
 // central dispatcher of all url requests arriving at the webserver
-// returns true, if request has been dispatched within dispatch. Otherwise the caller
+// returns true, if request has been dispatched successfully. Otherwise the caller
 // should assume that static content is to be displayed.
-bool  CommandDispatcher::dispatch(string uri, string query, string body, string &response, bool &okOrNOk) {
+bool CommandDispatcher::dispatch(string uri, string query, string body, string &response, bool &okOrNOk) {
 
 	response = "";
 	string urlPath = getPath(uri);
@@ -454,8 +463,8 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		}
 	}
 
-	if (hasPrefix(uri, "/plan/local")) {
-		string command = uri.substr(string("/plan/local").length());
+	if (hasPrefix(uri, "/plan/")) {
+		string command = uri.substr(string("/plan/").length());
 		if (hasPrefix(command, "get")) {
 			bool deliverContent = false;
 			if (localPlanSerialized != "") {
@@ -471,38 +480,13 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 
 			response = getResponse(true);
 			if (deliverContent)
-				response = localPlanSerialized + "," + response;
+				response = globalPlanSerialized +"," + localPlanSerialized + "," + response;
 
 
 			okOrNOk = true;
 			return true;
 		}
 	}
-
-	if (hasPrefix(uri, "/plan/global")) {
-		string command = uri.substr(string("/plan/global").length());
-		if (hasPrefix(command, "get")) {
-			bool deliverContent = false;
-			if (globalPlanSerialized != "") {
-				string generationNumberStr ;
-				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-				if (ok) {
-					int generationNumber = stringToInt(generationNumberStr,ok);
-					if (!ok || (generationNumber < globalPlanGenerationNumber))
-						deliverContent = true;
-				} else
-					deliverContent = true;
-			}
-
-			response = getResponse(true);
-			if (deliverContent)
-				response = globalPlanSerialized + "," + response;
-
-			okOrNOk = true;
-			return true;
-		}
-	}
-
 
 	if (hasPrefix(uri, "/navigation/")) {
 		string command = uri.substr(string("/navigation/").length());
@@ -516,7 +500,20 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 			Pose goalPose;
 			goalPose.deserialize(in,ok);
 
-			setNavigationGoal(goalPose);
+			string latchOrientationStr;
+			bool setNavigationOrientation = false;
+			cout << "command " << command << endl;
+
+			ok = getURLParameter(urlParamName, urlParamValue, "latchorientation", latchOrientationStr);
+			if (ok) {
+				cout << "latchorientation found:" << latchOrientationStr << endl;
+
+				std::stringstream in(latchOrientationStr);
+				setNavigationOrientation = parseBool(in, ok);
+				cout << "setNavigationOrientation:" << setNavigationOrientation << " goal:" << goalPose << endl;
+
+			}
+			setNavigationGoal(goalPose, setNavigationOrientation);
 			response = getResponse(true);
 			okOrNOk = true;
 			return true;
@@ -524,10 +521,12 @@ bool  CommandDispatcher::dispatch(string uri, string query, string body, string 
 		else if (hasPrefix(command,"goal/get")) {
 			std::ostringstream out;
 			int navStatus = NavigationStatusType::NavPending;
-			if (!navigationGoal.isNull()) {
+			if (!navigationGoal_world.isNull()) {
 				navStatus = (int)getNavigationGoalStatus().state_;
 			}
-			out << "\"goal\"=" << navigationGoal << ", \"status\"=" << navStatus;
+
+			navigationGoal_world.serialize(out);
+			out << ", \"status\":" << navStatus;
 			response = out.str() + "," + getResponse(true);
 			okOrNOk = true;
 		}
@@ -588,6 +587,7 @@ void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& sc
 
 }
 
+// we use the same data type Map for costmaps and for slam maps.
 enum MapType { SLAM_MAP_TYPE, COSTMAP_TYPE };
 void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& inputMap, MapType type,  Map& outputMap, int& generationNumber,  string& serializedMap) {
 	if ((inputMap->info.width > 0) && (inputMap->info.height > 0)) {
@@ -596,8 +596,8 @@ void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& inputMap
 		int mapArraySize = inputMap->info.width * inputMap->info.height;
 		int width = inputMap->info.width;
 		for (int i = 0;i<mapArraySize;i++) {
-			// this is the regular call, but we take the short (and ugly) route
-			// m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i]);
+			// the regular call is m.setOccupancyByGridCoord(i/width,i % width, occupancyGrid.data[i])
+			// but we take the short (and ugly) route
 			int occupancy = inputMap->data[i];
 
 			// the occupancy Map has different values than Map::GridState
@@ -666,6 +666,27 @@ void CommandDispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
 
 void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
 	convertPoseStampedToTrajectory(og, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
+
+	// in case the need to set the goal orientation, do it now
+	if (!navigationGoal.isNull() && latchedGoalOrientationToPath && (globalPlan.size() > 5)) {
+		// global path does not go straight to the goal, very often the last piece is bent
+		// so identify the direction the bot is coming from by taking the vector of the last piece that takes lastPieceLength
+		const milliseconds lastPieceLength = 1000;
+		int curr = globalPlan.size()-1;
+		StampedPose lastPose = globalPlan[globalPlan.size()-1];
+		while ((curr > 0) && (globalPlan[curr].timestamp > lastPose.timestamp + lastPieceLength))
+			curr--;
+
+		StampedPose prevPose = globalPlan[curr]; // this pose is as least 1s earlier than the predicted goal arrival time
+
+		// compute the orientation
+		Point orientationVec = lastPose.pose.position - prevPose.pose.position;
+		navigationGoal.orientation = Rotation(0,0,atan2(orientationVec.y, orientationVec.x));
+		navigationGoal_world.orientation.z = navigationGoal.orientation.z + (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation);
+
+		ROS_INFO_STREAM("setting orientation of navigation goal to " << degrees(atan2(orientationVec.y, orientationVec.x)));
+		setNavigationGoal(navigationGoal, false);
+	}
 }
 
 void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
@@ -744,15 +765,7 @@ void CommandDispatcher::startLidar(bool on) {
 void CommandDispatcher::clearCostmaps() {
  	std_srvs::Empty srv;
     ROS_INFO("clear costmaps");
-		 clearCostmapService.call(srv);
-}
-
-// ugly thing: if the lidar is not on during startup of the navigation stack, and
-// therefore not slam map is generated, the navigation stack gives up and does not
-// recover when the SLAM map is there.
-
-void CommandDispatcher::initNavigation(ros::NodeHandle& handle) {
-
+	clearCostmapService.call(srv);
 }
 
 // subscription to bots state

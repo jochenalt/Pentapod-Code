@@ -70,21 +70,23 @@ public:
 	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
 	void listenToTrajectory(const nav_msgs::Path::ConstPtr& path);
 
-	void setNavigationGoal(const Pose& goalPose);
+	void setNavigationGoal(const Pose& goalPose, bool setOrientationToPath = false);
+
 	Pose getNavigationGoal();
 
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
 	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
 
-	void initNavigation(ros::NodeHandle& handle);
 	void setupNavigationStackTopics(ros::NodeHandle& handle);
 
 	// call a service to start/stop the motor of the lidar
 	void startLidar(bool on);
-	// call the move_base servcie to clear all costmaps.
+
+	// call the move_base service to clear all costmaps.
 	void clearCostmaps();
 
+	// return the fused position of slam outcome and odometry
 	Pose getBaselink() { engineState.currentBaselinkPose; };
 
 	void broadcastTransformationMapToOdom();
@@ -144,12 +146,12 @@ private:
 	ros::ServiceClient clearCostmapService;
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
-
+    Pose navigationGoal_world;
 	DarkHoleFinder holeFinder;
 	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;
-
+	bool latchedGoalOrientationToPath;
 };
 
 
