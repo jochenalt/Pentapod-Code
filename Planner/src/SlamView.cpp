@@ -44,7 +44,7 @@ void displaySlamView() {
 int SlamView::create(int mainWindow, string pTitle) {
 
 	manualLookAtAdjustTime = 0;
-
+	latchGoalOrientation = false;
 	defaultHipPoseWorld = EngineProxy::getInstance().getHipPoseWorld();
 	defaultLegAngles = EngineProxy::getInstance().getLegAngles();
 	defaultBodyPose = EngineProxy::getInstance().getBodyPose();
@@ -142,6 +142,7 @@ void SlamView::drawNavigationGoal() {
 
 		// draw the sphere in the color of the status
 		NavigationStatusType navStatus = EngineProxy::getInstance().getCurrentNavigationStatus();
+		// navigationGoal = EngineProxy::getInstance().getCurrentNavigationGoal();
 		int sphereRGBColor;
 		switch (navStatus) {
 			case NavPending:   sphereRGBColor = YellowGrey;break;
@@ -589,8 +590,8 @@ void SlamView::drawMap() {
 }
 
 
-void SlamView::defineNavigationGoal() {
-	EngineProxy::getInstance().setNavigationGoal(navigationGoal);
+void SlamView::defineNavigationGoal(bool latchOrientation) {
+	EngineProxy::getInstance().setNavigationGoal(navigationGoal, latchOrientation);
 }
 
 void SlamView::setNavigationGoal(const Pose& p) {
@@ -664,8 +665,24 @@ Point SlamView::get3DByMouseClick(int screenX,int screenY) {
 	glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
 	GLdouble x,y,z;
 	bool success =  gluUnProject( winX, winY, winZ, modelview, projection, viewport, &x, &y, &z);
-	if (success == GL_TRUE)
+	if (success == GL_TRUE) {
+
+		// if the object hit is higher than y = 200 (which actually is z = 200)
+		// we identified a dark scary hole. In that case we latch the orientation
+		// i.e. the orientation of the goal is defined by the last piece of the path
+		latchGoalOrientation = (y > 200);
+		if (latchGoalOrientation) {
+			// find the dark scary hole
+			std::vector<Point> holes = EngineProxy::getInstance().getDarkScaryHoles();
+			for (unsigned i = 0;i<holes.size();i++) {
+				if (holes[i].distance(Point(z, x,0)) <= 50)
+					return holes[i];
+			}
+		}
+
 		return Point(z, x,0 );
+
+	}
 	else
 		return Point(0,0,0);
 }
@@ -677,7 +694,7 @@ void SlamView::MouseCallback(int button, int button_state, int x, int y )
 
 	// When releasing left-ctrl, navigation goal is really set
 	if ( mouseNavigationGoalDirection && button == GLUT_LEFT_BUTTON && button_state == GLUT_UP && !withShift && withCtrl) {
-		defineNavigationGoal();
+		defineNavigationGoal(latchGoalOrientation);
 	}
 
 	mouseViewPlane = false;

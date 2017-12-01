@@ -447,7 +447,7 @@ NavigationStatusType EngineProxy::getCurrentNavigationStatus() {
 	return navigationStatus;
 }
 
-void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
+void EngineProxy::setNavigationGoal(const Pose& navigationGoal, bool latchOrientation) {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
@@ -456,7 +456,9 @@ void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
 		navigationGoal.serialize(bodyposeIn);
 
 		url << "/navigation/goal/set"
-			<< "?bodypose="  << stringToJSonString(bodyposeIn.str());
+			<< "?bodypose="  << stringToJSonString(bodyposeIn.str())
+		    << "&latchorientation="  << boolToJSonString(latchOrientation);
+		cout << "navgoal=" << navigationGoal << " url=" << url.str();
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	};
 }

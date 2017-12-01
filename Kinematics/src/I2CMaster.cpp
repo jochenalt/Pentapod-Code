@@ -1,5 +1,7 @@
 /*
- * I2CPort.cpp
+ * I2CMaster.cpp
+ *
+ * Class to communicate with cortex via I2C
  *
  * Author: JochenAlt
  */
@@ -40,13 +42,6 @@ void I2CMaster::disconnect(void) {
 }
 
 int I2CMaster::sendArray(uint8_t *buffer, int len) {
-	/*
-	stringstream str;
-	for (int i = 0;i<len;i++) {
-		str << (int)buffer[i] << ' ';
-	}
-	ROS_DEBUG_STREAM ("I2CPort::send({" << str.str() << "}, len=" << len << ")");
-*/
 	// split the block into 32 byte blocks
 	int numberOfBlocks = (len+31)/32;
 	int positionInBuffer = 0;
@@ -100,13 +95,6 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
         }
     } while ((clock_ms() < start + timeout_ms) && (RemainingBufferSize > 0));
 
-    /*
-    stringstream str;
-	for (int i = 0;i<totalBytesRead;i++) {
-		str << (int)buffer[i] << ' ';
-	}
-	ROS_DEBUG_STREAM ("i2CPort::receive({" << str.str() << "}, len=" << totalBytesRead << ")");
-	*/
     return totalBytesRead;
 }
 

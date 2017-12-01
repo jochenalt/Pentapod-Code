@@ -33,7 +33,7 @@ public:
 private:
 	Point get3DByMouseClick (int x,int y);
 	void setNavigationGoal(const Pose& p);
-	void defineNavigationGoal();
+	void defineNavigationGoal(bool latchOrientation);
 
 	void drawFreeSlamGrid( const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
 	void drawOccupiedSlamGrid(bool onlyTop,  const Point &p1,const Point &p2, const Point &p3, const Point &p4 );
@@ -67,6 +67,7 @@ private:
 
 	// generic marker that leaves a flag in the map. Use for navigation goal.
 	Pose navigationGoal;
+	bool latchGoalOrientation;
 
 	Pose lastFusedPosition;
 	milliseconds manualLookAtAdjustTime;

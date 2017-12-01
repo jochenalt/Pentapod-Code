@@ -257,7 +257,7 @@ void idleCallback( void )
 		WindowController::getInstance().mainBotView.postRedisplay();
 		doSomething = true;
 	}
-	if (newMapData || newMapPoseData || (now - lastDisplayRefreshCall > emergencyRefreshRate)) {
+	if (newMapData || newMapPoseData || newBotData || (now - lastDisplayRefreshCall > emergencyRefreshRate)) {
 		WindowController::getInstance().slamView.postRedisplay();
 		doSomething = true;
 	}
