@@ -176,7 +176,8 @@ void EngineProxy::loop() {
 		}
 		if (UpdateTrajectorySampleRate > 0) {
 			if (fetchTrajectoryTimer.isDue(UpdateTrajectorySampleRate)) {
-				updateTrajectory();
+				// updateTrajectory();
+				updatePlan();
 				updateNavigation();
 			}
 		}
@@ -446,7 +447,7 @@ NavigationStatusType EngineProxy::getCurrentNavigationStatus() {
 	return navigationStatus;
 }
 
-void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
+void EngineProxy::setNavigationGoal(const Pose& navigationGoal, bool latchOrientation) {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
@@ -455,7 +456,9 @@ void EngineProxy::setNavigationGoal(const Pose& navigationGoal) {
 		navigationGoal.serialize(bodyposeIn);
 
 		url << "/navigation/goal/set"
-			<< "?bodypose="  << stringToJSonString(bodyposeIn.str());
+			<< "?bodypose="  << stringToJSonString(bodyposeIn.str())
+		    << "&latchorientation="  << boolToJSonString(latchOrientation);
+		cout << "navgoal=" << navigationGoal << " url=" << url.str();
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	};
 }
@@ -552,20 +555,10 @@ void EngineProxy::updateLaserScan() {
 }
 
 void EngineProxy::updateTrajectory() {
-	// updateTrajectory(TRAJECTORY);
-	updateTrajectory(GLOBAL_PLAN);
-	updateTrajectory(LOCAL_PLAN);
-}
-
-void EngineProxy::updateTrajectory(TrajectoryType type) {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
-		switch (type) {
-			case TRAJECTORY: url << "/trajectory/get?no=" << trajectory.getGenerationNumber();break;
-			case GLOBAL_PLAN: url << "/plan/global/get?no=" << globalPlan.getGenerationNumber();break;
-			case LOCAL_PLAN: url << "/plan/local/get?no=" << localPlan.getGenerationNumber();break;
-		}
+		url << "/trajectory/get?no=" << trajectory.getGenerationNumber();
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 
@@ -576,27 +569,45 @@ void EngineProxy::updateTrajectory(TrajectoryType type) {
 
 		if (ok) {
 			newTrajectoryDataAvailable = true;
-			switch (type) {
-				case TRAJECTORY: trajectory = tmp;break;
-				case GLOBAL_PLAN: globalPlan = tmp;break;
-				case LOCAL_PLAN: localPlan = tmp;break;
-			}
+			trajectory = tmp;
 		}
 	}
 }
 
-void EngineProxy::updateNavigation() {
+
+void EngineProxy::updatePlan() {
 	if (callRemoteEngine) {
 		string responseStr;
 		std::ostringstream url;
-		url << "/navigation/get";
+		url << "/plan/get?no=" << globalPlan.getGenerationNumber();
 		remoteEngine.httpGET(url.str(), responseStr, 20000);
 		std::istringstream in(responseStr);
 
 		bool ok = true;
 		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
-		parseString(in, ok); // parse "goal"
-		parseCharacter(in, ':', ok); // parse ":"
+		Trajectory tmpGlobal;
+		tmpGlobal.deserialize(in, ok);
+		parseCharacter(in,',', ok);
+		Trajectory tmpLocal;
+		tmpLocal.deserialize(in, ok);
+
+		if (ok) {
+			newTrajectoryDataAvailable = true;
+			globalPlan = tmpGlobal;
+			localPlan = tmpLocal;
+		}
+	}
+}
+void EngineProxy::updateNavigation() {
+	if (callRemoteEngine) {
+		string responseStr;
+		std::ostringstream url;
+		url << "/navigation/goal/get";
+		remoteEngine.httpGET(url.str(), responseStr, 20000);
+		std::istringstream in(responseStr);
+
+		bool ok = true;
+		// use intermediate variable since the UI thread is using the variable map, unless we have a semaphore do it quick at least
 		navigationGoal.deserialize(in, ok);
 		parseCharacter(in, ',', ok); // parse ","
 		parseString(in, ok); // parse "status"

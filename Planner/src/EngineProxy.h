@@ -152,7 +152,7 @@ public:
 	const Pose& getFusedPose();
 
 	// set the new navigation goal
-	void setNavigationGoal(const Pose& goal);
+	void setNavigationGoal(const Pose& goal, bool latchOrientation = false);
 
 	// get last navigation goal(gets nulled once it has been reached)
 	Pose getCurrentNavigationGoal();
@@ -178,9 +178,8 @@ private:
 	void updateLocalCostmap();
 	void updateGlobalCostmap();
 
-	void updateTrajectory(TrajectoryType type);
 	void updateTrajectory();
-
+	void updatePlan();
 	void updateNavigation();
 
 
