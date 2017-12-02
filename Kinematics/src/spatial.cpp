@@ -74,7 +74,7 @@ std::istream& LegPose::deserialize(std::istream &in, bool &ok) {
 }
 
 // add a vector to a pose by considering the applied pose as transformation(trans and rot)
-Pose Pose::add(const Pose& add) const {
+Pose Pose::concatTransformation(const Pose& add) const {
 		Pose result;
 	 	result.position = position + add.position.getRotatedAroundZ(orientation.z);
 	 	result.orientation.z = orientation.z  + add.orientation.z;
@@ -83,7 +83,7 @@ Pose Pose::add(const Pose& add) const {
 
 
 	// substract a vector from the applied pose by considering both as transformation(trans and rot)
-Pose Pose::substract(const Pose& sub) const {
+Pose Pose::concatInverseTransformation(const Pose& sub) const {
 		Pose  result;
 		result.position = position - sub.position.getRotatedAroundZ(orientation.z-sub.orientation.z);
 		result.orientation.z = orientation.z-sub.orientation.z;

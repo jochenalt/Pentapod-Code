@@ -181,7 +181,7 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 					<< "latched=" << setOrientationToPath);
 
 	// navigation goal is set from the base_links perspective. Convert goalPose into base_links frame
-	navigationGoal = goalPose_world.substract(engineState.currentBaselinkPose);
+	navigationGoal = goalPose_world.concatInverseTransformation(engineState.currentBaselinkPose);
 
 	move_base_msgs::MoveBaseGoal goal;
 	goal.target_pose.header.frame_id = "base_link";
@@ -196,7 +196,7 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 
 	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
 		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
-		moveBaseClient->cancelGoal();
+		moveBaseClient->cancelAllGoals();
 	}
 	moveBaseClient->sendGoal(goal);
 
@@ -631,7 +631,7 @@ void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::Cons
 	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
 }
 
-void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
+void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan, const Pose& odomFrame, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
 	outputPlan.clear();
 	for (unsigned int i = 0;i<inputPlan->poses.size();i++) {
 		Point p(inputPlan->poses[i].pose.position.x*1000.0,inputPlan->poses[i].pose.position.y*1000.0,0);
@@ -640,7 +640,7 @@ void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, 
 					 inputPlan->poses[i].pose.orientation.z,
 					 inputPlan->poses[i].pose.orientation.w);
 
-		StampedPose sp(odomFrame.add(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
+		StampedPose sp(odomFrame.concatTransformation(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
 		outputPlan.add(sp);
 	}
 
@@ -652,11 +652,11 @@ void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, 
 }
 
 void CommandDispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
-	convertPoseStampedToTrajectory(og, localPlan, localPlanGenerationNumber, localPlanSerialized);
+	convertPoseStampedToTrajectory(og, odomFrame, localPlan, localPlanGenerationNumber, localPlanSerialized);
 }
 
 void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
-	convertPoseStampedToTrajectory(og, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
+	convertPoseStampedToTrajectory(og, odomFrame, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
 
 	// in case the need to set the goal orientation, do it now
 
@@ -692,11 +692,11 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	// compute odomFrame for map->odom transformation
 	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(mapPose.orientation.z-odomPose.orientation.z);
 	odomFrame.orientation.z = mapPose.orientation.z-odomPose.orientation.z;
-	odomFrame = mapPose.substract(odomPose);
+	odomFrame = mapPose.concatInverseTransformation(odomPose);
 
 	// check this
  	Pose test;
-	test = odomFrame.add(odomPose);
+	test = odomFrame.concatTransformation(odomPose);
 
  	if ((test.position.distance(mapPose.position) > 0.1 ))
  		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
