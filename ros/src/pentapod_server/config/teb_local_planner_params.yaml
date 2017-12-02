@@ -18,7 +18,7 @@ min_vel_theta: -0.3
 
 acc_lim_x: 0.05
 acc_lim_y: 0.05
-acc_lim_theta: 0.05
+acc_lim_theta: 0.1
 min_in_place_vel_theta: 0.3
 
 # Footprint model is a point in order to save CPU, distance is kept min_obstacle_dist
