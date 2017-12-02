@@ -63,35 +63,40 @@ int main(int argc, char * argv[]) {
 	ROS_INFO_STREAM("initialization odom publisher");
 	odomPublisher.setup(rosNode, engine);
 
-	// main loop spins at the rate the cortex wants calls (around 45Hz)
+	// main loop spins at the rate the cortex wants calls (around 33Hz)
 	ros::WallRate mainLoopRate(1000.0/CORTEX_SAMPLE_RATE);
 
 	// main loop that takes care of the engine
 	// by sending move commands with approx. 45Hz
 	TimeSamplerStatic lowPrioLoopTimer;
+	TimeSamplerStatic engineTimer;
 
 	ROS_INFO_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
+	ROS_INFO_STREAM("broadcast bot information and odom with " << 1000/10 << "Hz");
+
 	while (rosNode.ok()) {
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
 		// so call engine.loop() right after sleep
-		mainLoopRate.sleep();
+		// mainLoopRate.sleep();
+		if (engineTimer.isDue(CORTEX_SAMPLE_RATE)) {
+			engine.loop(); // send move commands to cortex
 
-		engine.loop(); // send move commands to cortex
+			// pump callbacks and topics
+			// - listen to speed, bodypose and move commands coming from pentapod_server
+			// - broadcast odom2base_link to be consumed by navigation
+			// - broadcast base_link2laser to be consumed by hector slam
+			// - broadcast pentapod_state to be consumed by pentapod_server
+			ros::spinOnce();
 
-		// now we have some time to publish odom and odom->base_link
-		if (lowPrioLoopTimer.isDue(1000/10)) {
-			odomPublisher.broadcastState();
-			odomPublisher.broadcastTransformation();
-			odomPublisher.broadcastOdom();
-		}
-
-		// pump callbacks and topics
-		// - listen to speed, bodypose and move commands coming from pentapod_server
-		// - broadcast odom2base_link to be consumed by navigation
-		// - broadcast base_link2laser to be consumed by hector slam
-		// - broadcast pentapod_state to be consumed by pentapod_server
-		ros::spinOnce();
+			// now we have some time to publish odom and odom->base_link
+			if (lowPrioLoopTimer.isDue(1000/10)) {
+				odomPublisher.broadcastState();
+				odomPublisher.broadcastTransformation();
+				odomPublisher.broadcastOdom();
+			}
+		} else
+			delay_ms(1); // be cpu friendly
 	}
 
 	return 0;
