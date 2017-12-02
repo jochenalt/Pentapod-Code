@@ -679,7 +679,7 @@ void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) 
 
 		// compute the orientation
 		Point orientationVec = lastPose.pose.position - prevPose.pose.position;
-		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z +	engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
+		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
 
 		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world );
 		setNavigationGoal(navigationGoal_world, false);
@@ -696,13 +696,13 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	mapPose.orientation = EulerAngles(q);
 
 	// compute odomFrame for map->odom transformation
-	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(odomPose.orientation.z-mapPose.orientation.z);
-	odomFrame.orientation.z = odomPose.orientation.z-mapPose.orientation.z;
+	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(mapPose.orientation.z-odomPose.orientation.z);
+	odomFrame.orientation.z = mapPose.orientation.z-odomPose.orientation.z;
 
 	// check this
  	Pose test;
  	test.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
- 	test.orientation = odomFrame.orientation  + odomPose.orientation;
+ 	test.orientation.z = odomFrame.orientation.z  + odomPose.orientation.z;
  	if ((test.position.distance(mapPose.position) > 0.1 ))
  		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
  	if ((abs(test.orientation.z - mapPose.orientation.z) > 0.1))
@@ -775,7 +775,7 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 	engineState.deserialize(in);
 
 	// update baselink pose and slam pose which does not come from pentapod engine
-	ROS_INFO_STREAM("listenerBotState " << engineState.currentBaselinkPose << "odomF:;" << odomFrame << "odomPose:" << odomPose);
+	ROS_INFO_STREAM_THROTTLE(5, "receiving engine state base_link=" << engineState.currentBaselinkPose << "odomFrame=" << odomFrame << "odomPose=" << odomPose);
  	engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
  	engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
 
