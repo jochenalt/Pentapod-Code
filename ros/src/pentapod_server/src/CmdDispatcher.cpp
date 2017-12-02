@@ -98,7 +98,7 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	ROS_INFO_STREAM("subscribe to /scan");
-	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::setLaserScan, this);
+	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::listenToLaserScan, this);
 
 	// subscribe to the SLAM topic that deliveres the etimated position
 	ROS_INFO_STREAM("subscribe to /slam_out_pose");
@@ -556,7 +556,7 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 	return false;
 }
 
-void CommandDispatcher::setLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr ) {
+void CommandDispatcher::listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr ) {
 	LaserScan laserScan;
 	std::vector<int_millimeter> newScan;
 	angle_rad startAngle = scanPtr->angle_min;
@@ -711,7 +711,7 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 
 	engineState.currentMapPose = mapPose;
 	ROS_INFO_STREAM_THROTTLE(5, "received slam output pose" << odomPose);
-	engineState.currentBaselinkPose = odomPose; // reset pose that is fused of map and odom
+	engineState.currentBaselinkPose = mapPose; // reset base_link to slam pose, odomFrame stored the new deviation of odometry
 }
 
 // subscription to path

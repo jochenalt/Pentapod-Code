@@ -63,7 +63,7 @@ public:
 	void listenerLocalPlan(const nav_msgs::Path::ConstPtr& og );
 	void listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og );
 
-	void setLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
+	void listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
 
 	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
 	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
