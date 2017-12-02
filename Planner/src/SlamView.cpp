@@ -125,16 +125,16 @@ void SlamView::drawLaserScan() {
 	glPopMatrix();
 }
 
-void SlamView::drawNavigationGoal() {
+void drawOneNavigationGoal(const Pose &goal) {
 	glPushMatrix();
 	glLoadIdentity();
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapMarkerColor4v);
 	glColor3fv(glMapMarkerColor4v);
 
-	if (!navigationGoal.isNull() || !EngineProxy::getInstance().getCurrentNavigationGoal().isNull())
+	if (!goal.isNull())
 	{
-		glTranslatef(navigationGoal.position.y, navigationGoal.position.z, navigationGoal.position.x);
+		glTranslatef(goal.position.y, goal.position.z, goal.position.x);
 		glRotatef(-90, 1,0,0);
 		GLUquadricObj *quadratic = gluNewQuadric();
 		gluCylinder(quadratic, 20, 10, 1000, 12, 1);
@@ -142,7 +142,6 @@ void SlamView::drawNavigationGoal() {
 
 		// draw the sphere in the color of the status
 		NavigationStatusType navStatus = EngineProxy::getInstance().getCurrentNavigationStatus();
-		// navigationGoal = EngineProxy::getInstance().getCurrentNavigationGoal();
 		int sphereRGBColor;
 		switch (navStatus) {
 			case NavPending:   sphereRGBColor = YellowGrey;break;
@@ -163,7 +162,7 @@ void SlamView::drawNavigationGoal() {
 		glutSolidSphere(50, 12, 12);
 
 		// draw the small flag on top
-		glRotatef(degrees(navigationGoal.orientation.z), 0, 1,0);
+		glRotatef(degrees(goal.orientation.z), 0, 1,0);
 		glBegin(GL_TRIANGLE_STRIP);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glMapSphereMarkerColor4v);
 			glColor4fv(glMapSphereMarkerColor4v);
@@ -175,6 +174,13 @@ void SlamView::drawNavigationGoal() {
 	}
 
 	glPopMatrix();
+}
+
+
+void SlamView::drawNavigationGoal() {
+	drawOneNavigationGoal(tempNavigationGoal);
+	cout << " drawNavi=" << EngineProxy::getInstance().getCurrentNavigationGoal() << endl;
+	drawOneNavigationGoal(EngineProxy::getInstance().getCurrentNavigationGoal());
 
 }
 
@@ -591,11 +597,13 @@ void SlamView::drawMap() {
 
 
 void SlamView::defineNavigationGoal(bool latchOrientation) {
-	EngineProxy::getInstance().setNavigationGoal(navigationGoal, latchOrientation);
+	sentNavigationGoal = tempNavigationGoal;
+	cout << "send goal " << sentNavigationGoal << endl;
+	EngineProxy::getInstance().setNavigationGoal(sentNavigationGoal, latchOrientation);
 }
 
 void SlamView::setNavigationGoal(const Pose& p) {
-	navigationGoal = p;
+	tempNavigationGoal = p;
 }
 
 void SlamView::MotionCallback(int x, int y) {
@@ -623,8 +631,8 @@ void SlamView::MotionCallback(int x, int y) {
 				// check current projection of mouse position
 				Point targetDirection = get3DByMouseClick(x,y);
 				// compute direction from goal set to current position
-				Point directionPoint = targetDirection - navigationGoal.position;
-				navigationGoal.orientation.z = atan2(directionPoint.y, directionPoint.x);
+				Point directionPoint = targetDirection - tempNavigationGoal.position;
+				tempNavigationGoal.orientation.z = atan2(directionPoint.y, directionPoint.x);
 			} else {
 				if (lastMouseScroll != 0) {
 					WindowController::getInstance().slamView.changeEyePosition(-getCurrentEyeDistance()*2*lastMouseScroll/100, 0,0);
@@ -676,7 +684,7 @@ Point SlamView::get3DByMouseClick(int screenX,int screenY) {
 			std::vector<Point> holes = EngineProxy::getInstance().getDarkScaryHoles();
 			for (unsigned i = 0;i<holes.size();i++) {
 				if (holes[i].distance(Point(z, x,0)) <= 50)
-					return holes[i];
+					return Point(holes[i].x,holes[i].y,0); // holes[i].x, holes[i].y,0);
 			}
 		}
 

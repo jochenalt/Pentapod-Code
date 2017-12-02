@@ -105,7 +105,9 @@ public:
   void  torqueON(int servoID);
   void  torqueOFF(int servoID);
   void  changeBaudRate(int servoID, int baudNum);
-  
+  void  setAccelerationMax(int servoID, int accelerationMax);
+  void  setAccelerationRatio(int servoID, int accelerationRatio);
+
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);
   void  moveAllAngle(int servoID, float angle, int iLed);

@@ -178,6 +178,61 @@ void HerkulexClass::torqueOFF(int servoID)
 
 }
 
+// torque off - the torque is FREE, not Break
+void HerkulexClass::setAccelerationRatio(int servoID, int accelerationRatio)
+{
+	pSize = 0x0A;               // 3.Packet size 7-58
+	pID   = servoID;            // 4. Servo ID
+	cmd   = HRAMWRITE;          // 5. CMD
+	data[0]=0x14;               // 8. Address
+	data[1]=0x01;               // 9. Lenght
+	data[2]=accelerationRatio;  // 10. Default: 19
+	lenghtString=3;             // lenghtData
+
+	ck1=checksum1(data,lenghtString);	//6. Checksum1
+	ck2=checksum2(ck1);					//7. Checksum2
+
+	dataEx[0] = 0xFF;			// Packet Header
+	dataEx[1] = 0xFF;			// Packet Header
+	dataEx[2] = pSize;	 		// Packet Size
+	dataEx[3] = pID;			// Servo ID
+	dataEx[4] = cmd;			// Command Ram Write
+	dataEx[5] = ck1;			// Checksum 1
+	dataEx[6] = ck2;			// Checksum 2
+	dataEx[7] = data[0]; 		// Address 52
+	dataEx[8] = data[1]; 		// Length
+	dataEx[9] = data[2]; 		// Data
+
+    sendData(dataEx, pSize);
+}
+
+// torque off - the torque is FREE, not Break
+void HerkulexClass::setAccelerationMax(int servoID, int accelerationMax)
+{
+	pSize = 0x0A;               // 3.Packet size 7-58
+	pID   = servoID;            // 4. Servo ID
+	cmd   = HRAMWRITE;          // 5. CMD
+	data[0]=0x14;               // 8. Address
+	data[1]=0x01;               // 9. Lenght
+	data[2]=accelerationMax;  // 10. Default: 45 = 45*11.2ms = 504ms
+	lenghtString=3;             // lenghtData
+
+	ck1=checksum1(data,lenghtString);	//6. Checksum1
+	ck2=checksum2(ck1);					//7. Checksum2
+
+	dataEx[0] = 0xFF;			// Packet Header
+	dataEx[1] = 0xFF;			// Packet Header
+	dataEx[2] = pSize;	 		// Packet Size
+	dataEx[3] = pID;			// Servo ID
+	dataEx[4] = cmd;			// Command Ram Write
+	dataEx[5] = ck1;			// Checksum 1
+	dataEx[6] = ck2;			// Checksum 2
+	dataEx[7] = data[0]; 		// Address 52
+	dataEx[8] = data[1]; 		// Length
+	dataEx[9] = data[2]; 		// Data
+
+    sendData(dataEx, pSize);
+}
 // ACK  - 0=No Replay, 1=Only reply to READ CMD, 2=Always reply
 void HerkulexClass::ACK(int valueACK)
 {

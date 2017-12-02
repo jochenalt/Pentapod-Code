@@ -308,12 +308,11 @@ Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFac
 		if (dT > floatPrecision) { // first round is for the road
 			Rotation prop = error;
 			Rotation integ = errorIntegral;
-			Rotation deriv = (error-lastError)/dT;
+			Rotation deriv = (error-lastError);
 
 			// cout << std::setprecision(4) << "pid=(" << prop << "," << integ << "," << deriv << ")->(" << prop*p << "," << integ*i << "," << deriv*d << ") dT=" << dT;
-			imuCompensation = prop*propFactor + integ * IntegFactor + deriv*derivativeFactor;
+			imuCompensation = prop*propFactor + integ * IntegFactor + deriv*derivativeFactor / dT;
 			imuCompensation.limit(outMin, outMax);
-			// cout << "imucomp" << imuCompensation << endl;
 			lastError = error;
 
 			errorIntegral += error*dT;

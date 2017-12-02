@@ -497,6 +497,7 @@ void Engine::computeBodyPose() {
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
 			imuCompensation.orientation = imuPID.getPID(error, 1.0, 1.2, 0.005, maxError);
+			// imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
 
 		} else {
 			// in any other mode than walking keep the IMU in a reset state

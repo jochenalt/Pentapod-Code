@@ -32,7 +32,7 @@ public:
 		}
 	};
 
-	~EngineState () {};
+	virtual ~EngineState () {};
 
 	void operator=(const EngineState& state) {
 		currentBodyPose = state.currentBodyPose;
