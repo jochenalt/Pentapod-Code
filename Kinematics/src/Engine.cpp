@@ -496,7 +496,7 @@ void Engine::computeBodyPose() {
 			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
-			imuCompensation.orientation += imuPID.getPID(error, 0.1, 0.0, 0.00, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 1.0, 1.2, 0.005, maxError);
 			// imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
 
 		} else {

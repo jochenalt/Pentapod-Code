@@ -335,7 +335,6 @@ bool CortexClient::cmdBinaryMOVE(
         for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
         	flatDegAngles[limbNo + legNo*NumberOfLimbs] = degrees(legAngles[legNo][limbNo]);
         }
-
     }
 
     long startTime = millis();
@@ -344,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 0,100);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 5,100);
     } while (retry(ok));
 
 	if (ok)
