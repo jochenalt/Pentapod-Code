@@ -180,7 +180,8 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 	initialPosition.header.frame_id = "map";
 	ROS_INFO_STREAM("publishing initial pose " << engineState.currentBaselinkPose.position <<
 					" nose=" << degrees(engineState.currentBodyPose.orientation.z +
-					engineState.currentNoseOrientation));
+					engineState.currentNoseOrientation)
+					<< "latched=" << setOrientationToPath);
 
 	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
 	navigationGoal.position = goalPose_world.position - engineState.currentBaselinkPose.position;
@@ -205,7 +206,7 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 	}
 	moveBaseClient->sendGoal(goal);
 
-	ROS_INFO_STREAM("setting navigation goal " << navigationGoal.position << string(setOrientationToPath?" (latched orientation)":""));
+	ROS_INFO_STREAM("setting navigation goal (" << goalPose_world << ") " << navigationGoal.position << string(setOrientationToPath?" (latched orientation)":""));
 
 	// latch the flag indicating that once the global path has been computed by navigation stack, set the orientation
 	latchedGoalOrientationToPath = setOrientationToPath;
@@ -503,17 +504,12 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 
 			string latchOrientationStr;
 			bool setNavigationOrientation = false;
-			cout << "command " << command << endl;
 
 			ok = getURLParameter(urlParamName, urlParamValue, "latchorientation", latchOrientationStr);
 			if (ok) {
-				cout << "latchorientation found:" << latchOrientationStr << endl;
-
-				std::stringstream in(latchOrientationStr);
-				setNavigationOrientation = parseBool(in, ok);
-				cout << "setNavigationOrientation:" << setNavigationOrientation << " goal:" << goalPose << endl;
-
+				setNavigationOrientation = latchOrientationStr == "true";
 			}
+			cout << "ok=" << ok << "latchsr=" << latchOrientationStr << "sno=" << setNavigationOrientation << endl;
 			setNavigationGoal(goalPose, setNavigationOrientation);
 			response = getResponse(true);
 			okOrNOk = true;
@@ -522,11 +518,11 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 		else if (hasPrefix(command,"goal/get")) {
 			std::ostringstream out;
 			int navStatus = NavigationStatusType::NavPending;
-			if (!navigationGoal_world.isNull()) {
+			if (!getNavigationGoal().isNull()) {
 				navStatus = (int)getNavigationGoalStatus().state_;
 			}
 
-			navigationGoal_world.serialize(out);
+			getNavigationGoal().serialize(out);
 			out << ", \"status\":" << navStatus;
 			response = out.str() + "," + getResponse(true);
 			okOrNOk = true;
@@ -669,24 +665,24 @@ void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) 
 	convertPoseStampedToTrajectory(og, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
 
 	// in case the need to set the goal orientation, do it now
+
 	if (!navigationGoal.isNull() && latchedGoalOrientationToPath && (globalPlan.size() > 5)) {
 		// global path does not go straight to the goal, very often the last piece is bent
 		// so identify the direction the bot is coming from by taking the vector of the last piece that takes lastPieceLength
-		const milliseconds lastPieceLength = 1000;
+		const milliseconds lastPieceLength = 3000;
 		int curr = globalPlan.size()-1;
-		StampedPose lastPose = globalPlan[globalPlan.size()-1];
-		while ((curr > 0) && (globalPlan[curr].timestamp > lastPose.timestamp + lastPieceLength))
+		StampedPose lastPose = globalPlan[curr];
+		while ((curr > 0) && (globalPlan[curr].timestamp > lastPose.timestamp - lastPieceLength))
 			curr--;
 
-		StampedPose prevPose = globalPlan[curr]; // this pose is as least 1s earlier than the predicted goal arrival time
+		StampedPose prevPose = globalPlan[curr]; // this pose is at least 3000ms earlier than the predicted goal arrival time
 
 		// compute the orientation
 		Point orientationVec = lastPose.pose.position - prevPose.pose.position;
-		navigationGoal.orientation = Rotation(0,0,atan2(orientationVec.y, orientationVec.x));
-		navigationGoal_world.orientation.z = navigationGoal.orientation.z + (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation);
+		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z +	engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
 
-		ROS_INFO_STREAM("setting orientation of navigation goal to " << degrees(atan2(orientationVec.y, orientationVec.x)));
-		setNavigationGoal(navigationGoal, false);
+		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world );
+		setNavigationGoal(navigationGoal_world, false);
 	}
 }
 
