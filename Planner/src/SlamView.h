@@ -66,7 +66,9 @@ private:
 	Pose defaultBodyPose;
 
 	// generic marker that leaves a flag in the map. Use for navigation goal.
-	Pose navigationGoal;
+	Pose tempNavigationGoal;
+	Pose sentNavigationGoal;
+
 	bool latchGoalOrientation;
 
 	Pose lastFusedPosition;

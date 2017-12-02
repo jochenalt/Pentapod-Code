@@ -207,7 +207,7 @@ void I2CSlave::executeRequest() {
 					status, angles, distance, servoStatus,
 					imuX, imuY, imuStatus,
 					voltage.getHighVoltage(),
-					controller.looptime(),
+					controller.loopDuration_ms(),
 					response);
 
 			// set semaphore to indicate that response can be sent within main loop

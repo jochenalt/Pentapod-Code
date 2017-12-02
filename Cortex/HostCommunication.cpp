@@ -449,7 +449,7 @@ void cmdBIN() {
 				status, angles, distance, servoStatus,
 				imuX, imuY, imuStatus,
 				voltage.getHighVoltage(),
-				controller.looptime(),
+				controller.loopDuration_ms(),
 				response);
 
 		if (ok) {
@@ -521,7 +521,7 @@ void cmdGET() {
 
 				// return loop time
 				cmdSerial->print(' ');
-				cmdSerial->print(controller.looptime());
+				cmdSerial->print(controller.loopDuration_ms());
 
 				cmdSerial->print(")");
 
@@ -638,7 +638,7 @@ void cmdMOVE() {
 
 			// return loop time
 			cmdSerial->print(' ');
-			cmdSerial->print(controller.looptime());
+			cmdSerial->print(controller.loopDuration_ms());
 			replyOk();
 		}
 	}

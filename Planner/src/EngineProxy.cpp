@@ -458,7 +458,6 @@ void EngineProxy::setNavigationGoal(const Pose& navigationGoal, bool latchOrient
 		url << "/navigation/goal/set"
 			<< "?bodypose="  << stringToJSonString(bodyposeIn.str())
 		    << "&latchorientation="  << boolToJSonString(latchOrientation);
-		cout << "navgoal=" << navigationGoal << " url=" << url.str();
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	};
 }

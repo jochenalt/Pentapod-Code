@@ -36,6 +36,8 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	movement.setNull();
 	
 	// switch off torque, wait for real action until enable is called
+	herkulexMgr->setAccelerationMax(configData->herkulexMotorId, 0);   // rectangle speed profile
+	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // rectangle speed profile
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
@@ -258,7 +260,7 @@ void HerkulexServoDrive::loop(uint32_t now) {
 		float toBeAngle = movement.getCurrentAngle(now+(int)CORTEX_SAMPLE_RATE);
 
 		currentUserAngle = toBeAngle;
-		moveToAngle(toBeAngle, HERKULEX_MIN_SAMPLE);
+		moveToAngle(toBeAngle, 1 /*HERKULEX_MIN_SAMPLE */);
 	} else {
 		currentUserAngle = readCurrentAngle();
 	}

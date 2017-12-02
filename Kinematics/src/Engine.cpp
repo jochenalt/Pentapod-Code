@@ -491,20 +491,22 @@ void Engine::computeBodyPose() {
 		Rotation imu = legController.getIMUOrientation();
 		imu.z = 0; // z coordnate is not used
 		Pose imuCompensation;
+		Rotation error;
 		if (legController.isIMUValueValid() && ((generalMode == WalkingMode) || (generalMode == TerrainMode))) {
 			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
-			Rotation error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
+			error = toBePose.orientation - imu ;
+			imuCompensation.orientation += imuPID.getPID(error, 0.1, 0.0, 0.00, maxError);
+			// imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
+
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
 			imuPID.reset();
 		}
 		currentBodyPose = toBePose;
 		currentBodyPose.orientation += imuCompensation.orientation;
-		ROS_DEBUG_STREAM("IMU=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y)
+		ROS_DEBUG_STREAM("IMU error=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y)
 				         << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")"
-				         << " before=(" << degrees(toBePose.orientation.x) << "," << degrees(toBePose.orientation.y)
 				         << ") after=(" << degrees(currentBodyPose.orientation.x) << "," << degrees(currentBodyPose.orientation.y) << ")");
 	}
 }

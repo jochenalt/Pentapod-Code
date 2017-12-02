@@ -32,7 +32,7 @@ class Controller {
 		void loop(uint32_t now);
 
 		Leg& getLeg(int i) { return legs[i]; };
-		uint32_t looptime() { return loopTime_ms; };
+		uint32_t loopDuration_ms() { return loopTime_ms; };
 		TimePassedBy& getTimer();
 		void adaptSynchronisation();
 		void sendCommandToServos();

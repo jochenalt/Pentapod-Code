@@ -53,6 +53,7 @@ void Controller::logConfiguration() {
 }
 
 bool Controller::setup() {
+	loopTime_ms = 0;
 	servoLoopTimer.setRate(CORTEX_SAMPLE_RATE);
 
 	if (memory.persMem.logSetup) {
@@ -131,15 +132,14 @@ void Controller::sendCommandToServos() {
 	uint32_t end = millis();
 
 	static uint32_t distanceTime = 0;
-	static uint32_t loopTime = 0;
 	static TimePassedBy logTimer(5000);
 
 	distanceTime = (end - middle + distanceTime)/2;
-	loopTime = ((end - now) + loopTime)/2;
+	loopTime_ms = ((end - now) + loopTime_ms)/2;
 
 	if (logTimer.isDue()) {
 		cmdSerial->print("TIME(");
-		cmdSerial->print(loopTime);
+		cmdSerial->print(loopTime_ms);
 		cmdSerial->print("(");
 		cmdSerial->print(distanceTime);
 		cmdSerial->println(")ms");
@@ -153,7 +153,11 @@ void Controller::loop(uint32_t now) {
 	// update the servo position
 	if (servoLoopTimer.isDue_ms(CORTEX_SAMPLE_RATE,now))
 	{
+		// send commands to all servos via 5 serial lines
 		sendCommandToServos();
+
+		// right after sending the command, fetch data from IMU to leverage the time in between two I2C command best
+		orientationSensor.fetchData();
 	}
 }
 
@@ -174,8 +178,8 @@ void Controller::adaptSynchronisation() {
 	// get the time when the controller will fire the next loop
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
 
-	// the ideal timing is when the command comes in right between two move commands
-	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2;
+	// the ideal timing is when the command comes in right between two move commands. Substract the runtime of a loop
+	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - 16/2;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.
