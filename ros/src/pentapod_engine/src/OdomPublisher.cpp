@@ -123,7 +123,7 @@ void OdomPublisher::broadcastOdom() {
 	odom_trans.child_frame_id = "base_link";
 	odom_trans.transform.translation.x = engine->getOdomPose().position.x/1000.0;
 	odom_trans.transform.translation.y = engine->getOdomPose().position.y/1000.0;
-	odom_trans.transform.translation.z = 0;
+	odom_trans.transform.translation.z = 0.0;
 	odom_trans.transform.rotation = odom_quat;
 	broadcaster.sendTransform(odom_trans);
 

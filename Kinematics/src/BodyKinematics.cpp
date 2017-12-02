@@ -145,7 +145,7 @@ bool BodyKinematics::computeKinematics(
 
 			// during startup reduce angle speed
 			realnum maxAngleDiff = maxStartupAngleSpeed * (CORTEX_SAMPLE_RATE/1000.0) ;
-			realnum angleDiff = toBeAngle0 - givenAngle0;
+			realnum  angleDiff = toBeAngle0 - givenAngle0;
 			if (abs(angleDiff) > maxAngleDiff)
 				angleDiff = sgn(angleDiff)* maxAngleDiff;
 			realnum angle0 = givenAngle0 + angleDiff;
@@ -154,7 +154,7 @@ bool BodyKinematics::computeKinematics(
 				// ok, did not work, so try the original angle.
 				ok = kin.computeInverseKinematics(toeHipCoord, givenAngle0);
 				if (!ok) {
-					ROS_ERROR_STREAM("kinematics of leg " << legNo << " with " << toeHipCoord << " and " << givenAngle0 << " during startup could not be found");
+					ROS_ERROR_STREAM("kinematics of leg " << legNo << " with " << toeHipCoord << " and " << givenAngle0 << "/" << toBeAngle0 << "/" << angleDiff << " during startup could not be found");
 				}
 			}
 		} else {

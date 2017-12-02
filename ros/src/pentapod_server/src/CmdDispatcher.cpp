@@ -136,6 +136,8 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// identical map->odom transformation which is required by the navigation stack.
 	// After this method, the map->odom transformation will be taken up by the main loop
 	ros::Time now = ros::Time::now();
+	ROS_INFO_STREAM("starting up move_base");
+
 	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - now < ros::Duration(10.0))) {
 		ROS_INFO_THROTTLE(2, "waiting for move base to come up");
 		broadcastTransformationMapToOdom();
@@ -163,7 +165,6 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 
 	// advertise the initial position for the navigation stack everytime the navigation goal is set
 	navigationGoal_world = goalPose_world;
-	cout << "set goal:" << navigationGoal_world <<endl;
 
 	geometry_msgs::PoseWithCovarianceStamped initialPosition;
 	initialPosition.pose.pose.position.x = engineState.currentBaselinkPose.position.x/1000.0;
@@ -706,11 +707,14 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
  	Pose test;
  	test.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
  	test.orientation = odomFrame.orientation  + odomPose.orientation;
- 	if ((test.position.distance(mapPose.position) > floatPrecision) || (abs(test.orientation.z - mapPose.orientation.z) > floatPrecision))
- 		ROS_ERROR_STREAM("map->odom transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
+ 	if ((test.position.distance(mapPose.position) > 0.1 ))
+ 		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
+ 	if ((abs(test.orientation.z - mapPose.orientation.z) > 0.1))
+ 		ROS_ERROR_STREAM("map->odom orientation transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
 
 
 	engineState.currentMapPose = mapPose;
+	ROS_INFO_STREAM_THROTTLE(5, "received slam output pose" << odomPose);
 	engineState.currentBaselinkPose = odomPose; // reset pose that is fused of map and odom
 }
 
@@ -739,6 +743,7 @@ void CommandDispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odo
 	// receive odometry from bot
 	odomPose.position.x = odom->pose.pose.position.x*1000.0;
 	odomPose.position.y = odom->pose.pose.position.y*1000.0;
+	odomPose.position.z = 0;
 	Quaternion q(odom->pose.pose.orientation.x,odom->pose.pose.orientation.y,odom->pose.pose.orientation.z,odom->pose.pose.orientation.w);
 	odomPose.orientation = EulerAngles(q);
 
@@ -770,12 +775,11 @@ void CommandDispatcher::clearCostmaps() {
 
 // subscription to bots state
 void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {
-	Pose previousOdom = engineState.currentOdomPose;
-
 	std::istringstream in(fullStateStr->data);
 	engineState.deserialize(in);
 
 	// update baselink pose and slam pose which does not come from pentapod engine
+	ROS_INFO_STREAM("listenerBotState " << engineState.currentBaselinkPose << "odomF:;" << odomFrame << "odomPose:" << odomPose);
  	engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
  	engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
 
@@ -794,7 +798,7 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 
 void CommandDispatcher::broadcastTransformationMapToOdom() {
 	Pose baselink = getBaselink();
-
+	ROS_INFO_STREAM_THROTTLE(5,"publish map->odom=" << engineState.currentBaselinkPose);
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::createQuaternionFromYaw(baselink.orientation.z),
