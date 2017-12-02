@@ -252,6 +252,11 @@ class Pose : public Serializable  {
 			return result;
 		};
 
+		// add a vector to a pose by considering the applied pose as transformation(trans and rot)
+		Pose add(const Pose add);
+		// substract a vector from the applied pose by considering both as transformation(trans and rot)
+		Pose substract(const Pose sub);
+
 		virtual std::ostream& serialize(std::ostream &out) const;
 		virtual std::istream& deserialize(std::istream &in, bool &ok);
 

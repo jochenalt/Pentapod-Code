@@ -73,6 +73,24 @@ std::istream& LegPose::deserialize(std::istream &in, bool &ok) {
     return in;
 }
 
+// add a vector to a pose by considering the applied pose as transformation(trans and rot)
+Pose Pose::add(const Pose add) {
+		Pose result;
+	 	result.position = position + add.position.getRotatedAroundZ(orientation.z);
+	 	result.orientation.z = orientation.z  + add.orientation.z;
+	 	return result;
+}
+
+
+	// substract a vector from the applied pose by considering both as transformation(trans and rot)
+Pose Pose::substract(const Pose sub) {
+		Pose  result;
+		result.position = position - sub.position.getRotatedAroundZ(orientation.z-sub.orientation.z);
+		result.orientation.z = orientation.z-sub.orientation.z;
+	 	return result;
+}
+
+
 std::ostream& Pose::serialize(std::ostream &out) const {
 	out << "{\"pos\":";
 	position.serialize(out);
@@ -316,7 +334,7 @@ Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFac
 			lastError = error;
 
 			errorIntegral += error;
-			errorIntegral.limit(outMin, outMax);
+			// errorIntegral.limit(outMin, outMax);
 		}
 
 		return imuCompensation;

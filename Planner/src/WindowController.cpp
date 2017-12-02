@@ -267,7 +267,6 @@ void idleCallback( void )
 		lastDisplayRefreshCall = now;
 	}
 
-
 	static milliseconds lastGaitCall = millis();
 	if (now - lastGaitCall > gaitLoopTime) {
 		imposeGroundDistance();
@@ -277,7 +276,7 @@ void idleCallback( void )
 
 	// be cpu friendly
 	if (!doSomething)
-		delay_ms(1);
+		delay_ms(5);
 }
 
 void singleLegActiveCallback(int buttonNo) {
