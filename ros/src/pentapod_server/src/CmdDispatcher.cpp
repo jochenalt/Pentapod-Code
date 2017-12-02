@@ -71,12 +71,9 @@ void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 
 	// subscribe to the right topic of the local planner used
 	std::string base_local_planner;
-	std::string local_plan_topic_name;
-	std::string global_plan_topic_name;
-
 	ros::param::get("/move_base/base_local_planner", base_local_planner);
-	local_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/local_plan";
-	global_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/global_plan";
+	std::string local_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/local_plan";
+	std::string global_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/global_plan";
 
 	// subscribe to path of local planner
     ROS_INFO_STREAM("subscribe to local plan from " << local_plan_topic_name);
@@ -183,11 +180,8 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 					engineState.currentNoseOrientation)
 					<< "latched=" << setOrientationToPath);
 
-	// navigation goal is set in terms of base_frame. Transform goalPose_world in base_frame
-	navigationGoal.position = goalPose_world.position - engineState.currentBaselinkPose.position;
-
-	navigationGoal.position.rotateAroundZ(- (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation));
-	navigationGoal.orientation.z = goalPose_world.orientation.z - (engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation);
+	// navigation goal is set from the base_links perspective. Convert goalPose into base_links frame
+	navigationGoal = goalPose_world.substract(engineState.currentBaselinkPose);
 
 	move_base_msgs::MoveBaseGoal goal;
 	goal.target_pose.header.frame_id = "base_link";
@@ -646,7 +640,7 @@ void convertPoseStampedToTrajectory(const nav_msgs::Path::ConstPtr&  inputPlan, 
 					 inputPlan->poses[i].pose.orientation.z,
 					 inputPlan->poses[i].pose.orientation.w);
 
-		StampedPose sp(Pose(p,q),inputPlan->poses[i].header.stamp.toSec()*1000.0);
+		StampedPose sp(odomFrame.add(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
 		outputPlan.add(sp);
 	}
 
@@ -698,11 +692,12 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	// compute odomFrame for map->odom transformation
 	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(mapPose.orientation.z-odomPose.orientation.z);
 	odomFrame.orientation.z = mapPose.orientation.z-odomPose.orientation.z;
+	odomFrame = mapPose.substract(odomPose);
 
 	// check this
  	Pose test;
- 	test.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
- 	test.orientation.z = odomFrame.orientation.z  + odomPose.orientation.z;
+	test = odomFrame.add(odomPose);
+
  	if ((test.position.distance(mapPose.position) > 0.1 ))
  		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
  	if ((abs(test.orientation.z - mapPose.orientation.z) > 0.1))
