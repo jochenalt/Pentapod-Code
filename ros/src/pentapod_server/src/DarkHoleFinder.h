@@ -38,7 +38,7 @@ public:
 	void feed(const Map& slamMap, const Map& globalCostmap, const Pose& pose);
 
 
-	void findHole();
+	void findDarkAndScaryHoles();
 	void getDarkScaryHoles(std::vector<Point>& holes);
 
 private:
@@ -61,8 +61,8 @@ private:
 	double rayMinDistance;
 	double rayMaxDistance;
 	double scarynessthreshold;
-	Map slamMap;
-	Map costMap;
+	Map *slamMap = NULL;
+	Map *costMap = NULL;
 	Pose pose;
 
 	std::map<int, realnum> foundDarkHoles;

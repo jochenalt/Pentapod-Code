@@ -7,7 +7,9 @@
 
 #include "DarkHoleFinder.h"
 
+// in ros costmaps, lethal zones are 100
 const int LethalThreshold = 99;
+// according to our setting of inflation area in the costmap, 80 is a costmap value that is still reachable but close to a wall
 const int CandidateThreshold = 80;
 
 DarkHoleFinder::DarkHoleFinder() {
@@ -30,18 +32,18 @@ void DarkHoleFinder::setup(ros::NodeHandle handle) {
 	height *= 1000;
 	rayMinDistance *= 1000;
 	rayMaxDistance *= 1000;
-
 }
 
 void DarkHoleFinder::feed(const Map& newSlamMap, const Map& newCostMap, const Pose& newPose) {
-	slamMap = newSlamMap;
-	costMap = newCostMap;
+	// store the reference to the passed maps, do not copy for performance reasons
+	slamMap = (Map*)&newSlamMap;
+	costMap = (Map*)&newCostMap;
 	pose = newPose;
 
-	findHole();
+	findDarkAndScaryHoles();
 }
 
-// find candidate by xoring each grid cell against the pattern and taking all cells with a result of at least 5 as candidates
+// find candidate by xor-ing each grid cell against the pattern below and take all cells with a result of at least 5 as candidates
 //    111
 //   1   1
 //   1 0 1
@@ -49,15 +51,15 @@ void DarkHoleFinder::feed(const Map& newSlamMap, const Map& newCostMap, const Po
 //    111
 
 bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
-	int pivotValue = costMap.getValueByWorld(x,y);
+	int pivotValue = costMap->getValueByWorld(x,y);
 	realnum holeValue = 0;
 	int wallCounter = 0;
 	const int radius = 2;
-	if ((pivotValue < CandidateThreshold ) && (pivotValue >= 0) && (slamMap.getOccupancyByWorld(x,y) ==  Map::FREE)) {
+	if ((pivotValue < CandidateThreshold ) && (pivotValue >= 0) && (slamMap->getOccupancyByWorld(x,y) ==  Map::FREE)) {
 		for (int xc = -radius;xc <= radius; xc++) {
 			for (int yc = -radius;yc <= radius; yc++) {
 				if (((abs(xc) == radius) || (abs(yc) == radius)) && (abs(yc) != abs(xc))) {
-					int value = costMap.getValueByWorld(x+xc*slamMap.getGridSize(),y+yc*slamMap.getGridSize());
+					int value = costMap->getValueByWorld(x+xc*slamMap->getGridSize(),y+yc*slamMap->getGridSize());
 					if (value > pivotValue) {
 						if (value > LethalThreshold)
 							wallCounter += 2;
@@ -73,10 +75,11 @@ bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
 	return false;
 }
 
+// scariness is a metric between 0..1 identifying how tight the walls are around a location. 1 is the most scariness, kinda a coffin, 0 is free space
 realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
 	// send out 16 rays and measure the distance to the next wall
 	const int numberOfRays = 32;
-	int gridSize = slamMap.getGridSize();
+	int gridSize = slamMap->getGridSize();
 	realnum scaryness = 0.0;
 	for (realnum alpha = 0; alpha < 2.0*M_PI;alpha += M_PI*2.0/numberOfRays) {
 		realnum s = sin(alpha);
@@ -84,7 +87,7 @@ realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
 		realnum gridDistance = sqrt(s*s + c*c)*gridSize;
 		bool found = false;
 		for (realnum distance = rayMinDistance+gridDistance;distance < rayMaxDistance;distance += gridDistance) {
-			if (slamMap.getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
+			if (slamMap->getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
 				scaryness += 1000.0/(1000.0 + distance-rayMinDistance);
 				found = true;
 				break;
@@ -96,16 +99,16 @@ realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
 }
 
 
+// diagonalize the 2d space into one hash code
 int DarkHoleFinder::getHashIdx(millimeter_int x, millimeter_int y) {
 
-	int gridSize = slamMap.getGridSize();
-	int w = slamMap.getGridsWidth();
-	int h = slamMap.getGridsHeight();
+	int gridSize = slamMap->getGridSize();
+	int w = slamMap->getGridsWidth();
+	int h = slamMap->getGridsHeight();
 
 	if ((abs(x) >= w*gridSize/2) || (abs(y) >= h*gridSize/2)) {
 		return -1;
 	}
-
 
 	int xi = ((int)(x) + gridSize/2)/gridSize + w/2;
 	int yi = ((int)(y) + gridSize/2)/gridSize + h/2;
@@ -113,10 +116,11 @@ int DarkHoleFinder::getHashIdx(millimeter_int x, millimeter_int y) {
 	return hashIdx;
 }
 
+// reverse diagonalization, get 2d coordinates out of a hash code
 void DarkHoleFinder::getCoordByHashIdx(int hashIdx, millimeter_int& x, millimeter_int& y) {
-	int gridSize = slamMap.getGridSize();
-	int w = slamMap.getGridsWidth();
-	int h = slamMap.getGridsHeight();
+	int gridSize = slamMap->getGridSize();
+	int w = slamMap->getGridsWidth();
+	int h = slamMap->getGridsHeight();
 
 	int xi = hashIdx % w;
 	int yi = hashIdx / w;
@@ -144,9 +148,9 @@ void DarkHoleFinder::addDarkScaryHole(millimeter_int x, millimeter_int y, realnu
 }
 
 void DarkHoleFinder::removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y) {
-	int gridSize = slamMap.getGridSize();
-	int w = slamMap.getGridsWidth();
-	int h = slamMap.getGridsHeight();
+	int gridSize = slamMap->getGridSize();
+	int w = slamMap->getGridsWidth();
+	int h = slamMap->getGridsHeight();
 	// return if outside the grid
 	if ((abs(x) >= w*gridSize/2) || (abs(y) >= h*gridSize/2))
 		return;
@@ -173,18 +177,28 @@ void DarkHoleFinder::removeIfBetterHoleInNeighbourhood(millimeter_int x, millime
 }
 
 // feed the hole finder with a new costmap and maintain the inner structure of all found holes
-void DarkHoleFinder::findHole() {
-	foundDarkHoles.clear();
-	int gridSize = slamMap.getGridSize();
-	int w = slamMap.getGridsWidth();
-	int h = slamMap.getGridsHeight();
+void DarkHoleFinder::findDarkAndScaryHoles() {
+	int gridSize = slamMap->getGridSize();
+	int w = slamMap->getGridsWidth();
+	int h = slamMap->getGridsHeight();
 
 	// set position to a multiple of gridsize
 	Point origin = pose.position;
 	origin.x = ((int)(origin.x/gridSize + 0.5)) * gridSize;
 	origin.y = ((int)(origin.y/gridSize + 0.5)) * gridSize;
 
+	// clear all dark holes in the area that we are about to examine
+	for (millimeter x = origin.x - width/2; x < origin.x + width/2; x += gridSize) {
+		for (millimeter y = origin.y - height/2; y < origin.y + height/2; y += gridSize) {
+			int hashIdx = getHashIdx(x,y);
+			foundDarkHoles.erase(hashIdx);
+		}
+	}
+
+
 	std::vector<int> holes; // holes that have been found in this run
+
+	// examine the given area, find candidates and real dark scary holes
 	for (millimeter x = origin.x - width/2; x < origin.x + width/2; x += gridSize) {
 		for (millimeter y = origin.y - height/2; y < origin.y + height/2; y += gridSize) {
 
@@ -195,7 +209,6 @@ void DarkHoleFinder::findHole() {
 			// check if pivot grid cell is a dark hole candidate
 			if (isCandidate(x,y)) {
 
-				// compute scaryness
 				realnum s = computeScariness(xGrid,yGrid);
 
 				if (s > scarynessthreshold) {
