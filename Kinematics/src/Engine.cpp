@@ -75,6 +75,8 @@ bool Engine::setupCommon() {
 	inputBodyPose.position.z = standardBodyHeigh;
 
 	fourWalkLegRatio = 0; // we start with 5 legs mode. 0 % of 4 legs mode
+	spiderWalkLegRatio = 0; // we start with 5 legs mode.
+
 	gaitControl.setTargetGaitMode(OneLegInTheAir);
 	targetGaitMode = OneLegInTheAir;
 	humpsCompensation = 0;
@@ -263,7 +265,6 @@ void Engine::loop() {
 		if (!turnedOn) {
 			bool ok = legController.fetchAngles(allLegAngles);
 			Rotation imuOrientation = legController.getIMUOrientation();
-			cout << "startup IMU" << legController.getIMUOrientation() << " " << legController.isIMUValueValid(1000) << endl;
 			imuOrientation.z = 0;
 			if (ok) {
 				// compute leg pose out of angles, estimate body pose
@@ -477,7 +478,7 @@ void Engine::computeBodyPose() {
 		// move towards the target body pose
 		// but: if we are in lift mode, wait until all legs are on the ground
 		if ((generalMode != LiftBody)
-			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < 5.0))) {
+			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan))) {
 			realnum bodySpeed = maxBodyPositionSpeed;
 			if (generalMode == LiftBody)
 				bodySpeed = maxLiftBodyPositionSpeed;
@@ -496,8 +497,7 @@ void Engine::computeBodyPose() {
 			// small PID controller on orientation of x/y axis only
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 1.0, 1.2, 0.005, maxError);
-			// imuCompensation.orientation = imuPID.getPID(error, 1.0, 0.8, 0.00, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 1.0, 1.2, 0.01, maxError);
 
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
@@ -546,6 +546,17 @@ void Engine::computeGaitMode() {
 			gaitControl.setForceGait(false);
 		}
 		gaitControl.setFourWalkModeRatio(speedUpAndDown(fourWalkLegRatio));
+	}
+
+	// if we are not in FourLegMode but havent fully left it, work on it
+	if (targetGaitMode == gaitControl.getTargetGaitMode() && (gaitControl.getTargetGaitMode() != SpiderWalk) && (spiderWalkLegRatio > floatPrecision)) {
+		spiderWalkLegRatio -= dT/switchGaitDuration;
+		gaitControl.setForceGait(true);
+		if (spiderWalkLegRatio <= 0.0) {
+			spiderWalkLegRatio = 0.0;
+			gaitControl.setForceGait(false);
+		}
+		gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
 	}
 
 	// find out if we switched to OneLeg mode, but are not yet there. Then wait for next time.

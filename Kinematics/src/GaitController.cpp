@@ -82,22 +82,34 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius) {
 	else
 		startAngle = 360.0/NumberOfLegs*(float(NumberOfLegs/2));
 
-	realnum angleAdaption = 0;
+	realnum angleAdaption4LegsMode = 0;
+	realnum angleAdaptionSpiderMode = 0;
 
 	for (int i = 0;i< NumberOfLegs;i++) {
-		angleAdaption = 0;
+		angleAdaption4LegsMode = 0;
 
 		// in case of 4-legs walk sort out legs in a square
 		if (i == 0)
-			angleAdaption = -(360.0/4 - 360.0/NumberOfLegs);
+			angleAdaption4LegsMode = -(360.0/4 - 360.0/NumberOfLegs);
 		if (i == 1)
-			angleAdaption = -(360.0/4 - 360.0/NumberOfLegs);
+			angleAdaption4LegsMode = -(360.0/4 - 360.0/NumberOfLegs);
 		if (i == NumberOfLegs -2)
-			angleAdaption = (360.0/4 - 360.0/NumberOfLegs);
+			angleAdaption4LegsMode = (360.0/4 - 360.0/NumberOfLegs);
 		if (i == NumberOfLegs -1)
-			angleAdaption = (360.0/4 - 360.0/NumberOfLegs);
+			angleAdaption4LegsMode = (360.0/4 - 360.0/NumberOfLegs);
 
-		realnum angle = startAngle + fourLegsModeRatio*angleAdaption;
+		angleAdaptionSpiderMode = 0;
+		// in case of 4-legs walk sort out legs in a square
+		if (i == 0)
+			angleAdaptionSpiderMode = -(360.0/7 - 360.0/NumberOfLegs);
+		if (i == 1)
+			angleAdaptionSpiderMode = -(360.0/7 - 360.0/NumberOfLegs);
+		if (i == NumberOfLegs -2)
+			angleAdaptionSpiderMode = (360.0/7 - 360.0/NumberOfLegs);
+		if (i == NumberOfLegs -1)
+			angleAdaptionSpiderMode = (360.0/7 - 360.0/NumberOfLegs);
+
+		realnum angle = startAngle + fourLegsModeRatio*angleAdaption4LegsMode + spiderModeRatio*angleAdaptionSpiderMode;
 		realnum currentRadius = gaitRefPointRadius;
 
 		realnum zCoordOverGround = perpendicularGroundHeight[i];
@@ -206,7 +218,7 @@ Point GaitController::interpolateLegMotion(
 	bool doMove =  (moveLength > floatPrecision)
 				   || !feetOnGround[legNo]
  				   || (forceGait)
-                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(20));
+                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan));
 
 	/*
 	LOG(DEBUG) << "[" << legNo << "] move=" << doMove << " ml=" << moveLength << "|" << (moveLength > floatPrecision) << " fog" << !feetOnGround[legNo]
@@ -224,29 +236,31 @@ Point GaitController::interpolateLegMotion(
 					// formally we take the fullsteplength, but this does not yet calculate the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
 					// step length (precisely following the computed step length this is not THAT important)
-					if (crawlCreepy)
-						nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
-					else
-						nextTouchPoint -= diffToePoint*(fullStepLength_mm);
+					nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
 				}
 
 				Point prevTouchPoint = lastPhasePosition;
 
-				// if we just started this phase, define the bezier curve
+				// if we enter this phase the first time in that gait, define the bezier curve
 				if (newPhase) {
-					Point corner1 = prevTouchPoint;
-					corner1.z = gaitHeight + gaitRefPoint.z;
-					Point corner2 = nextTouchPoint;
-					corner2.z = gaitHeight + gaitRefPoint.z;
+					Point leftSupportPoint = prevTouchPoint;
+					leftSupportPoint.z = gaitHeight + gaitRefPoint.z;
+					Point rightSupportPoint = nextTouchPoint;
+					rightSupportPoint.z = gaitHeight + gaitRefPoint.z;
 
-					if (crawlCreepy)
-						bezier[legNo].set(prevTouchPoint, (corner1+corner2)*0.5, nextTouchPoint, corner2);
-					else
-						bezier[legNo].set(prevTouchPoint, corner1, nextTouchPoint, corner2);
+					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
 
 				}
 				result = bezier[legNo].getCurrent(localPhaseBeat/2.0);
 				// LOG(DEBUG) << "leg[" << legNo << "] up:" << result  << " curr=" << currentPoint << " grp" << gaitRefPoint << " lpp" << lastPhasePosition << "gp=" << gaitProgress << " lpb=" << localPhaseBeat << " cgp=" << currGroundPercentage << endl;
+
+				// if toe is close to the ground move leg with the ground during the first mm
+				if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance/3) {
+					Point nextToe = getNextToePoint(currentToePoint, dT);
+					result.x = nextToe.x;
+					result.y = nextToe.y;
+					// don't overwrite z-coordinate
+				}
 
 				if (result.z > gaitRefPoint.z + floatPrecision) {
 					feetOnGround[legNo] = false;
@@ -267,10 +281,8 @@ Point GaitController::interpolateLegMotion(
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
 					Point bezierPoint;
-					if (crawlCreepy)
-						bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
-					else
-						bezierPoint = bezier[legNo].getCurrent(localPhaseBeat*0.5+0.5);
+					bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
+					// bezierPoint = bezier[legNo].getCurrent(localPhaseBeat*0.5+0.5);
 
 					Point bezierTouchPoint = bezier[legNo].getEnd();
 					Point touchPointDifference = target-bezierTouchPoint;
@@ -281,13 +293,11 @@ Point GaitController::interpolateLegMotion(
 						feetOnGround[legNo] = false;
 
 					// if toe is close to the ground move leg with the ground already when doing the last mm's
-					if (crawlCreepy) {
-						if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
-							Point nextToe = getNextToePoint(currentToePoint, dT);
-							result.x = nextToe.x;
-							result.y = nextToe.y;
-							// don't overwrite z-coordinate
-						}
+					if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
+						Point nextToe = getNextToePoint(currentToePoint, dT);
+						result.x = nextToe.x;
+						result.y = nextToe.y;
+						// don't overwrite z-coordinate
 					}
 				}
 				break;
@@ -319,8 +329,6 @@ GaitModeType GaitController::getActualGaitMode(realnum footSpeed) {
 			return OneLegInTheAir;
 		if (footSpeed < 20.0)
 			return TwoLegsInTheAir;
-		if (footSpeed < 60.0)
-			return SexyWalk;
 		else
 			return TwoLegsInTheAir;
 	}
@@ -343,6 +351,7 @@ realnum GaitController::getLegAddOn(realnum globalGaitRatio, realnum footSpeed,i
 				return legSequence[leg];
 			}
 		case OneLegInTheAir:
+		case SpiderWalk:
 		case TwoLegsInTheAir:
 		{
 			if (NumberOfLegs == 5) {
@@ -358,14 +367,6 @@ realnum GaitController::getLegAddOn(realnum globalGaitRatio, realnum footSpeed,i
 				return legSequence[leg];
 			}
 		}
-		case SexyWalk: {
-			if (NumberOfLegs == 5) {
-				realnum legSequence[5] = { 0,3,1,4,2 };
-				return legSequence[leg];
-			}
-			else
-				return leg;
-		}
 
 		case Auto:
 		case None:
@@ -378,8 +379,8 @@ realnum GaitController::getFootOnTheGroundRatio(realnum footSpeed, GaitModeType 
 	switch (gm) {
 		case FourLegWalk: return 3.0/4.0;
 		case OneLegInTheAir: return float(NumberOfLegs-1)/float(NumberOfLegs);
-		case TwoLegsInTheAir: return float(NumberOfLegs-2)/float(NumberOfLegs);
-		case SexyWalk:
+		case TwoLegsInTheAir:
+		case SpiderWalk:
 			return float(NumberOfLegs-2)/float(NumberOfLegs);
 		case None:
 		case Auto:

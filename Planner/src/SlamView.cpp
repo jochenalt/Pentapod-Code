@@ -179,7 +179,6 @@ void drawOneNavigationGoal(const Pose &goal) {
 
 void SlamView::drawNavigationGoal() {
 	drawOneNavigationGoal(tempNavigationGoal);
-	cout << " drawNavi=" << EngineProxy::getInstance().getCurrentNavigationGoal() << endl;
 	drawOneNavigationGoal(EngineProxy::getInstance().getCurrentNavigationGoal());
 
 }
@@ -598,7 +597,6 @@ void SlamView::drawMap() {
 
 void SlamView::defineNavigationGoal(bool latchOrientation) {
 	sentNavigationGoal = tempNavigationGoal;
-	cout << "send goal " << sentNavigationGoal << endl;
 	EngineProxy::getInstance().setNavigationGoal(sentNavigationGoal, latchOrientation);
 }
 

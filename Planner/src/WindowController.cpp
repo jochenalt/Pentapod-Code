@@ -500,7 +500,7 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 	gaitRadioGroup =  new GLUI_RadioGroup(gaitInputPanel, &gaitLiveVar, 0, gaitModeControlCallback);
 	new GLUI_RadioButton(gaitRadioGroup, "one foot up");
 	new GLUI_RadioButton(gaitRadioGroup, "two feet up");
-	new GLUI_RadioButton(gaitRadioGroup, "sexy walk");
+	new GLUI_RadioButton(gaitRadioGroup, "spider walk");
 	new GLUI_RadioButton(gaitRadioGroup, "auto");
 	new GLUI_RadioButton(gaitRadioGroup, "four leg walk");
 

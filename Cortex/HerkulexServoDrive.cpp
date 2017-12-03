@@ -37,7 +37,9 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	
 	// switch off torque, wait for real action until enable is called
 	herkulexMgr->setAccelerationMax(configData->herkulexMotorId, 0);   // rectangle speed profile
+	delay(10);
 	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // rectangle speed profile
+	delay(10);
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled

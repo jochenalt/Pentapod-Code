@@ -24,7 +24,7 @@ enum LegGaitPhase { LegMovesUp = 0, LegMovesDown = 1, LegOnGround = 2};
 
 // several gait types
 // FourLegWalk is a gait with 4 legs only
-enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, SexyWalk, Auto, FourLegWalk, None };
+enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, SpiderWalk, Auto, FourLegWalk, None };
 
 enum ShutDownModeType { NoShutDownActive, Initiate, FallAsleep, Done };
 enum NavigationStatusType { NavPending=0, 	 	// The goal has yet to be processed by the action server
@@ -64,14 +64,14 @@ const realnum maxAngularSpeed = maxSpeed/sleepingFootTouchPointRadius; //  [rad/
 const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
 
 // limits of gait frequency (for beautiness of the gait mainly)
-const realnum minGaitFrequency = 0.2; 				// [Hz]
+const realnum minGaitFrequency = 0.3; 				// [Hz]
 const realnum maxGaitFrequency = 3.0; 				// [Hz]
 
 // maximum speed of virtual foot ref point
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
 
 // maximum speed of a foot that is in the air during a gait
-const realnum maxFootSpeed = 600; 					// [mm/s]
+const realnum maxFootSpeed = 500; 					// [mm/s]
 
 // maximum speed of a foot that is in the air during a gait
 const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
@@ -88,5 +88,7 @@ const realnum moveWithGroundBelowThisGroundDistance = 20.0; // [mm]
 const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
+const realnum moveToeWhenDistanceGreaterThan = 20.0;
+const realnum standUpWhenDistanceSmallerThan = 10.0;
 
 #endif /* SETUP_H_ */

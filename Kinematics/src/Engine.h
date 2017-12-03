@@ -165,6 +165,7 @@ private:
 	CortexClient legController;			// proxy to cortex
 
 	realnum fourWalkLegRatio;			// ratio between 0 and 1 switching slowly between 5 and 4 legs mode
+	realnum spiderWalkLegRatio;			// ratio between 0 and 1 switching slowly between 5 and 4 legs mode
 
 	radPerSecond targetAngularSpeed;
 	angle_rad targetWalkingDirection;
