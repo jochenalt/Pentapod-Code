@@ -184,7 +184,7 @@ void HerkulexClass::setAccelerationRatio(int servoID, int accelerationRatio)
 	pSize = 0x0A;               // 3.Packet size 7-58
 	pID   = servoID;            // 4. Servo ID
 	cmd   = HRAMWRITE;          // 5. CMD
-	data[0]=0x14;               // 8. Address
+	data[0]=0x08;               // 8. Address
 	data[1]=0x01;               // 9. Lenght
 	data[2]=accelerationRatio;  // 10. Default: 19
 	lenghtString=3;             // lenghtData
@@ -212,7 +212,7 @@ void HerkulexClass::setAccelerationMax(int servoID, int accelerationMax)
 	pSize = 0x0A;               // 3.Packet size 7-58
 	pID   = servoID;            // 4. Servo ID
 	cmd   = HRAMWRITE;          // 5. CMD
-	data[0]=0x14;               // 8. Address
+	data[0]=0x09;               // 8. Address
 	data[1]=0x01;               // 9. Lenght
 	data[2]=accelerationMax;  // 10. Default: 45 = 45*11.2ms = 504ms
 	lenghtString=3;             // lenghtData
