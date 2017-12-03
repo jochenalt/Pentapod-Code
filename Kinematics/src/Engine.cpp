@@ -494,10 +494,10 @@ void Engine::computeBodyPose() {
 		Pose imuCompensation;
 		Rotation error;
 		if (legController.isIMUValueValid() && ((generalMode == WalkingMode) || (generalMode == TerrainMode))) {
-			// small PID controller on orientation of x/y axis only
+			// PID controller on orientation of x/y axis only, z is not used
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 1.0, 1.2, 0.01, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 0.8, 8.0, 0.023, maxError);
 
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
