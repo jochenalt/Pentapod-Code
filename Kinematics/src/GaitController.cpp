@@ -99,13 +99,12 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius) {
 			angleAdaption4LegsMode = (360.0/4 - 360.0/NumberOfLegs);
 
 		angleAdaptionSpiderMode = 0;
-		// in case of 4-legs walk sort out legs in a square
 		if (i == 0)
 			angleAdaptionSpiderMode = -(360.0/7 - 360.0/NumberOfLegs);
 		if (i == 1)
-			angleAdaptionSpiderMode = -(360.0/7 - 360.0/NumberOfLegs);
-		if (i == NumberOfLegs -2)
 			angleAdaptionSpiderMode = (360.0/7 - 360.0/NumberOfLegs);
+		if (i == NumberOfLegs -2)
+			angleAdaptionSpiderMode = -(360.0/7 - 360.0/NumberOfLegs);
 		if (i == NumberOfLegs -1)
 			angleAdaptionSpiderMode = (360.0/7 - 360.0/NumberOfLegs);
 

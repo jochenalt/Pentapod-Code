@@ -537,7 +537,7 @@ void Engine::computeGaitMode() {
 		lastFeetOnGround[i] = legOnGround[i];
 	}
 
-	// if we are not in FourLegMode but havent fully left it, work on it
+	// if we are not in FourLegMode but havent fully reached it, work on it
 	if (targetGaitMode == gaitControl.getTargetGaitMode() && (gaitControl.getTargetGaitMode() != FourLegWalk) && (fourWalkLegRatio > floatPrecision)) {
 		fourWalkLegRatio -= dT/switchGaitDuration;
 		gaitControl.setForceGait(true);
@@ -548,7 +548,7 @@ void Engine::computeGaitMode() {
 		gaitControl.setFourWalkModeRatio(speedUpAndDown(fourWalkLegRatio));
 	}
 
-	// if we are not in FourLegMode but havent fully left it, work on it
+	// if we are not in SpiderMode but havent fully reached it, work on it
 	if (targetGaitMode == gaitControl.getTargetGaitMode() && (gaitControl.getTargetGaitMode() != SpiderWalk) && (spiderWalkLegRatio > floatPrecision)) {
 		spiderWalkLegRatio -= dT/switchGaitDuration;
 		gaitControl.setForceGait(true);
@@ -594,6 +594,43 @@ void Engine::computeGaitMode() {
 				return;
 			}
 
+
+			return;
+		}
+		if (targetGaitMode == SpiderWalk) {
+			// if in full OneLegInTheAir mode, and Spider-Leg-position is not yet reached, move towards it.
+			// when finished, switch to FourLeg mode
+			if ((gaitControl.getTargetGaitMode() == OneLegInTheAir) &&
+				(numberOfLegsOnTheGround >=  NumberOfLegs - 1)) {
+				if (((spiderWalkLegRatio < floatPrecision) && legJustWentUp[NumberOfLegs/2]) ||
+					((spiderWalkLegRatio > floatPrecision) && !legOnGround[NumberOfLegs/2]))	{
+					spiderWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
+					gaitControl.setForceGait(true);
+					gaitControl.setIncludeFrontLeg(true);
+					if (spiderWalkLegRatio >= 1.0) {
+						gaitControl.setTargetGaitMode(SpiderWalk);
+						gaitControl.setForceGait(false); // switching done, do not force gait anymore
+					}
+				}
+
+				gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
+				return;
+			}
+
+			if ((gaitControl.getTargetGaitMode() == TwoLegsInTheAir)) {
+				spiderWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
+				gaitControl.setForceGait(true);
+				gaitControl.setIncludeFrontLeg(true);
+				if (spiderWalkLegRatio >= 1.0) {
+					gaitControl.setTargetGaitMode(SpiderWalk);
+					gaitControl.setForceGait(false); // switching done, do not force gait anymore
+				}
+
+				gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
+				return;
+			}
+
+
 			return;
 		}
 		if (targetGaitMode == OneLegInTheAir) {
@@ -603,7 +640,7 @@ void Engine::computeGaitMode() {
 				gaitControl.setForceGait(false); // switching done, do not force gait anymore
 				return;
 			}
-			if (gaitControl.getTargetGaitMode() == FourLegWalk) {
+			if ((gaitControl.getTargetGaitMode() == FourLegWalk) || (gaitControl.getTargetGaitMode() == SpiderWalk)) {
 				if ((gaitControl.getToePointsWorld()[NumberOfLegs/2].distanceSqr(gaitControl.getGaitRefPointsWorld()[NumberOfLegs/2]) < sqr(maxFootSpeed*dT)) &&
 					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
@@ -614,13 +651,13 @@ void Engine::computeGaitMode() {
 			return;
 		}
 		if (targetGaitMode == TwoLegsInTheAir) {
-			if (gaitControl.getTargetGaitMode() == OneLegInTheAir) {
+			if ((gaitControl.getTargetGaitMode() == OneLegInTheAir) || (gaitControl.getTargetGaitMode() == SpiderWalk)) {
 				// no need to wait for sync point, switch immediately
 				gaitControl.setTargetGaitMode(targetGaitMode);
 				gaitControl.setForceGait(false); // switching done, do not force gait anymore
 				return;
 			}
-			if (gaitControl.getTargetGaitMode() == FourLegWalk) {
+			if ((gaitControl.getTargetGaitMode() == FourLegWalk)) {
 				if ((gaitControl.getToePointsWorld()[NumberOfLegs/2].distanceSqr(gaitControl.getGaitRefPointsWorld()[NumberOfLegs/2]) < sqr(maxFootSpeed*dT)) &&
 					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
@@ -653,15 +690,29 @@ void Engine::computeGaitRefPointRadius() {
 					gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius);
 					inputBodyPose.orientation = Rotation(0,0,0);
 				}
-				// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
-				// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
-				realnum hipOffset = fourWalkLegRatio*radians(360/NumberOfLegs - 360/4);
+				if (fourWalkLegRatio > 0) {
+					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
+					// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
+					realnum hipOffset = fourWalkLegRatio*radians(360/NumberOfLegs - 360/4);
 
-				// change only other legs than the front leg
-				bodyKinematics.getLeg(0).setHipOffset(hipOffset);
-				bodyKinematics.getLeg(1).setHipOffset(hipOffset);
-				bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(-hipOffset);
-				bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
+					// change only other legs than the front leg
+					bodyKinematics.getLeg(0).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(-hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
+				}
+				if (spiderWalkLegRatio > 0) {
+					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
+					// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
+					realnum hipOffset = spiderWalkLegRatio*radians(360/NumberOfLegs - 360/7);
+
+					// change only other legs than the front leg
+					bodyKinematics.getLeg(0).setHipOffset(-hipOffset);
+					bodyKinematics.getLeg(1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
+				}
+
 			}
 			break;
 	}
