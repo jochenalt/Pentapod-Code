@@ -114,7 +114,7 @@ void Engine::wakeUp() {
 	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
 		generalMode = LiftBody;
 		bodyKinematics.startupPhase(true);
-		gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+		gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
 }
 
@@ -541,10 +541,10 @@ void Engine::computeGaitMode() {
 	// if we are not in FourLegMode but havent fully reached it, work on it
 	if (targetGaitMode == gaitControl.getTargetGaitMode() && (gaitControl.getTargetGaitMode() != FourLegWalk) && (fourWalkLegRatio > floatPrecision)) {
 		fourWalkLegRatio -= dT/switchGaitDuration;
-		gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);
+		gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);
 		if (fourWalkLegRatio <= 0.0) {
 			fourWalkLegRatio = 0.0;
-			gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+			gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 		}
 		gaitControl.setFourWalkModeRatio(speedUpAndDown(fourWalkLegRatio));
 	}
@@ -552,10 +552,10 @@ void Engine::computeGaitMode() {
 	// if we are not in SpiderMode but havent fully reached it, work on it
 	if (targetGaitMode == gaitControl.getTargetGaitMode() && (gaitControl.getTargetGaitMode() != SpiderWalk) && (spiderWalkLegRatio > floatPrecision)) {
 		spiderWalkLegRatio -= dT/switchGaitDuration;
-		gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);
+		gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);
 		if (spiderWalkLegRatio <= 0.0) {
 			spiderWalkLegRatio = 0.0;
-			gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+			gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 		}
 		gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
 	}
@@ -572,7 +572,7 @@ void Engine::computeGaitMode() {
 			if (gaitControl.getTargetGaitMode() == TwoLegsInTheAir) {
 				// no sync point necessary, switch immediately and wait until mode is complete (see above)
 				gaitControl.setTargetGaitMode(OneLegInTheAir);
-				gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);	// start gait switch, force a gait even when not moving to carry out switch
+				gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);	// start gait switch, force a gait even when not moving to carry out switch
 				return;
 			}
 
@@ -583,11 +583,11 @@ void Engine::computeGaitMode() {
 				if (((fourWalkLegRatio < floatPrecision) && legJustWentUp[NumberOfLegs/2]) ||
 					((fourWalkLegRatio > floatPrecision) && !legOnGround[NumberOfLegs/2]))	{
 					fourWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
-					gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);
+					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);
 					gaitControl.setIncludeFrontLeg(false);
 					if (fourWalkLegRatio >= 1.0) {
 						gaitControl.setTargetGaitMode(FourLegWalk);
-						gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+						gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 					}
 				}
 
@@ -606,11 +606,11 @@ void Engine::computeGaitMode() {
 				if (((spiderWalkLegRatio < floatPrecision) && legJustWentUp[NumberOfLegs/2]) ||
 					((spiderWalkLegRatio > floatPrecision) && !legOnGround[NumberOfLegs/2]))	{
 					spiderWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
-					gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);
+					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);
 					gaitControl.setIncludeFrontLeg(true);
 					if (spiderWalkLegRatio >= 1.0) {
 						gaitControl.setTargetGaitMode(SpiderWalk);
-						gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+						gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 					}
 				}
 
@@ -620,11 +620,11 @@ void Engine::computeGaitMode() {
 
 			if ((gaitControl.getTargetGaitMode() == TwoLegsInTheAir)) {
 				spiderWalkLegRatio += dT/switchGaitDuration; // this is time critical, switch must happen within one leg movement
-				gaitControl.setForceGait(ADAPT_TO_GAIT_POINT);
+				gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT);
 				gaitControl.setIncludeFrontLeg(true);
 				if (spiderWalkLegRatio >= 1.0) {
 					gaitControl.setTargetGaitMode(SpiderWalk);
-					gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 				}
 
 				gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
@@ -638,14 +638,14 @@ void Engine::computeGaitMode() {
 			if (gaitControl.getTargetGaitMode() == TwoLegsInTheAir) {
 				// no need to wait for sync point, switch immediately
 				gaitControl.setTargetGaitMode(targetGaitMode);
-				gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+				gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 				return;
 			}
 			if ((gaitControl.getTargetGaitMode() == FourLegWalk) || (gaitControl.getTargetGaitMode() == SpiderWalk)) {
 				if ((gaitControl.getToePointsWorld()[NumberOfLegs/2].distanceSqr(gaitControl.getGaitRefPointsWorld()[NumberOfLegs/2]) < sqr(maxFootSpeed*dT)) &&
 					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
-					gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 					gaitControl.setIncludeFrontLeg(true);
 				}
 			}
@@ -655,7 +655,7 @@ void Engine::computeGaitMode() {
 			if ((gaitControl.getTargetGaitMode() == OneLegInTheAir) || (gaitControl.getTargetGaitMode() == SpiderWalk)) {
 				// no need to wait for sync point, switch immediately
 				gaitControl.setTargetGaitMode(targetGaitMode);
-				gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+				gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 				return;
 			}
 			if ((gaitControl.getTargetGaitMode() == FourLegWalk)) {
@@ -663,7 +663,7 @@ void Engine::computeGaitMode() {
 					(legJustWentDown[0] || legJustWentDown[1] || legJustWentDown[3] || legJustWentDown[4] || (numberOfLegsOnTheGround == 4))) {
 					gaitControl.setTargetGaitMode(targetGaitMode);
 					gaitControl.setIncludeFrontLeg(true);
-					gaitControl.setForceGait(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
+					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 
 					return;
 				}
@@ -792,7 +792,7 @@ void Engine::computeWakeUpProcedure() {
 
 	if (generalMode == FallASleep) {
 		if (gaitControl.getFeetOnTheGround() == NumberOfLegs) {
-			gaitControl.setForceGait(DO_NOT_ADAPT_GAIT_POINT);
+			gaitControl.adaptToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			if (abs(moderatedBodyPose.position.z-minBodyHeight) < 1.0) {
 				// falling asleep is done
 				generalMode = BeingAsleep;
