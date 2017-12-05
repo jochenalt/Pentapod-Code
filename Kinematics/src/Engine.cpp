@@ -546,7 +546,7 @@ void Engine::computeGaitMode() {
 			fourWalkLegRatio = 0.0;
 			gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 		}
-		gaitControl.setFourWalkModeRatio(speedUpAndDown(fourWalkLegRatio));
+		gaitControl.getFourWalkModeRatio() = speedUpAndDown(fourWalkLegRatio);
 	}
 
 	// if we are not in SpiderMode but havent fully reached it, work on it
@@ -557,7 +557,7 @@ void Engine::computeGaitMode() {
 			spiderWalkLegRatio = 0.0;
 			gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 		}
-		gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
+		gaitControl.getSpiderModeRatio() = speedUpAndDown(spiderWalkLegRatio);
 	}
 
 	// find out if we switched to OneLeg mode, but are not yet there. Then wait for next time.
@@ -591,7 +591,7 @@ void Engine::computeGaitMode() {
 					}
 				}
 
-				gaitControl.setFourWalkModeRatio(speedUpAndDown(fourWalkLegRatio));
+				gaitControl.getFourWalkModeRatio() = speedUpAndDown(fourWalkLegRatio);
 				return;
 			}
 
@@ -614,7 +614,7 @@ void Engine::computeGaitMode() {
 					}
 				}
 
-				gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
+				gaitControl.getSpiderModeRatio() = speedUpAndDown(spiderWalkLegRatio);
 				return;
 			}
 
@@ -627,7 +627,7 @@ void Engine::computeGaitMode() {
 					gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 				}
 
-				gaitControl.setSpiderModeRatio(speedUpAndDown(spiderWalkLegRatio));
+				gaitControl.getSpiderModeRatio() = speedUpAndDown(spiderWalkLegRatio);
 				return;
 			}
 

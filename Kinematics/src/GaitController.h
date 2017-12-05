@@ -96,8 +96,8 @@ public:
 
 	realnum getFootOnTheGroundRatio(realnum footSpeed, GaitModeType gm = None);
 
-	void setFourWalkModeRatio(realnum newfourWalkLegRatio) { fourLegsModeRatio = newfourWalkLegRatio; };
-	void setSpiderModeRatio(realnum newSpiderModeRatio) { spiderModeRatio = newSpiderModeRatio; };
+	realnum& getFourWalkModeRatio() { return fourLegsModeRatio; };
+	realnum& getSpiderModeRatio() { return spiderModeRatio; };
 
 	// the Ref Points are used as orientation points for a gait. It is the point at the ground in the middle of a gait.
 	void setTargetGaitRefPointsRadius(realnum rad);
