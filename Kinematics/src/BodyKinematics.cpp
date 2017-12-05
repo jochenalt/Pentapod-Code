@@ -167,12 +167,8 @@ bool BodyKinematics::computeKinematics(
 
 			realnum toBeAngle0;
 			// that is the middle point of the toePoint and this point
-			if (crawlCreepy) {
-				Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
-				toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
-			} else {
-				toBeAngle0 = atan2(toeHipCoord.position.y, toeHipCoord.position.x)*1.4;
-			}
+			Point knee = toeHipCoord.position*(1.0-kneeZenitPointOffset) +  walkingTouchPointHipCoord*kneeZenitPointOffset;
+			toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
 
 			// take the dampener into account which is not a point but a fat toe with a significant diameter
 			// @TODO check if this is working with terrain mode

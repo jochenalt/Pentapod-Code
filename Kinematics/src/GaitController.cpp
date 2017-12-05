@@ -31,7 +31,7 @@ void GaitController::setup(Engine& pMainController) {
 	currentSpeed = 0;	// initial speed is zero
 	globalGaitBeat = 0;
 	includeFrontLeg = true; // include front leg into the gait movement
-	forceGait = false; 		// stop gait when not moving
+	adaptToGaitRefPointType = ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE; 		// stop gait when not moving but perform gait when ref points differ a lot from toe position
 
 	gaitRefPointRadius = 300;
 
@@ -216,8 +216,8 @@ Point GaitController::interpolateLegMotion(
 
 	bool doMove =  (moveLength > floatPrecision)
 				   || !feetOnGround[legNo]
- 				   || (forceGait)
-                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan));
+ 				   || (adaptToGaitRefPointType == ADAPT_TO_GAIT_POINT)
+                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
 
 	/*
 	LOG(DEBUG) << "[" << legNo << "] move=" << doMove << " ml=" << moveLength << "|" << (moveLength > floatPrecision) << " fog" << !feetOnGround[legNo]

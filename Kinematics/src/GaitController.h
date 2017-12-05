@@ -17,6 +17,7 @@ class Engine;
 
 typedef bool FootOnGroundFlagType[NumberOfLegs];
 
+enum AdaptToGaitRefPointType { DO_NOT_ADAPT_GAIT_POINT, ADAPT_TO_GAIT_POINT, ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE };
 class GaitController {
 public:
 
@@ -113,7 +114,7 @@ public:
 	void setIncludeFrontLeg (bool ok) { includeFrontLeg = ok;	}
 
 	// force a gait movement even when we do not move. Used during gait changes
-	void setForceGait(bool ok) { forceGait = ok; };
+	void adaptToGaitRefPoint(AdaptToGaitRefPointType ok) { adaptToGaitRefPointType = ok; };
 
 	Point& getCurrentPositionWorld() { return currPosWorld; };
 	void setCurrentPositionWorld(const Point& p) { currPosWorld = p; };
@@ -153,27 +154,27 @@ private:
 	mmPerSecond speedY;					// current speed in x direction
 	radPerSecond currentAngularSpeed;
 	angle_rad currentAbsWalkingDirection;
-	realnum currentSpeed; 			// current speed, slowly accelerating to totalSpeed
+	realnum currentSpeed; 				// current speed, slowly accelerating to totalSpeed
 
-	realnum gaitSpeed;				// [gaits/s] number of full gaits per second
+	realnum gaitSpeed;					// [gaits/s] number of full gaits per second
 
-	realnum globalGaitBeat;			// global heartbeat indicating the position within a gait. One beat happens between [x..x+1]
-	realnum walkingGaitHeight;		// maximum height of a leg during walking
-	realnum sortOutLegsGaitHeight; // maximum heigh of a leg when sorting out legs during startup
+	realnum globalGaitBeat;				// global heartbeat indicating the position within a gait. One beat happens between [x..x+1]
+	realnum walkingGaitHeight;			// maximum height of a leg during walking
+	realnum sortOutLegsGaitHeight;	 // maximum heigh of a leg when sorting out legs during startup
 	realnum gaitHeight;
-	bool stretchingLegsMode;		// mode that stretches the legs (used during wakeup)
+	bool stretchingLegsMode;			// mode that stretches the legs (used during wakeup)
 
-	GaitModeType targetGaitType;	// target gait type (the current gait is switched coordinatedly, so this is not even to currentGaitType)
-	GaitModeType currentGaitType;	// currently executed gait type
+	GaitModeType targetGaitType;		// target gait type (the current gait is switched coordinatedly, so this is not even to currentGaitType)
+	GaitModeType currentGaitType;		// currently executed gait type
 
-	realnum gaitRefPointRadius;		// gait ref points (middle ground point of each leg in a gait) are arranged in a circle
-	realnum fourLegsModeRatio;		// when we switch from five to four leg ratio (or vice versa), this represents the ratio of the switching procedure starting with 0 and ending with 1
-	realnum spiderModeRatio;		// when we switch from five to four leg ratio (or vice versa), this represents the ratio of the switching procedure starting with 0 and ending with 1
+	realnum gaitRefPointRadius;			// gait ref points (middle ground point of each leg in a gait) are arranged in a circle
+	realnum fourLegsModeRatio;			// when we switch from five to four leg ratio (or vice versa), this represents the ratio of the switching procedure starting with 0 and ending with 1
+	realnum spiderModeRatio;			// when we switch from five to four leg ratio (or vice versa), this represents the ratio of the switching procedure starting with 0 and ending with 1
 
 	realnum fastestFootSpeed;
-	realnum biggestRefPointDistance;// biggest current difference of a toe to its gait point
-	bool includeFrontLeg;			// true, if the front leg shall be included in the gait (used during gait switching)
-	bool forceGait;					// do gait even when speed is zero. Used during switching gait
+	realnum biggestRefPointDistance;	// biggest current difference of a toe to its gait point
+	bool includeFrontLeg;			 	// true, if the front leg shall be included in the gait (used during gait switching)
+	AdaptToGaitRefPointType adaptToGaitRefPointType;	// do gait even when speed is zero. Used during switching gait
 
 	Point frontLegPosition;
 
