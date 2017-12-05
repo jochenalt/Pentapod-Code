@@ -45,9 +45,6 @@ public:
 	// returns the gait mode which has been set by setTargetGaitMode
 	GaitModeType getTargetGaitMode() { return targetGaitType; };
 
-	// returns gait mode. It takes a while until the gait set by setTargetMode is reflected here.
-	GaitModeType getCurrentGaitMode() { return currentGaitType; };
-
 	// return the gait phase of a specified leg
 	LegGaitPhase getLegsGaitPhase(int legNo) { return legPhase[legNo]; };
 	LegGaitPhase getLastGaitPhase(int legNo) { return lastPhase[legNo]; };
@@ -162,7 +159,6 @@ private:
 	bool stretchingLegsMode;			// mode that stretches the legs (used during wakeup)
 
 	GaitModeType targetGaitType;		// target gait type (the current gait is switched coordinatedly, so this is not even to currentGaitType)
-	GaitModeType currentGaitType;		// currently executed gait type
 
 	realnum gaitRefPointRadius;			// gait ref points (middle ground point of each leg in a gait) are arranged in a circle
 

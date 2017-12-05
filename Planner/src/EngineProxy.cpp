@@ -286,7 +286,7 @@ void EngineProxy::setGaitMode(GaitModeType gaitType) {
 			<< "?gaitmode="  << (int)gaitType;
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	} else {
-		engine.setTargetGaitMode(gaitType);
+		engine.setGaitMode(gaitType);
 	}
 }
 

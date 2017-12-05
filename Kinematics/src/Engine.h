@@ -79,7 +79,7 @@ public:
 	radPerSecond getTargetAngularSpeedLimited(); // in case sum of speed and angular speed is too this is the reduced angular target speed
 
 	// switch to another gait type including a switching procedure, which might take some time
-	void setTargetGaitMode(GaitModeType gaitType);
+	void setGaitMode(GaitModeType gaitType);
 
 	angle_rad getCurrentNoseOrientation() { return bodyKinematics.getCurrentNoseOrientation(); };
 
@@ -173,7 +173,7 @@ private:
 	FootOnGroundFlagType lastFeetOnGround; // feet on the ground flag of last loop
 
 	Pose inputBodyPose;					// input pose, which is moderated afterwards and gets additional breathing
-	GaitModeType targetGaitMode;		// gait mode (5-leg, 4-leg,...)
+	GaitModeType currentGaitMode;		// gait mode (5-leg, 4-leg,...)
 	Pose moderatedBodyPose;				// pose after limiting acceleration
 	Pose currentBodyPose;				// current real pose
 	realnum humpsCompensation;  		// if any humps are on the ground,  adapt the body height accordingly

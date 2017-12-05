@@ -16,8 +16,7 @@ GaitController::GaitController() {
 void GaitController::setup(Engine& pMainController) {
 
 	mainController = &pMainController;
-	currentGaitType = TwoLegsInTheAir;
-	targetGaitType = currentGaitType;
+	targetGaitType = TwoLegsInTheAir;
 
 	for (int i = 0;i<NumberOfLegs;i++) {
 		lastPhase[i] = LegOnGround; 				// start with stay-on-the-ground-phase
@@ -396,7 +395,7 @@ void GaitController::loop() {
 		PentaPointType loopFootMoveVector;
 
 		int numberOfActiveLegs = NumberOfLegs;
-		if (getCurrentGaitMode() == FourLegWalk)
+		if (targetGaitType == FourLegWalk)
 			numberOfActiveLegs = 4;
 
 		realnum maxRefPointDistance = 0;
@@ -421,7 +420,6 @@ void GaitController::loop() {
 		}
 		biggestRefPointDistance = maxRefPointDistance;
 		fastestFootSpeed = maxFootDistance/dT;
-		currentGaitType = getActualGaitMode(maxFootDistance);
 
 		realnum footOntheGroundPercentage = getFootOnTheGroundRatio(fastestFootSpeed);
 		realnum gaitDuration = 1.0/gaitSpeed; // duration in s per gait, might be infinite
@@ -435,7 +433,7 @@ void GaitController::loop() {
 		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 			// leave out the front leg if we are in four-leg more, or
 			// if we just switch to four leg mode
-			bool omitThisLeg = ((getCurrentGaitMode() == FourLegWalk) && (legNo > 1) && (legNo < NumberOfLegs-2)) ||
+			bool omitThisLeg = ((targetGaitType == FourLegWalk) && (legNo > 1) && (legNo < NumberOfLegs-2)) ||
 								((legNo == NumberOfLegs/2) && !includeFrontLeg);
 
 			// define gait pattern
