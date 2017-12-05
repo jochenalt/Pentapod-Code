@@ -35,7 +35,7 @@ void GaitController::setup(Engine& pMainController) {
 
 	gaitRefPointRadius = 300;
 
-	setTargetGaitRefPointsRadius(gaitRefPointRadius); // happens in addition to ctor to make setup idempotent when changing basic parameters
+	setTargetGaitRefPointsRadius(gaitRefPointRadius, 0,0); // happens in addition to ctor to make setup idempotent when changing basic parameters
 	toePoints = currentGaitRefPoints;
 	for (int i = 0;i<NumberOfLegs;i++) {
 		lastPhasePositions[i] = toePoints[i];
@@ -74,7 +74,7 @@ void GaitController::setTargetGaitRefPoint(int legNo, const Point& newGaitRefPoi
 }
 
 
-void GaitController::setTargetGaitRefPointsRadius (realnum radius) {
+void GaitController::setTargetGaitRefPointsRadius (realnum radius, realnum spiderModeRatio, realnum fourLegsModeRatio) {
 	gaitRefPointRadius = radius;
 	realnum startAngle;
 	if (NumberOfLegs % 2 == 0)
