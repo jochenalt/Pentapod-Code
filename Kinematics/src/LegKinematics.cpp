@@ -1,6 +1,3 @@
-#define LOG_KIN_DETAILS true
-#define LOG_FK_DETAILS true
-
 #include <exception>
 
 #include "core.h"
@@ -111,8 +108,8 @@ void LegKinematics::computeForwardKinematics(LegPose& pose, HomMatrix& current) 
 	// compute final position by multiplying all DH transformation matrixes
 	HomMatrix currDHMatrix;
 	DHParams[LimbConfiguration::HIP].computeDHMatrix(angle[LimbConfiguration::HIP], current);
-	DHParams[LimbConfiguration::THIGH].computeDHMatrix(angle[LimbConfiguration::THIGH], currDHMatrix);
 
+	DHParams[LimbConfiguration::THIGH].computeDHMatrix(angle[LimbConfiguration::THIGH], currDHMatrix);
 	current *= currDHMatrix;
 
 	DHParams[LimbConfiguration::KNEE].computeDHMatrix(angle[LimbConfiguration::KNEE], currDHMatrix);

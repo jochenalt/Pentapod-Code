@@ -2,8 +2,8 @@
  * LegKinematics.h
  *
  * This is the tough one. Computes forward and inverse kinematics of a leg.
- * By reading code only, this is hard to understand
- * kinematics.xlsx or the kinematics documentation for
+ * By reading code only, this is hard to understand.
+ * Try kinematics.xlsx or the kinematics documentation for
  * further explanations.
  *
  * Author: JochenAlt
@@ -24,8 +24,8 @@
 
 class Engine;
 /**
- * Leg kinematics can compute the kinematics of a single leg. It works in the coordinate system which origin is in the hip.
- * The joints are called hip/thigh/knee/foot. The following limb has the same name.
+ * Leg kinematics can compute the kinematics of a single leg. It works in the coordinate
+ * system which origin is in the hip. The joints are called hip/thigh/knee/foot.
  *
  *   side view
  *              O Foot
@@ -74,10 +74,10 @@ public:
 	float performanceTest();
 	bool selftest();
 private:
-
+	// compute euler angles out of transformation matrix
 	void computeEulerAngles(const HomMatrix &current, realnum &alpha, realnum &beta, realnum &gamma);
+	// compute full leg pose and show off the resulting transformation matrix
 	void computeForwardKinematics(LegPose& pose, HomMatrix &current);
-
 
 	void setupLegPosition(const DenavitHardenbergParams& dh, realnum pTheta);
 	void setBodyTransformation(const HomMatrix& origin2Body);
