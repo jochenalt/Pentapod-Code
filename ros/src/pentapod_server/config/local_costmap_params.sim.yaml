@@ -3,7 +3,7 @@ local_costmap:
   # in the local map we use a smaller radius than in the global to prevent that the robot is stuck in lethal locations close to a wall.  
   robot_radius: 0.20
 
-  global_frame: map
+  global_frame: odom
   robot_base_frame: base_link
   update_frequency: 5.0    # lidar delivers scans with 10Hz
   publish_frequency: 5.0
