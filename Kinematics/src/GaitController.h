@@ -108,7 +108,7 @@ public:
 	void setIncludeFrontLeg (bool ok) { includeFrontLeg = ok;	}
 
 	// force a gait movement even when we do not move. Used during gait changes
-	void adaptToGaitRefPoint(AdaptToGaitRefPointType ok) { adaptToGaitRefPointType = ok; };
+	void adaptToGaitRefPoint(AdaptToGaitRefPointType ok) { cout << "adaptto=" << ok << endl;adaptToGaitRefPointType = ok; };
 
 	Point& getCurrentPositionWorld() { return currPosWorld; };
 	void setCurrentPositionWorld(const Point& p) { currPosWorld = p; };

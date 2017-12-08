@@ -136,6 +136,8 @@ void Engine::terrainMode(bool terrainModeOn) {
 	}
 	else
 		generalMode = WalkingMode;
+
+	gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 }
 
 void Engine::turnOn() {
@@ -483,7 +485,9 @@ void Engine::computeBodyPose() {
 			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan))
 			|| ((generalMode == FallASleep) && (gaitControl.getCurrentSpeed() < floatPrecision) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < moveToeWhenDistanceGreaterThan))) {
 			realnum bodySpeed = maxBodyPositionSpeed;
-			gaitControl.adaptToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
+
+			if ((generalMode != WalkingMode) && (generalMode != TerrainMode))
+				gaitControl.adaptToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			if ((generalMode == LiftBody) || (generalMode == FallASleep))
 				bodySpeed = maxLiftBodyPositionSpeed;
 			moderatedBodyPose.moveTo(inputBodyPose, dT, bodySpeed, maxBodyOrientationSpeed);
@@ -531,10 +535,6 @@ void Engine::computeGaitMode() {
 		legJustWentDown[i] = (lastFeetOnGround[i] == false) && (legOnGround[i] == true);
 		legJustWentUp[i]   = (lastFeetOnGround[i] == true)  && (legOnGround[i] == false);
 	}
-
-	// cout << "dn" << legWentDown[0] << "|" << legWentDown[1]<< "|" << legWentDown[2] << "|" << legWentDown[3] << "|" << legWentDown[4]
-	// 	 << "   up" << legWentUp[0] << "|" << legWentUp[1]<< "|" << legWentUp[2] << "|" << legWentUp[3] << "|" << legWentUp[4]
-	//  	 << "   on" << legOnGround[0] << "|" << legOnGround[1]<< "|" << legOnGround[2] << "|" << legOnGround[3] << "|" << legOnGround[4] << endl;
 
 	for (int i = 0;i<NumberOfLegs;i++) {
 		lastFeetOnGround[i] = legOnGround[i];
@@ -788,6 +788,7 @@ void Engine::computeWakeUpProcedure() {
 			(gaitControl.getFeetOnTheGround() == NumberOfLegs))  {
 			currentGaitMode = TwoLegsInTheAir;
 			generalMode = WalkingMode;
+			gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 			bodyKinematics.startupPhase(false);
 		}
 	}

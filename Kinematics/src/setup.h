@@ -90,6 +90,9 @@ const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
 const realnum moveToeWhenDistanceGreaterThan = 20.0;
+
+// must be bigger than moveToDistance, otherwise we end up in a deadlock in standing up where
+// the toes do not not yet move due to a small difference but the distance is too big to stand up
 const realnum standUpWhenDistanceSmallerThan = moveToeWhenDistanceGreaterThan+5.0;
 
 #endif /* SETUP_H_ */
