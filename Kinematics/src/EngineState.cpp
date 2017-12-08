@@ -14,7 +14,7 @@ std::ostream& EngineState::serialize(std::ostream &out) const {
 	out << ",\"map\":";
 	currentMapPose.serialize(out);
 	out << ",\"baselink\":";
-	currentBaselinkPose.serialize(out);
+	baseLinkInMapFrame.serialize(out);
 	out << ",\"hp\":";
 	hipPoseWorld.serialize(out);
 	out << ",\"gp\":";
@@ -75,7 +75,7 @@ std::istream& EngineState::deserialize(std::istream &in) {
 
     	parseString(in, ok); // "baselink"
     	parseCharacter(in, ':', ok);
-    	currentBaselinkPose.deserialize(in, ok);
+    	baseLinkInMapFrame.deserialize(in, ok);
     	parseCharacter(in, ',', ok);
 
 

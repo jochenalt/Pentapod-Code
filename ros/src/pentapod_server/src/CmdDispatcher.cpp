@@ -170,8 +170,8 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 	navigationGoal_world = goalPose_world;
 
 	// navigation goal is set from the base_links perspective. Convert goalPose into base_links frame
-	navigationGoal = engineState.currentBaselinkPose.inverse().applyTransformation(goalPose_world);
-	ROS_INFO_STREAM("convert goal(world)" << goalPose_world << " from base_link=" << engineState.currentBaselinkPose << " = navigation gaol(base_link)" << navigationGoal);
+	navigationGoal = engineState.baseLinkInMapFrame.inverse().applyTransformation(goalPose_world);
+	ROS_INFO_STREAM("convert goal(world)" << goalPose_world << " from base_link=" << engineState.baseLinkInMapFrame << " = navigation gaol(base_link)" << navigationGoal);
 
 
 	move_base_msgs::MoveBaseGoal goal;
@@ -557,12 +557,10 @@ void CommandDispatcher::listenToLaserScan (const sensor_msgs::LaserScan::ConstPt
 			newScan.push_back(-1);
 	}
 
-	laserScan.setLaserScan(engineState.currentBaselinkPose, newScan, startAngle, angleIncrement, endAngle);
+	laserScan.setLaserScan(engineState.baseLinkInMapFrame, newScan, startAngle, angleIncrement, endAngle);
 	std::stringstream out;
 	laserScan.serialize(out);
 	serializedLaserScan = out.str();
-
-
 }
 
 // we use the same data type Map for costmaps and for slam maps.
@@ -677,7 +675,7 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	mapPose.orientation = EulerAngles(q);
 
 	// compute odomFrame for map->odom transformation
-	odomFrame = mapPose.concatInverseTransformation(odomPose);
+	odomFrame = mapPose.applyInverseTransformation(odomPose);
 
 	// check this
  	Pose test;
@@ -690,8 +688,8 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 
 
 	engineState.currentMapPose = mapPose;
-	ROS_INFO_STREAM_THROTTLE(5, "received slam output pose" << odomPose);
-	engineState.currentBaselinkPose = mapPose; // reset base_link to slam pose, odomFrame stored the new deviation of odometry
+	ROS_INFO_STREAM_THROTTLE(5, "/slam out odom_pose=" << odomPose);
+	engineState.baseLinkInMapFrame = mapPose; // reset base_link to slam pose, odomFrame stored the new deviation of odometry
 }
 
 // subscription to path
@@ -755,10 +753,12 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 	engineState.deserialize(in);
 
 	// update baselink pose and slam pose which does not come from pentapod engine
-	ROS_INFO_STREAM_THROTTLE(5, "receiving engine state base_link=" << engineState.currentBaselinkPose << "odomFrame=" << odomFrame << "odomPose=" << odomPose);
+	ROS_INFO_STREAM_THROTTLE(5, "base_link=" << engineState.baseLinkInMapFrame);
  	// engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
  	// engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
-	engineState.currentBaselinkPose = odomFrame.applyTransformation(odomPose);
+
+	// ignore passed base_link and use odom_frame and /odom topic
+	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
  	engineState.currentMapPose = mapPose;
 
  	// turn on the lidar if we wake up
@@ -773,7 +773,6 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 
 
 void CommandDispatcher::broadcastTransformationMapToOdom() {
-	ROS_INFO_STREAM_THROTTLE(5,"publish map->odom=" << 	odomFrame);
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::createQuaternionFromYaw(odomFrame.orientation.z),

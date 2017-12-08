@@ -44,7 +44,7 @@ public:
 		currentWalkingDirection = state.currentWalkingDirection;
 		currentNoseOrientation = state.currentNoseOrientation;
 		currentOdomPose = state.currentOdomPose;
-		currentBaselinkPose = state.currentBaselinkPose;
+		baseLinkInMapFrame = state.baseLinkInMapFrame;
 		currentMapPose = state.currentMapPose;
 		currentGaitMode = state.currentGaitMode;
 		engineMode = state.engineMode;
@@ -88,7 +88,7 @@ public:
 	realnum currentWalkingDirection;
 	angle_rad currentNoseOrientation;
 	Pose currentOdomPose;     // odometry (no slam, only coming from legs)
-	Pose currentBaselinkPose; // fused odom and map frame
+	Pose baseLinkInMapFrame; // fused odom and map frame
 	Pose currentMapPose;      // slam map outcome
 	GaitModeType currentGaitMode;
 	GeneralEngineModeType engineMode;

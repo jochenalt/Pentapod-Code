@@ -87,7 +87,7 @@ public:
 	void clearCostmaps();
 
 	// return the fused position of slam outcome and odometry
-	Pose getBaselink() { engineState.currentBaselinkPose; };
+	Pose getBaselink() { engineState.baseLinkInMapFrame; };
 
 	void broadcastTransformationMapToOdom();
 

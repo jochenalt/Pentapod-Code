@@ -965,7 +965,7 @@ void Engine::getState(EngineState &data) {
 	data.toePointsWorld = gaitControl.getToePointsWorld();
 	data.hipPoseWorld = getHipPoseWorld();
 	data.groundPoints = getGroundPoints();
-	data.currentBaselinkPose = getOdomPose();
+	data.baseLinkInMapFrame = getOdomPose(); // will be overwritten later on, this asignment is only valid if odomFrame=0, used for simulation only
 
 	for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 		data.footOnGroundFlag[legNo] = getFootOnGround()[legNo];
