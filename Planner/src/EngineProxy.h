@@ -149,7 +149,7 @@ public:
 	const Pose& getOdomPose();
 
 	// take map pose for general pose and incrementally update via odom
-	const Pose& getFusedPose();
+	const Pose& getBaseLinkInMapFrame();
 
 	// set the new navigation goal
 	void setNavigationGoal(const Pose& goal, bool latchOrientation = false);

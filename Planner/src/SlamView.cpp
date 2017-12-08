@@ -559,7 +559,7 @@ void SlamView::drawCostMap(CostmapType type, const Pose& odom) {
 
 void SlamView::drawMap() {
 
-	const Pose& fusedPose = EngineProxy::getInstance().getFusedPose();
+	const Pose& fusedPose = EngineProxy::getInstance().getBaseLinkInMapFrame();
 
 	// if the manually set viewpoint is 5s old, and the bot has
 	// moved 50mm, switch view back to automated mode such that the bot can be seen
@@ -621,7 +621,7 @@ void SlamView::MotionCallback(int x, int y) {
 			lookAt.y = constrain(lookAt.y, (realnum)-map.getMapSizeY()/2, (realnum)map.getMapSizeY()/2);
 
 			manualLookAtAdjustTime = millis();
-			lastFusedPosition = EngineProxy::getInstance().getFusedPose();
+			lastFusedPosition = EngineProxy::getInstance().getBaseLinkInMapFrame();
 			setLookAtPosition(lookAt);
 			postRedisplay();
 		} else {

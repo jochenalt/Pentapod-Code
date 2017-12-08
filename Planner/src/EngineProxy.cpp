@@ -154,7 +154,7 @@ void EngineProxy::loop() {
 		if (remoteEngineCallTimer.isDue(BotTrajectorySampleRate)) {
 			updateEngineState(data);
 			newBotDataAvailable  = (data != lastData);
-			newMapPoseDataAvailable =  (data.currentBaselinkPose != lastData.currentBaselinkPose);
+			newMapPoseDataAvailable =  (data.baseLinkInMapFrame != lastData.baseLinkInMapFrame);
 		}
 
 		if (UpdateMapSampleRate > 0) {
@@ -191,7 +191,7 @@ void EngineProxy::loop() {
 			engine.getState(data);
 
 			newBotDataAvailable  = (data != lastData);
-			newMapPoseDataAvailable =  (data.currentBaselinkPose != lastData.currentBaselinkPose);
+			newMapPoseDataAvailable =  (data.baseLinkInMapFrame != lastData.baseLinkInMapFrame);
 			lastData = data;
 		}
 	}
@@ -361,8 +361,8 @@ Pose EngineProxy::getBodyPose() {
 	return data.currentBodyPose;
 }
 
-const Pose& EngineProxy::getFusedPose() {
-	return data.currentBaselinkPose;
+const Pose& EngineProxy::getBaseLinkInMapFrame() {
+	return data.baseLinkInMapFrame;
 }
 
 const Pose& EngineProxy::getMapPose() {
