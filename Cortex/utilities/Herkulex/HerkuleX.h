@@ -107,6 +107,7 @@ public:
   void  changeBaudRate(int servoID, int baudNum);
   void  setAccelerationMax(int servoID, int accelerationMax);
   void  setAccelerationRatio(int servoID, int accelerationRatio);
+  void  setPositionKi(int servoID, int Ki);
 
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);

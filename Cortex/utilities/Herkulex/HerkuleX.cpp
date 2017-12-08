@@ -233,6 +233,11 @@ void HerkulexClass::setAccelerationMax(int servoID, int accelerationMax)
 
     sendData(dataEx, pSize);
 }
+
+void  HerkulexClass::setPositionKi(int servoID, int Ki)
+{
+	writeRegistryRAM(servoID, 28, Ki);
+}
 // ACK  - 0=No Replay, 1=Only reply to READ CMD, 2=Always reply
 void HerkulexClass::ACK(int valueACK)
 {
