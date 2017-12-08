@@ -108,6 +108,7 @@ public:
   void  setAccelerationMax(int servoID, int accelerationMax);
   void  setAccelerationRatio(int servoID, int accelerationRatio);
   void  setPositionKi(int servoID, int Ki);
+  void  setPositionKp(int servoID, int Kp);
 
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);
@@ -127,7 +128,7 @@ public:
   void  reboot(int servoID);
   void  setLed(int servoID, int valueLed);
  
-  void  writeRegistryRAM(int servoID, int address, int writeByte);
+  void  writeRegistryRAM(int servoID, int address, int writeByte, int length);
   void  writeRegistryEEP(int servoID, int address, int writeByte);
 
   void waitTransmissionTime(int len);

@@ -35,10 +35,12 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	}
 	movement.setNull();
 	
-	// activate servos PD controller by by setting D value that leads to
-	// keeping the position even when a permanent load exists (the bots weight)
-	// herkulexMgr->setPositionKi(configData->herkulexMotorId, 10);
-	// delay(3);
+	// make servos stiffer by increasing P and I value of PI controller
+	herkulexMgr->setPositionKi(configData->herkulexMotorId, 120);
+	delay(3);
+	herkulexMgr->setPositionKp(configData->herkulexMotorId, 140);
+	delay(3);
+
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
