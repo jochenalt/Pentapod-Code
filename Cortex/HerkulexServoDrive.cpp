@@ -35,11 +35,10 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	}
 	movement.setNull();
 	
-	// switch off torque, wait for real action until enable is called
-	herkulexMgr->setAccelerationMax(configData->herkulexMotorId, 0);   // rectangle speed profile
-	delay(3);
-	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // rectangle speed profile
-	delay(3);
+	// activate servos PD controller by by setting D value that leads to
+	// keeping the position even when a permanent load exists (the bots weight)
+	// herkulexMgr->setPositionKi(configData->herkulexMotorId, 10);
+	// delay(3);
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
