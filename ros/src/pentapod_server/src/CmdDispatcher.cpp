@@ -160,28 +160,19 @@ Pose CommandDispatcher::getNavigationGoal() {
 
 void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
 
+	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
+		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
+		moveBaseClient->cancelGoal();
+	}
+
+
 	// advertise the initial position for the navigation stack everytime the navigation goal is set
 	navigationGoal_world = goalPose_world;
 
-	geometry_msgs::PoseWithCovarianceStamped initialPosition;
-	initialPosition.pose.pose.position.x = engineState.currentBaselinkPose.position.x/1000.0;
-	initialPosition.pose.pose.position.y = engineState.currentBaselinkPose.position.y/1000.0;
-	initialPosition.pose.pose.position.z = 0;
-	geometry_msgs::Quaternion initialPose_quat  =
-			tf::createQuaternionMsgFromYaw(
-					engineState.currentBodyPose.orientation.z +
-					engineState.currentNoseOrientation);
-
-	initialPosition.pose.pose.orientation = initialPose_quat;
-	initialPosition.header.stamp = ros::Time::now();
-	initialPosition.header.frame_id = "map";
-	ROS_INFO_STREAM("publishing initial pose " << engineState.currentBaselinkPose.position <<
-					" nose=" << degrees(engineState.currentBodyPose.orientation.z +
-					engineState.currentNoseOrientation)
-					<< "latched=" << setOrientationToPath);
-
 	// navigation goal is set from the base_links perspective. Convert goalPose into base_links frame
-	navigationGoal = goalPose_world.concatInverseTransformation(engineState.currentBaselinkPose);
+	navigationGoal = engineState.currentBaselinkPose.inverse().applyTransformation(goalPose_world);
+	ROS_INFO_STREAM("convert goal(world)" << goalPose_world << " from base_link=" << engineState.currentBaselinkPose << " = navigation gaol(base_link)" << navigationGoal);
+
 
 	move_base_msgs::MoveBaseGoal goal;
 	goal.target_pose.header.frame_id = "base_link";
@@ -194,10 +185,6 @@ void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setO
 	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(navigationGoal.orientation.z);
 	goal.target_pose.pose.orientation = goalPoseQuat;
 
-	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
-		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
-		moveBaseClient->cancelAllGoals();
-	}
 	moveBaseClient->sendGoal(goal);
 
 	ROS_INFO_STREAM("setting navigation goal (" << goalPose_world << ") " << navigationGoal.position << string(setOrientationToPath?" (latched orientation)":""));
@@ -640,7 +627,7 @@ void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan,
 					 inputPlan->poses[i].pose.orientation.z,
 					 inputPlan->poses[i].pose.orientation.w);
 
-		StampedPose sp(odomFrame.concatTransformation(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
+		StampedPose sp(odomFrame.applyTransformation(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
 		outputPlan.add(sp);
 	}
 
@@ -676,7 +663,7 @@ void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) 
 		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
 
 		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world );
-		setNavigationGoal(navigationGoal_world, false);
+		// setNavigationGoal(navigationGoal_world, false);
 	}
 }
 
@@ -690,13 +677,11 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	mapPose.orientation = EulerAngles(q);
 
 	// compute odomFrame for map->odom transformation
-	odomFrame.position = mapPose.position - odomPose.position.getRotatedAroundZ(mapPose.orientation.z-odomPose.orientation.z);
-	odomFrame.orientation.z = mapPose.orientation.z-odomPose.orientation.z;
 	odomFrame = mapPose.concatInverseTransformation(odomPose);
 
 	// check this
  	Pose test;
-	test = odomFrame.concatTransformation(odomPose);
+	test = odomFrame.applyTransformation(odomPose);
 
  	if ((test.position.distance(mapPose.position) > 0.1 ))
  		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
@@ -771,9 +756,9 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 
 	// update baselink pose and slam pose which does not come from pentapod engine
 	ROS_INFO_STREAM_THROTTLE(5, "receiving engine state base_link=" << engineState.currentBaselinkPose << "odomFrame=" << odomFrame << "odomPose=" << odomPose);
- 	engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
- 	engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
-
+ 	// engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
+ 	// engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
+	engineState.currentBaselinkPose = odomFrame.applyTransformation(odomPose);
  	engineState.currentMapPose = mapPose;
 
  	// turn on the lidar if we wake up
@@ -788,12 +773,11 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 
 
 void CommandDispatcher::broadcastTransformationMapToOdom() {
-	Pose baselink = getBaselink();
-	ROS_INFO_STREAM_THROTTLE(5,"publish map->odom=" << engineState.currentBaselinkPose);
+	ROS_INFO_STREAM_THROTTLE(5,"publish map->odom=" << 	odomFrame);
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
-			tf::Transform(tf::createQuaternionFromYaw(baselink.orientation.z),
-					      tf::Vector3(baselink.position.x/1000.0,baselink.position.y/1000.0,0)),
+			tf::Transform(tf::createQuaternionFromYaw(odomFrame.orientation.z),
+					      tf::Vector3(odomFrame.position.x/1000.0,odomFrame.position.y/1000.0,0)),
 			ros::Time::now(),"map", "odom"));
 }
 
