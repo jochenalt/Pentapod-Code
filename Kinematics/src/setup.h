@@ -26,7 +26,7 @@ enum LegGaitPhase { LegMovesUp = 0, LegMovesDown = 1, LegOnGround = 2};
 // FourLegWalk is a gait with 4 legs only
 enum GaitModeType { OneLegInTheAir, TwoLegsInTheAir, SpiderWalk, Auto, FourLegWalk, None };
 
-enum ShutDownModeType { NoShutDownActive, Initiate, FallAsleep, Done };
+enum ShutDownModeType { NoShutDownActive, InitiateShutDown, ExecuteShutdown, ShutdownDone };
 enum NavigationStatusType { NavPending=0, 	 	// The goal has yet to be processed by the action server
 							NavActive = 1, 		// The goal is currently being processed by the action server
 							NavRecalled = 2, 	// The goal received a cancel request before it started executing and was successfully cancelled (Terminal State)
@@ -48,7 +48,8 @@ const realnum standardBodyHeigh = 140.0;		// default height when walking
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 220.0;
 const realnum maxFootTouchPointRadius = 310.0;
-const realnum sleepingFootTouchPointRadius = 265;
+const realnum standUpFootTouchPointRadius = 245;
+const realnum sitDownTouchPointRadius = 245;
 
 // max acceleration
 const realnum maxAcceleration = 70.0; 		     // [mm/s^2]
@@ -58,14 +59,14 @@ const realnum maxSpeed = 100.0; 				// [mm/s]
 
 // possible acceleration of angular speed
 const realnum maxAngularSpeedAcceleration = 0.6; //  [rad/s^2]
-const realnum maxAngularSpeed = maxSpeed/sleepingFootTouchPointRadius; //  [rad/s]
+const realnum maxAngularSpeed = maxSpeed/minFootTouchPointRadius; //  [rad/s]
 
 // walking direction cannot be changed immediately but with that angular speed per speed*t
 const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
 
 // limits of gait frequency (for beautiness of the gait mainly)
-const realnum minGaitFrequency = 0.3; 				// [Hz]
-const realnum maxGaitFrequency = 3.0; 				// [Hz]
+const realnum minGaitFrequency = 0.4; 				// [Hz]
+const realnum maxGaitFrequency = 3.5; 				// [Hz]
 
 // maximum speed of virtual foot ref point
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
@@ -89,6 +90,6 @@ const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
 const realnum moveToeWhenDistanceGreaterThan = 20.0;
-const realnum standUpWhenDistanceSmallerThan = 10.0;
+const realnum standUpWhenDistanceSmallerThan = moveToeWhenDistanceGreaterThan+5.0;
 
 #endif /* SETUP_H_ */

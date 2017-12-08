@@ -125,6 +125,8 @@ void Engine::fallAsleep() {
 	inputBodyPose.orientation = Rotation(0,0,0);
 	targetAngularSpeed = 0;
 	targetSpeed = 0;
+	gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+
 }
 
 void Engine::terrainMode(bool terrainModeOn) {
@@ -319,28 +321,28 @@ void Engine::loop() {
 		switch (shutdownMode) {
 			case NoShutDownActive: {
 				ROS_ERROR_STREAM("Better shut me down due to fatal error. Go down and stop moving.");
-				shutdownMode = Initiate;
+				shutdownMode = InitiateShutDown;
 				targetSpeed = 0;
 				targetAngularSpeed = 0;
 				inputBodyPose = Pose(Point(0,0,standardBodyHeigh), Rotation(0,0,0));
 			}
-			case Initiate: {
+			case InitiateShutDown: {
 				if ((currentBodyPose.position.z - standardBodyHeigh < floatPrecision)
 					 && (getCurrentSpeed() < floatPrecision)) {
 					ROS_ERROR_STREAM("Better shut me down due to fatal error. Fall asleep.");
 					fallAsleep();
-					shutdownMode = FallAsleep;
+					shutdownMode = ExecuteShutdown;
 				}
 			}
-			case FallAsleep: {
+			case ExecuteShutdown: {
 				if (generalMode == BeingAsleep) {
 					ROS_ERROR_STREAM("Better shut me down due to fatal error. Turn off.");
 
 					turnOff();
-					shutdownMode = Done;
+					shutdownMode = ShutdownDone;
 				}
 			}
-			case Done:
+			case ShutdownDone:
 				break;
 
 		}
@@ -479,9 +481,9 @@ void Engine::computeBodyPose() {
 		// but: if we are in lift or fall asleep mode, wait until all legs are on the ground
 		if (((generalMode != LiftBody) &&  (generalMode != FallASleep))
 			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan))
-			|| ((generalMode == FallASleep) && (gaitControl.getFeetOnTheGround() == NumberOfLegs))) {
-
-				realnum bodySpeed = maxBodyPositionSpeed;
+			|| ((generalMode == FallASleep) && (gaitControl.getCurrentSpeed() < floatPrecision) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < moveToeWhenDistanceGreaterThan))) {
+			realnum bodySpeed = maxBodyPositionSpeed;
+			gaitControl.adaptToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			if ((generalMode == LiftBody) || (generalMode == FallASleep))
 				bodySpeed = maxLiftBodyPositionSpeed;
 			moderatedBodyPose.moveTo(inputBodyPose, dT, bodySpeed, maxBodyOrientationSpeed);
@@ -672,7 +674,7 @@ void Engine::computeGaitRefPointRadius() {
 	switch (generalMode) {
 		case FallASleep:
 		case BeingAsleep:
-			gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
@@ -683,7 +685,11 @@ void Engine::computeGaitRefPointRadius() {
 					realnum radius = minFootTouchPointRadius + (maxBodyHeight - heightOverGround-minBodyHeight)/(maxBodyHeight-minBodyHeight)*(maxFootTouchPointRadius-minFootTouchPointRadius);
 					gaitControl.setTargetGaitRefPointsRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
 				} else {
-					gaitControl.setTargetGaitRefPointsRadius (sleepingFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+					if (generalMode == LiftBody)
+						gaitControl.setTargetGaitRefPointsRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+					if (generalMode == FallASleep)
+						gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+
 					inputBodyPose.orientation = Rotation(0,0,0);
 				}
 				if (fourWalkLegRatio > 0) {
@@ -773,6 +779,7 @@ void Engine::computeWakeUpProcedure() {
 		(generalMode == FallASleep)) {
 		currentGaitMode = OneLegInTheAir;
 		gaitControl.setTargetGaitMode(currentGaitMode);
+		gaitControl.adaptToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
 
 	// After lifting the body, when close to the target position, stop with wake-up-Procedure
@@ -785,8 +792,11 @@ void Engine::computeWakeUpProcedure() {
 		}
 	}
 
+
+	// if bot moves from FallASleep Phase to BeeingAsleeep phase, all legs needs to be in the right position
 	if (generalMode == FallASleep) {
-		if (gaitControl.getFeetOnTheGround() == NumberOfLegs) {
+		if ((gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < moveToeWhenDistanceGreaterThan)) {
+			// go down without adapting to gait
 			gaitControl.adaptToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			if (abs(moderatedBodyPose.position.z-minBodyHeight) < 1.0) {
 				// falling asleep is done
