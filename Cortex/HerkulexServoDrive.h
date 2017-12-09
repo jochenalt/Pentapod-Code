@@ -25,7 +25,6 @@ class HerkulexServoDrive: public MotorBase
 public:
 	HerkulexServoDrive(): MotorBase (){
 		configData = NULL;
-		beforeFirstMove = true;
 		currentUserAngle = 0;
 		overloadDetected = false;
 		anyHerkulexError = false;
@@ -34,42 +33,54 @@ public:
 		enabled = false;
 		status = SERVO_STAT_NO_COMM;
 	}
-	void setUserAngle(float userAngle,uint32_t pDuration_ms);
-	void changeAngle(float pAngleChange,uint32_t pAngleTargetDuration);
 	
+	// establish communication, set null and limits, make the servo ready to be enabled
 	void setup(LimbConfigType* config, HerkulexClass* herkulexMgr);
-	void loop(uint32_t now);
-	float getCurrentAngle();
-	float readCurrentAngle();
 
-	void setNullAngle(float pAngle);
+	// sends move command to the servo
+	void loop(uint32_t now);
+
+	// define movement for one loop that is to be executed in loop()
+	void setUserAngle(float userAngle,uint32_t pDuration_ms);
+
+	// return cached recently read user angle
+	float getCurrentAngle();
+
+	// read user angle from servo
+	float readCurrentAngle();
 	
-	LimbConfigType& getConfig() { return *configData;}
+	// switch on torque
 	void enable();
+
+	// switch off torque
 	void disable();
-	bool isEnabled();
+
+	// returns true, if servo has been setup'ed and reacts
 	bool isConnected() { return connected; };
 
+	// return the recently read status
 	ServoStatusType stat();
-	bool statusOK() { return status == H_STATUS_OK; };
 
-	float getVoltage() { return voltage; };
+	// return the recently read voltage
+	float  getVoltage() { return voltage; };
+
+	// get the herkulex ID of one specific servo
 	static int getHerkulexId(int legId, int limbId);
 
+	// to be called at the beginning for all servos at the same time.
 	void syncStatusTimer(uint32_t now);
-private:	
-	void readStatus();
+
+private:
+	void  readStatus();
 	float readServoTorque();
 	float convertUserAngle2HerkulexAngle(float herkulexAngle);
 	float convertHerkulexAngle2UserAngle(float userAngle);
 
 	void moveToAngle(float angle, uint16_t pDuration_ms);
-	bool beforeFirstMove;
-
-	float currentUserAngle;
-	boolean overloadDetected;			// used to store servo feedback, true of too much load on the servo
-	boolean anyHerkulexError;
-	LimbConfigType* configData;
+	float currentUserAngle;              // current user angle (the angle after null values and gear ratio has been considered)
+	boolean overloadDetected;			 // used to store servo feedback, true of too much load on the servo
+	boolean anyHerkulexError;			 // true, if an error happened
+	LimbConfigType* configData;			 // defines null angles, limits etc.
 	float lastAngle;					 // angle of previous run
 	
 	bool connected;
