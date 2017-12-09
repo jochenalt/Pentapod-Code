@@ -907,7 +907,7 @@ void HerkulexClass::writeRegistryRAM(int servoID, int address, int writeByte, in
   pID   = servoID;     			// 4. Servo ID - 253=all servos
   cmd   = HRAMWRITE;          	// 5. CMD
   data[0]=address;              // 8. Address
-  data[1]=02;               	// 9. Lenght
+  data[1]=length;               	// 9. Lenght
   if (length == 1) {
 	  data[2]=writeByte;            // 10. Write error=0
   }
