@@ -34,6 +34,7 @@
 #define BNO055_ADDRESS_B (0x29)
 #define BNO055_ID        (0xA0)
 
+
 #define NUM_BNO055_OFFSET_REGISTERS (22)
 
 typedef struct
@@ -68,6 +69,10 @@ class Adafruit_BNO055 : public Adafruit_Sensor
       BNO055_SW_REV_ID_LSB_ADDR                               = 0x04,
       BNO055_SW_REV_ID_MSB_ADDR                               = 0x05,
       BNO055_BL_REV_ID_ADDR                                   = 0X06,
+
+	  // add-on to set the 2g mode
+	  BNO055_ACC_CONFIG_ADDR                                  = 0x08,
+
 
       /* Accel data register */
       BNO055_ACCEL_DATA_X_LSB_ADDR                            = 0X08,
@@ -307,6 +312,7 @@ class Adafruit_BNO055 : public Adafruit_Sensor
     void  setSensorOffsets(const uint8_t* calibData);
     void  setSensorOffsets(const adafruit_bno055_offsets_t &offsets_type);
     bool  isFullyCalibrated(void);
+    void  set2GRange();
 
   private:
     byte  read8   ( adafruit_bno055_reg_t );

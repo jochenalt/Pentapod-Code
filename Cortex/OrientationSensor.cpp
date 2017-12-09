@@ -66,7 +66,7 @@ void OrientationSensorData::setDefault () {
 	calib.mag_radius = 645;
 
 	nullX = 1.3;
-	nullY = -9.0;
+	nullY = -12.0;
 }
 
 void OrientationSensorData::clear () {
@@ -84,7 +84,7 @@ void OrientationSensorData::clear () {
 	calib.mag_radius = 0;
 
 	nullX = 1.3;
-	nullY = -9.0;
+	nullY = -12.0;
 }
 
 OrientationSensor::OrientationSensor() {
@@ -111,7 +111,7 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	if (bno == NULL)
 		bno = new Adafruit_BNO055(newWireline, glbSensorID);
 
-
+	sensorTimer.setRate(CORTEX_SAMPLE_RATE);
 	// Initialise the sensor
 	bool ok = bno->begin(Adafruit_BNO055::OPERATION_MODE_IMUPLUS);
 	if(!ok)
@@ -125,6 +125,7 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 
 	setupOk = true;
 
+	bno->set2GRange();
 	bno->setExtCrystalUse(true);
 
 	setupTime = millis();
@@ -138,7 +139,6 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	accelerationEvent.orientation.z = 0;
 
 	upgradeCalibrationTimer.setDueTime(millis()-5000);
-
 }
 
 
@@ -354,9 +354,9 @@ void OrientationSensor::fetchData() {
 void OrientationSensor::loop(uint32_t now) {
 	// first reading should no happen before one 300s
 
-	if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
-		updateCalibration();
-	}
+	// if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
+	// 	updateCalibration();
+	// }
 
 	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
 		fetchData();
