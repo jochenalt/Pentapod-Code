@@ -215,8 +215,8 @@ void imposeGroundDistance() {
 
 			// simulate warping of 30mm, when on the ground, the kinematic needs to lift the leg
 			// for at least 30mm until the leg really goes up.
-			if ((EngineProxy::getInstance().getLegsGaitPhase(legNo) == LegOnGround) ||
-				(EngineProxy::getInstance().getLegsGaitPhase(legNo) == LegMovesUp))
+			if ((EngineProxy::getInstance().getLegsGaitPhase(legNo) == LegGaitDuty) ||
+				(EngineProxy::getInstance().getLegsGaitPhase(legNo) == LegGaitUp))
 				{
 				if (distances[legNo] < 20)
 					distances[legNo] = 0;

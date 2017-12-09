@@ -19,7 +19,7 @@ void GaitController::setup(Engine& pMainController) {
 	targetGaitType = TwoLegsInTheAir;
 
 	for (int i = 0;i<NumberOfLegs;i++) {
-		lastPhase[i] = LegOnGround; 				// start with stay-on-the-ground-phase
+		lastPhase[i] = LegGaitDuty; 				// start with stay-on-the-ground-phase
 		currentGroundPercentage[i] = getFootOnTheGroundRatio(0.0);
 		feetOnGround[i] = true;
 		perpendicularGroundHeight[i] = 0; // distance sensors havent delivery anything yet
@@ -57,7 +57,7 @@ void GaitController::setup(Engine& pMainController) {
 
 	// initialize the leg's gaits (used for sensor computation)
 	for (int legNo = 0;legNo<NumberOfLegs;legNo++)
-		legPhase[legNo] = LegOnGround;
+		legPhase[legNo] = LegGaitDuty;
 }
 
 void GaitController::setFrontLegWorld(const Point& x) {
@@ -183,12 +183,12 @@ Point GaitController::interpolateLegMotion(
 	int phaseCounter = int(gaitProgress/onePhaseBeat);
 
 	LegGaitPhase phase = (LegGaitPhase)(int)(gaitProgress/onePhaseBeat);
-	if ((int)phase > LegOnGround)
-		phase = LegOnGround;
+	if ((int)phase > LegGaitDuty)
+		phase = LegGaitDuty;
 
 	// if we are on the ground for any reason, move with the ground until we move up
-	if ((feetOnGround[legNo] == true) && (phase != LegMovesUp))
-		phase = LegOnGround;
+	if ((feetOnGround[legNo] == true) && (phase != LegGaitUp))
+		phase = LegGaitDuty;
 
 	bool newPhase = (phase != lastPhase[legNo]);
 	if (newPhase) {
@@ -227,7 +227,7 @@ Point GaitController::interpolateLegMotion(
 	// if we do not move, lower all feet slowly to the ground
 	if (doMove) {
 		switch (phase) {
-			case LegMovesUp: {
+			case LegGaitUp: {
 				// next touch point is gait ref point + half a step forward
 				Point nextTouchPoint (gaitRefPoint);
 				if (abs(dDistance) > floatPrecision) {
@@ -249,8 +249,8 @@ Point GaitController::interpolateLegMotion(
 					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
 
 				}
-				result = bezier[legNo].getCurrent(localPhaseBeat/2.0);
-				// LOG(DEBUG) << "leg[" << legNo << "] up:" << result  << " curr=" << currentPoint << " grp" << gaitRefPoint << " lpp" << lastPhasePosition << "gp=" << gaitProgress << " lpb=" << localPhaseBeat << " cgp=" << currGroundPercentage << endl;
+				result = bezier[legNo].getCurrent((1.0-moderate(1.0-localPhaseBeat, 1))*postponeZenith);
+
 
 				// if toe is close to the ground move leg with the ground during the first mm
 				if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance/3) {
@@ -265,7 +265,7 @@ Point GaitController::interpolateLegMotion(
 				}
 				break;
 			}
-			case LegMovesDown: {
+			case LegGaitDown: {
 				// maybe the toe touches the ground already, then move with the ground
 				if (currentToePoint.z < floatPrecision + gaitRefPoint.z ) {
 					result = currentToePoint;
@@ -279,8 +279,7 @@ Point GaitController::interpolateLegMotion(
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
 					Point bezierPoint;
-					bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*0.5+0.5);
-					// bezierPoint = bezier[legNo].getCurrent(localPhaseBeat*0.5+0.5);
+					bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*(1.0-postponeZenith)+postponeZenith);
 
 					Point bezierTouchPoint = bezier[legNo].getEnd();
 					Point touchPointDifference = target-bezierTouchPoint;
@@ -300,7 +299,7 @@ Point GaitController::interpolateLegMotion(
 				}
 				break;
 			}
-			case LegOnGround:
+			case LegGaitDuty:
 			default:
 			{
 				// move along the ground
@@ -312,7 +311,7 @@ Point GaitController::interpolateLegMotion(
 		} // switch
 
 		// moderate the movement, unless we are on the ground where we must move very accurate
-		if ((phase != LegOnGround)) {
+		if ((phase != LegGaitDuty)) {
 			Point tmp(currentToePoint);
 			tmp.moveTo(result,dT, maxFootSpeed);
 			result = tmp;
@@ -452,7 +451,7 @@ void GaitController::loop() {
 				newFootPosition = frontLegPosition;
 				feetOnGround[legNo] = false; // 				(newFootPosition.position.z == distanceSqr(currentGaitRefPoints[legNo]) < floatPrecision);
 				if (feetOnGround[legNo]){
-					lastPhase[legNo] = LegOnGround;
+					lastPhase[legNo] = LegGaitDuty;
 				}
 				targetGaitRefPoints[legNo] = newFootPosition;
 			}
@@ -466,12 +465,6 @@ void GaitController::loop() {
 			// target = currentGaitrefPoint - loopFootMoveVector[legNo]*(((gaitDuration * footOntheGroundPercentage)/dT) *0.5);
 
 			currentWalkingTouchPoints[legNo] = currentGaitRefPoints[legNo] - loopFootMoveVector[legNo] * gaitDuration * footOntheGroundPercentage/dT *0.5;
-
-			/*
-			 if (legNo == 0) {
-				cout << "curr" << currentGaitRefPoints[0] << "vector=" << loopFootMoveVector[0] << " walk=" << currentWalkingTouchPoints[0] << endl;
-			}
-			 */
 		}
 
 		// adapt speed vector accordingly

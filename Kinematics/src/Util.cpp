@@ -101,6 +101,7 @@ realnum lowpass (realnum oldvalue, realnum newvalue, realnum tau, realnum dT) {
 
 // use polynom 3rd grade with (f(0) = 0, f(1) = 01 f'(0) = grade, f'(1) = 0)
 // input is number between 0..1, output is number between 0..1 but moving to 1 quicker in the beginning
+// grade has to be <=3
 realnum moderate(realnum input, realnum grade) {
 	return (grade-2.0)*input*input*input + (-2.0*grade+3.0)*input*input + grade*input;
 }

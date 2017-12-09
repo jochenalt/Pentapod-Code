@@ -20,7 +20,7 @@
 enum GeneralEngineModeType { BeingAsleep, LiftBody, WalkingMode, TerrainMode, FallASleep};
 
 // Phases of a leg during the gait
-enum LegGaitPhase { LegMovesUp = 0, LegMovesDown = 1, LegOnGround = 2};
+enum LegGaitPhase { LegGaitUp = 0, LegGaitDown = 1, LegGaitDuty = 2};
 
 // several gait types
 // FourLegWalk is a gait with 4 legs only
@@ -94,5 +94,8 @@ const realnum moveToeWhenDistanceGreaterThan = 20.0;
 // must be bigger than moveToDistance, otherwise we end up in a deadlock in standing up where
 // the toes do not not yet move due to a small difference but the distance is too big to stand up
 const realnum standUpWhenDistanceSmallerThan = moveToeWhenDistanceGreaterThan+5.0;
+
+// the zenith of the gait is reached at this ratio in time
+const realnum postponeZenith = 0.7;					// [%]*100 of time
 
 #endif /* SETUP_H_ */

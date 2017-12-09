@@ -504,7 +504,7 @@ void Engine::computeBodyPose() {
 			// PID controller on orientation of x/y axis only, z is not used
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 0.6, 8.0, 0.000, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 0.6, 8.0, 0.028, maxError);
 
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
@@ -868,7 +868,7 @@ void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 				bool newPhase = gaitControl.getLegsGaitPhase(legNo) != gaitControl.getLastGaitPhase(legNo);
 				switch (gaitControl.getLegsGaitPhase(legNo)) {
 						break;
-					case LegMovesDown: {
+					case LegGaitDown: {
 						if (newPhase) {
 							gaitControl.setAbsoluteGroundHeight(legNo,0);
 						}
@@ -877,14 +877,14 @@ void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 						groundHeight[legNo] = currGroundHeight;
 						break;
 					}
-					case LegMovesUp: {
+					case LegGaitUp: {
 						if (newPhase)
 							gaitControl.setAbsoluteGroundHeight(legNo,0);
 						realnum currGroundHeight = -toeZ + distance[legNo] * cos(bodyKinematics.getFootAngle(legNo));
 						groundHeight[legNo] = currGroundHeight;
 						break;
 					}
-					case LegOnGround:
+					case LegGaitDuty:
 						// reset the ground height
 						// gaitControl.setAbsoluteGroundHeight(legNo,0);
 						break;
