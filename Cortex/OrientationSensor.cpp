@@ -65,8 +65,8 @@ void OrientationSensorData::setDefault () {
 	calib.accel_radius = 1000;
 	calib.mag_radius = 645;
 
-	nullX = -2.4;
-	nullY = -10.1;
+	nullX = 1.3;
+	nullY = -9.0;
 }
 
 void OrientationSensorData::clear () {
@@ -83,8 +83,8 @@ void OrientationSensorData::clear () {
 	calib.accel_radius = 0;
 	calib.mag_radius = 0;
 
-	nullX = -2.4;
-	nullY = -10.1;
+	nullX = 1.3;
+	nullY = -9.0;
 }
 
 OrientationSensor::OrientationSensor() {

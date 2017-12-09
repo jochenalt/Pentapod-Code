@@ -10,44 +10,51 @@
 // Hip  (drs 0101) = legId*10 + 1 = [01,   11,  12,  13,  14 ]
 // Thigh(drs 0401) = legId + 100  = [100, 101, 102, 103, 104 ]
 // Knee (drs 0101) = legId*10 + 3 = [03,   13,  23,  33,  43 ]
-// Foot (drs 0201) = legId*10 + 4 = [04,   14,  24,  34,  44 ]
+// Foot (drs 0201) = legId*10 + 4 = [02,   12,  22,  32,  42 ]
 
-int HerkulexServoDrive::getHerkulexId(int legId, int limbId) {
+// This method returns the herkulex ID of one sepcific limb
+int HerkulexServoDrive::getHerkulexId(int legId /* start with 0 */, int limbId /* hip is 0 */) {
 	switch (limbId) {
 		case HIP:   return legId*10 + 1;
 		case THIGH: return 100 + legId;
 		case KNEE:  return legId*10 + 4;
 		case FOOT:  return legId*10 + 2;
 	}
-	return -1;
+	return -1; // should never happen
 };
 
-
+// setup a servo, to be called before using it
 void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* newHerkulexMgr) {
 	// voltage is measured within low-prio loop
+	// but at this stage, we do not have a voltage yet.
 	voltage = 0;
 
+	// print memory content
 	configData = newConfigData;
 	herkulexMgr = newHerkulexMgr;
 	if (memory.persMem.logSetup) {
 		logger->print(F("   "));
 		configData->print();
 	}
+
+	// no current movement
 	movement.setNull();
 	
 	// make servos stiffer by increasing P and I value of PI controller
 	herkulexMgr->setPositionKi(configData->herkulexMotorId, 220);
-	herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
+	herkulexMgr->setPositionKp(configData->herkulexMotorId, 250);
 
-	// do not use trapzoid but rectangular speed profile
+	// do not use trapezoid but rectangular speed profile, speed profile is taken care of by cortex
 	// otherwise reacting to terrain or IMU changes takes too long
-	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0);
+	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // ratio of acceleration within in one loop (default: 25[%])
 
+	// start without torque, will be switched by command
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
+	// these LED's can't be seen in the leg
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
 
-	// get stat
+	// get/check status of servo
 	status = herkulexMgr->stat(configData->herkulexMotorId);
 	connected = false;
 	if (status == H_STATUS_OK) {
@@ -89,6 +96,7 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 
 } //setup
 
+// switch off the motor ( it turns freely afterwards)
 void HerkulexServoDrive::disable() {
 	if (connected) {
 		herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
@@ -97,10 +105,8 @@ void HerkulexServoDrive::disable() {
 	}
 }
 
-bool HerkulexServoDrive::isEnabled() {
-	return enabled;
-}
-
+// enable a servo, i.e. switch on the motor. The servo does not move, upfront it
+// reads the current angle and holds thr servo at that angle
 void HerkulexServoDrive::enable() {
 	if (!connected )
 		return;
@@ -131,19 +137,8 @@ void HerkulexServoDrive::enable() {
 	enabled = true;
 }
 
-void HerkulexServoDrive::changeAngle(float pAngleChange,uint32_t pAngleTargetDuration) {
-	if (memory.persMem.logServo) {
-		logger->print(F("Herkulex.changeAngle("));
-		logger->print(pAngleChange);
-		logger->print(F(" duration="));
-		logger->print(pAngleTargetDuration);
-		logger->println(") ");
-	}
-	
-	// this methods works even when no current Angle has been measured
-	movement.set(getCurrentAngle(), getCurrentAngle()+pAngleChange, millis(), pAngleTargetDuration);
-}
 
+// define the user angle of the servo (but do not yet send it to the servo, this happens in loop() )
 void HerkulexServoDrive::setUserAngle(float pUserAngle,uint32_t pAngleTargetDuration) {
 	uint32_t now = millis();
 	
@@ -164,23 +159,19 @@ void HerkulexServoDrive::setUserAngle(float pUserAngle,uint32_t pAngleTargetDura
 	movement.set(movement.getCurrentAngle(now), pUserAngle, now, pAngleTargetDuration);
 }
 
-void HerkulexServoDrive::setNullAngle(float pRawAngle /* uncalibrated */) {
-	if (configData)
-		configData->nullAngle = pRawAngle;
-}
-
-
+// conversion from user angle to servo angle (take care of gear ratio and null angle)
 float HerkulexServoDrive::convertUserAngle2HerkulexAngle(float userAngle) {
 	float herkulexAngle = ((userAngle + configData->nullAngle)*configData->gearRatio)*(configData->direction());
 	return herkulexAngle;
 }
 
+// conversion from serv angle to user angle (take care of gear ratio and null angle)
 float HerkulexServoDrive::convertHerkulexAngle2UserAngle(float herkulexAngle) {
 	float userAngle = herkulexAngle/configData->direction() / configData->gearRatio - configData->nullAngle;
 	return userAngle;
 }
 
-
+// send a move command to the servo.
 void HerkulexServoDrive::moveToAngle(float pUserAngle, uint16_t pDuration_ms) {
 	if (connected && enabled) {
 		if (memory.persMem.logServo) {
@@ -209,7 +200,7 @@ void HerkulexServoDrive::moveToAngle(float pUserAngle, uint16_t pDuration_ms) {
 	}
 }
 
-// read the status, store it such that stat() can return the result
+// read the status of the servo, stores it such that stat() can return the result
 void HerkulexServoDrive::readStatus() {
 	if (!connected)
 		status = SERVO_STAT_NO_COMM;
@@ -225,7 +216,7 @@ void HerkulexServoDrive::readStatus() {
 	}
 }
 
-// return the servo status in error enum
+// return the cached servo status in an error enum
 ServoStatusType HerkulexServoDrive::stat() {
 	switch (status) {
 		case H_STATUS_OK: return SERVO_STAT_OK;
@@ -242,10 +233,13 @@ ServoStatusType HerkulexServoDrive::stat() {
 }
 
 
+// returns the last angle of the servo, asked via readCurrentAngle
 float HerkulexServoDrive::getCurrentAngle() {
 	return currentUserAngle;
 }
 
+
+// asks the current angle from the servo
 float HerkulexServoDrive::readCurrentAngle() {
 	bool error;
 	int count = 0;
@@ -259,12 +253,16 @@ float HerkulexServoDrive::readCurrentAngle() {
 	return userAngle;
 }
 
+// main loop, to be called every CORTEX_SAMPLE_RATE ms.
+// sends a move command to the servo.
 void HerkulexServoDrive::loop(uint32_t now) {
 	if (connected && enabled && !movement.isNull()) {
 		// compute where the servo is supposed to be
 		float toBeAngle = movement.getCurrentAngle(now+(int)CORTEX_SAMPLE_RATE);
 
 		currentUserAngle = toBeAngle;
+
+		// send the change of angle of one loop to the servo
 		moveToAngle(toBeAngle, HERKULEX_MIN_SAMPLE);
 	} else {
 		currentUserAngle = readCurrentAngle();
@@ -277,6 +275,10 @@ void HerkulexServoDrive::loop(uint32_t now) {
 	}
 }
 
+// Each servo has a timer that takes care when the status of this servo is to be fetched.
+// Within each controller loop, one servo is asked for its status. This timer synchronizes
+// that, it is initialized with a frequency of loop-frequency*20 and fires at a point in time
+// that ensures that witrhin each controller only one of all servo-timers fires.
 void HerkulexServoDrive::syncStatusTimer(uint32_t now) {
 	int legId = configData->leg;
 	int limbId = configData->id;
@@ -285,6 +287,7 @@ void HerkulexServoDrive::syncStatusTimer(uint32_t now) {
 }
 
 
+// return the torque in terms of PWM power that is sent to the servo
 float HerkulexServoDrive::readServoTorque(){
 	int16_t pwm = herkulexMgr->getPWM(configData->herkulexMotorId); // pwm is proportional to torque
 	float torque = float (pwm);
