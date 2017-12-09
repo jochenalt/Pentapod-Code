@@ -36,10 +36,12 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	movement.setNull();
 	
 	// make servos stiffer by increasing P and I value of PI controller
-	herkulexMgr->setPositionKi(configData->herkulexMotorId, 120);
-	delay(3);
-	herkulexMgr->setPositionKp(configData->herkulexMotorId, 140);
-	delay(3);
+	herkulexMgr->setPositionKi(configData->herkulexMotorId, 220);
+	herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
+
+	// do not use trapzoid but rectangular speed profile
+	// otherwise reacting to terrain or IMU changes takes too long
+	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0);
 
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
