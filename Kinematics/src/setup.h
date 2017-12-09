@@ -79,7 +79,7 @@ const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 
 // below that distance a toe is already moving with the ground
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)
-const realnum moveWithGroundBelowThisGroundDistance = 20.0; // [mm]
+const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
 
 // Typically, the top point of the knee in one gait is in the
 // middle of the touch point and the point when the toe leaves the ground.

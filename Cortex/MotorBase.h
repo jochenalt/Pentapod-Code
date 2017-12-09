@@ -20,12 +20,10 @@ class MotorBase {
 		
 	// the following methods are redefined in GearedStepperDrive and HerkulexServoDrive
 	virtual void setUserAngle(float pAngle,uint32_t pAngleTargetDuration_ms) = 0;
-	virtual void changeAngle(float pAngleChange,uint32_t pAngleTargetDuration_ms) = 0;
 	virtual void loop(uint32_t now_ms) = 0;
 	virtual float getCurrentAngle() = 0;
 	virtual void enable() = 0;
 	virtual void disable() = 0;
-	virtual bool isEnabled() = 0;
 	
 	AngleMovement movement;
 };

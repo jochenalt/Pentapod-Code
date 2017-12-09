@@ -125,10 +125,10 @@ void Controller::sendCommandToServos() {
 	}
 
 	uint32_t middle = millis();
-
 	for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
 		legs[leg].fetchDistance();
 	}
+
 	uint32_t end = millis();
 
 	static uint32_t distanceTime = 0;

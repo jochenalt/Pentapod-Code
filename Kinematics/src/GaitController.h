@@ -17,7 +17,7 @@ class Engine;
 
 typedef bool FootOnGroundFlagType[NumberOfLegs];
 
-enum AdaptToGaitRefPointType { DO_NOT_ADAPT_GAIT_POINT, ADAPT_TO_GAIT_POINT, ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE };
+enum AdaptionTypeToGaitRefPoint { DO_NOT_ADAPT_GAIT_POINT, ADAPT_TO_GAIT_POINT, ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE };
 class GaitController {
 public:
 
@@ -108,7 +108,7 @@ public:
 	void setIncludeFrontLeg (bool ok) { includeFrontLeg = ok;	}
 
 	// force a gait movement even when we do not move. Used during gait changes
-	void adaptToGaitRefPoint(AdaptToGaitRefPointType ok) { cout << "adaptto=" << ok << endl;adaptToGaitRefPointType = ok; };
+	void setAdaptionTypeToGaitRefPoint(AdaptionTypeToGaitRefPoint ok) { adaptToGaitRefPointType = ok; };
 
 	Point& getCurrentPositionWorld() { return currPosWorld; };
 	void setCurrentPositionWorld(const Point& p) { currPosWorld = p; };
@@ -117,9 +117,6 @@ public:
 
 	realnum getAbsoluteGroundHeight(int legno) { return perpendicularGroundHeight[legno]; };
 	realnum getAvrPerpendicularGroundHeight() { realnum s = 0;for (int i = 0;i<NumberOfLegs;i++) s += perpendicularGroundHeight[i]; return s/NumberOfLegs; };
-
-	realnum getPerpendicularDistanceToGround(int legNo) { return toePoints[legNo].z - getAbsoluteGroundHeight(legNo); };
-	realnum getMinGaitRefPoint() { realnum min = 1000.0;for (int i = 0;i<NumberOfLegs;i++) if (currentGaitRefPoints[i].z < min) min=currentGaitRefPoints[i].z ; return min; };
 
 	// impose current feet points (used when initializing). In walking mode, foot points are computed internally
 	void imposeFootPointsWorld(const PentaPointType& footPoints);
@@ -165,7 +162,7 @@ private:
 	realnum fastestFootSpeed;
 	realnum biggestRefPointDistance;	// biggest current difference of a toe to its gait point
 	bool includeFrontLeg;			 	// true, if the front leg shall be included in the gait (used during gait switching)
-	AdaptToGaitRefPointType adaptToGaitRefPointType;	// do gait even when speed is zero. Used during switching gait
+	AdaptionTypeToGaitRefPoint adaptToGaitRefPointType;	// do gait even when speed is zero. Used during switching gait
 
 	Point frontLegPosition;
 
