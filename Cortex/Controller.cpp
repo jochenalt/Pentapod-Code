@@ -13,6 +13,7 @@
 #include "watchdog.h"
 #include "core.h"
 #include "limits.h"
+#include "PowerVoltage.h"
 
 Controller controller;
 
@@ -158,6 +159,8 @@ void Controller::loop(uint32_t now) {
 
 		// right after sending the command, fetch data from IMU to leverage the time in between two I2C command best
 		orientationSensor.fetchData();
+
+		voltage.loop(now);			// check the voltage with 1Hz
 	}
 }
 
@@ -179,7 +182,7 @@ void Controller::adaptSynchronisation() {
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
 
 	// the ideal timing is when the command comes in right between two move commands. Substract the runtime of a loop
-	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - 16/2;
+	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopTime_ms/2;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.

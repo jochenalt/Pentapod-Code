@@ -9,6 +9,8 @@
 #define POWERVOLTAGE_H_
 
 #include <Arduino.h>
+#include <TimePassedBy.h>
+
 class PowerVoltage {
 public:
 	PowerVoltage();
@@ -18,10 +20,13 @@ public:
 	void print();
 	float getHighVoltage();
 	float getLowVoltage();
+	void fetchVoltage();
 
 private:
 	float measuredLowVoltage;
 	float measuredHighVoltage;
+
+	TimePassedBy timer;
 
 };
 
