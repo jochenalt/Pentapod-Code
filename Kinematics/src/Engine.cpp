@@ -504,7 +504,7 @@ void Engine::computeBodyPose() {
 			// PID controller on orientation of x/y axis only, z is not used
 			Rotation maxError (radians(20.0), radians(20.0), radians(0.0));
 			error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 0.5, 8.0, 0.0, maxError);
+			imuCompensation.orientation = imuPID.getPID(error, 0.5, 6.0, 0.02, maxError);
 
 		} else {
 			// in any other mode than walking keep the IMU in a reset state

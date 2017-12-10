@@ -312,7 +312,7 @@ bool CortexClient::cmdBinaryGetAll() {
 
 	cortexCommRetryCounter = 0;
 	do {
-		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 40,100);
+		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 45,100);
 	} while (retry(ok));
 
 	if (ok)
@@ -343,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 6,50);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 9,50);
     } while (retry(ok));
 
 	if (ok)
