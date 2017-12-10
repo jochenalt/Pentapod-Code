@@ -134,7 +134,29 @@ void Leg::logStatus() {
 void Leg::fetchDistance() {
 
 	// distance might be negative if communication issue
-	distance = herkulexMgr.requestDistance(SENSOR_HERKULEX_SERVO_ID, distanceStatus);
+	distance = herkulexMgr.getDistance(SENSOR_HERKULEX_SERVO_ID, distanceStatus);
+
+	// communmication issues?
+	if ((distanceStatus == VL6180X_ERROR_NONE) && (distance < 0)) {
+		distanceStatus = VL6180X_ERROR_COMM;
+	}
+
+	// correct null value
+	distance -= memory.persMem.legs[legId].nullDistance;
+}
+
+// check distance sensor
+void Leg::fetchDistanceRequest() {
+
+	// distance might be negative if communication issue
+	herkulexMgr.getDistanceRequest(SENSOR_HERKULEX_SERVO_ID);
+}
+
+// check distance sensor
+void Leg::fetchDistanceResponse() {
+
+	// distance might be negative if communication issue
+	distance = herkulexMgr.getDistanceResponse(SENSOR_HERKULEX_SERVO_ID, distanceStatus);
 
 	// communmication issues?
 	if ((distanceStatus == VL6180X_ERROR_NONE) && (distance < 0)) {

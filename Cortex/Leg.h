@@ -24,6 +24,8 @@ public:
 
 	// read a distance from sensor. Available via getDistance
 	void fetchDistance();
+	void fetchDistanceRequest();
+	void fetchDistanceResponse();
 
 	// set the target position of that leg in terms of angles and duration
 	// for the movement to that target position. Actual movement happens by

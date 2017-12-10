@@ -34,17 +34,19 @@ class Controller {
 		Leg& getLeg(int i) { return legs[i]; };
 		uint32_t loopDuration_ms() { return loopTime_ms; };
 		TimePassedBy& getTimer();
-		void adaptSynchronisation();
+		void adaptSynchronisation(uint32_t now);
 		void sendCommandToServos();
+		uint32_t& getCommunicationDuration_ms() { return communicationDuration_ms; };
 
 
 	private:
-
+		int round;
 		Leg legs[NUMBER_OF_LEGS];
 		bool setuped = false;
 		bool enabled = false;
 		uint32_t loopTime_ms;
 		TimePassedBy servoLoopTimer;
+		uint32_t communicationDuration_ms;
 };
 
 extern Controller controller;

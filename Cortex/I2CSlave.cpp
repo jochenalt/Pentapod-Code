@@ -11,6 +11,7 @@
 #include "core.h"
 #include "OrientationSensor.h"
 #include "PowerVoltage.h"
+#include "BotMemory.h"
 
 I2CSlave i2cSlave;
 
@@ -103,6 +104,7 @@ void I2CSlave::executeRequest() {
 		Cortex::Command cmd;
 		float angles[NumberOfLimbs*NumberOfLegs];
 		int duration_ms;
+		uint32_t now = millis();
 		ok = Cortex::ComPackage::readRequest(request, cmd, angles, duration_ms);
 		if (ok) {
 			switch (cmd) {
@@ -116,36 +118,49 @@ void I2CSlave::executeRequest() {
 				controller.disable();
 				break;
 			case Cortex::MOVE: {
-				controller.adaptSynchronisation();
+				controller.adaptSynchronisation(now);
 				LimbAnglesType legAngles;
-				cmdSerial->print("MOVE ");
+				if (memory.logServo()) {
+					cmdSerial->print("MOVE(");
+					cmdSerial->print(millis()-now);
+					cmdSerial->print("ms)");
+				}
+
 				for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 					Leg& leg = controller.getLeg(legNo);
-					cmdSerial->print('(');
+					if (memory.logServo())
+						cmdSerial->print('(');
 					for (int limbNo = 0;limbNo<NumberOfLimbs;limbNo++) {
 						float angle = angles[limbNo + legNo*NumberOfLimbs];
 						legAngles[limbNo] = angle;
-						if (limbNo > 0)
-							cmdSerial->print(' ');
-						cmdSerial->print(angle,1);
+						if (memory.logServo()) {
+							if (limbNo > 0)
+								cmdSerial->print(' ');
+							cmdSerial->print(angle,1);
+						}
 					}
-					cmdSerial->print(' ');
-					cmdSerial->print(leg.getDistance());
-					cmdSerial->print("mm");
-					cmdSerial->print(")");
-
+					if (memory.logServo()) {
+						cmdSerial->print(' ');
+						cmdSerial->print(leg.getDistance());
+						cmdSerial->print("mm");
+						cmdSerial->print(")");
+					}
 					leg.setAngles(legAngles, duration_ms);
 				}
-				cmdSerial->print("IMU(");
-				cmdSerial->print(imuX,1);
-				cmdSerial->print(',');
-				cmdSerial->print(imuY,1);
-				cmdSerial->print(',');
-				cmdSerial->print(imuStatus);
-				cmdSerial->println(')');
+				if (memory.logServo()) {
+					cmdSerial->print("IMU((");
+					cmdSerial->print(millis()-now);
+					cmdSerial->print("ms)");
 
-				static TimePassedBy timer(1000);
-				if (timer.isDue()) {
+					cmdSerial->print(imuX,1);
+					cmdSerial->print(',');
+					cmdSerial->print(imuY,1);
+					cmdSerial->print(',');
+					cmdSerial->print(imuStatus);
+					cmdSerial->print(')');
+				}
+				static TimePassedBy timer(2000);
+				if (timer.isDue() && memory.logServo()) {
 					cmdSerial->print("STATUS(");
 					for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 						cmdSerial->print('(');
@@ -163,13 +178,18 @@ void I2CSlave::executeRequest() {
 						cmdSerial->print((int)leg.servos[3].stat());
 						cmdSerial->print(')');
 					}
-					cmdSerial->println(')');
+					cmdSerial->print(')');
 				}
 
 				break;
 			}
 			case Cortex::GET:
 				// do nothing, just return current state
+				if (memory.logServo()) {
+					cmdSerial->print("GET(");
+					cmdSerial->print(millis()-now);
+					cmdSerial->print("ms)");
+				}
 				break;
 			}
 
@@ -209,6 +229,15 @@ void I2CSlave::executeRequest() {
 					voltage.getHighVoltage(),
 					controller.loopDuration_ms(),
 					response);
+
+			if (cmd == Cortex::MOVE)
+				controller.getCommunicationDuration_ms() = ((millis()-now) + controller.getCommunicationDuration_ms()*4)/5;
+
+			if (memory.logServo()) {
+				cmdSerial->print("END( ");
+				cmdSerial->print(millis()-now);
+				cmdSerial->println("ms)");
+			}
 
 			// set semaphore to indicate that response can be sent within main loop
 			responsePending = true;

@@ -370,21 +370,21 @@ void SlamView::drawTrajectory(EngineProxy::TrajectoryType type) {
 
 	if (pathLength > 0) {
 		switch (type) {
-		case EngineProxy::TRAJECTORY: {
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glTrajectoryColor4v);
-			glColor3fv(glTrajectoryColor4v);
-			break;
-		}
-		case EngineProxy::LOCAL_PLAN: {
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glLocalPlanColor4v);
-			glColor3fv(glLocalPlanColor4v);
-			break;
-		}
-		case EngineProxy::GLOBAL_PLAN: {
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glGlobalPlanColor4v);
-			glColor3fv(glGlobalPlanColor4v);
-			break;
-		}
+			case EngineProxy::TRAJECTORY: {
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glTrajectoryColor4v);
+				glColor3fv(glTrajectoryColor4v);
+				break;
+			}
+			case EngineProxy::LOCAL_PLAN: {
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glLocalPlanColor4v);
+				glColor3fv(glLocalPlanColor4v);
+				break;
+			}
+			case EngineProxy::GLOBAL_PLAN: {
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glGlobalPlanColor4v);
+				glColor3fv(glGlobalPlanColor4v);
+				break;
+			}
 		}
 	}
 	StampedPose prevPose;

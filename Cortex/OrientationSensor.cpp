@@ -354,9 +354,9 @@ void OrientationSensor::fetchData() {
 void OrientationSensor::loop(uint32_t now) {
 	// first reading should no happen before one 300s
 
-	// if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
-	// 	updateCalibration();
-	// }
+	if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
+	 	updateCalibration();
+	}
 
 	if (setupOk && sensorTimer.isDue_ms(CORTEX_SAMPLE_RATE, now)) {
 		fetchData();

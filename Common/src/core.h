@@ -20,6 +20,8 @@ const int NumberOfLegs = 5;
 // 4 servos per leg
 const int NumberOfLimbs= 4;
 
+const int NumberOfServos = NumberOfLimbs * NumberOfLegs;
+
 // kinematic is allowed to compute 5 degrees more than we mechanically will allow
 const float angleLimitOffset = 5;
 

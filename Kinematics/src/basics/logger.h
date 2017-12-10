@@ -20,6 +20,7 @@
 #define ROS_DEBUG_STREAM(args) LOG(DEBUG) << args;
 #define ROS_INFO_STREAM(args)  LOG(INFO) << args;
 #define ROS_ERROR_STREAM(args) LOG(ERROR) << args;
+#define ROS_WARN_STREAM(args)  LOG(WARNING) << args;
 #define ROS_ASSERT assert
 
 #endif
