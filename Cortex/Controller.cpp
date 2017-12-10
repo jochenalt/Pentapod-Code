@@ -108,16 +108,29 @@ TimePassedBy& Controller::getTimer() {
 
 
 void Controller::sendCommandToServos() {
-	uint32_t now = millis();
-	// logger->print("fire=");
-	// logger->println(now);
+	uint32_t start = millis();
 
 	round++;
-	// important: iterate over all legs limb-wise, such
+
+	uint32_t distancestarttime = start;
+	// grab the current distance coming from laser distance sensors
+	// apply the trick for performance: send the request to all serial lines
+	// and collect the answers in a second round
+	for (int leg = 0;leg<NumberOfLegs;leg++) {
+		legs[leg].fetchDistanceRequest(); // send request to serial line
+	}
+	// now collect all replies
+	for (int leg = 0;leg<NumberOfLegs;leg++) {
+		legs[leg].fetchDistanceResponse(); // collect distance from previous round
+	}
+	uint32_t distanceendtime = millis();
+
+	// iterate over all legs limb-wise, such
 	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
 	// Each loop just sends a fire-and-forget command with the to-be position,
 	// we do not wait for a reply, which takes around 10ms for 25 servos
 	// send command to Thigh, Hip, Foot, Knee in order to be more reactive
+	uint32_t servostarttime = millis();
 	for (int limb = 0;limb<NumberOfLimbs;limb++) {
 		int actLimb = limb;
 		switch (actLimb) {
@@ -127,30 +140,15 @@ void Controller::sendCommandToServos() {
 			case 3: actLimb = KNEE;break;
 		}
 		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
-			legs[leg].servos[actLimb].loop(now);
+			legs[leg].servos[actLimb].loop(servostarttime);
 		}
 	}
-
 	uint32_t servoendtime = millis();
-	/*
-	for (int leg = 0;leg<NumberOfLegs;leg++) {
-		legs[leg].fetchDistance();
-	}
-	*/
-	// grab the current distance coming from laser distance sensors
-	// apply the same trick for performance: send the request to all serial lines
-	// and collect the answers in a second round
-	for (int leg = 0;leg<NumberOfLegs;leg++) {
-		legs[leg].fetchDistanceRequest(); // send request to serial line
-	}
-	for (int leg = 0;leg<NumberOfLegs;leg++) {
-		legs[leg].fetchDistanceResponse(); // collect distance from previous round
-	}
-
-	uint32_t distanceendtime = millis();
 
 	// run low level loop that asks one servo per loop for its status
 	// ( results in a 1.6 Hz loop per servo )
+	uint32_t statstarttime = millis();
+
 	for (int limb = 0;limb<NumberOfLimbs;limb++) {
 		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
 			int servoNumber = leg*NumberOfLimbs + limb;
@@ -158,16 +156,18 @@ void Controller::sendCommandToServos() {
 				legs[leg].servos[limb].readStatus();
 		}
 	}
+	uint32_t statendtime = millis();
+	uint32_t end = statendtime;
 
-	uint32_t end = millis();
-
+	// low pass all measurements. These measurements are used to adapt the synchronisation
+	// between communication from Cortex via I2C and communication to servos
 	static uint32_t distanceTime_ms = 0;
-	distanceTime_ms = (distanceendtime - servoendtime)/2;
+	distanceTime_ms = (distanceendtime - distancestarttime + distanceTime_ms)/2;
 	static uint32_t statusTime_ms = 0;
-	statusTime_ms = (end - distanceendtime)/2;
+	statusTime_ms = (statendtime - statstarttime + statusTime_ms)/2;
 	static uint32_t servoTime_ms = 0;
-	servoTime_ms = (end - servoendtime)/2;
-	loopTime_ms = ((end - now) + loopTime_ms)/2;
+	servoTime_ms = (servoendtime - servostarttime  + servoTime_ms)/2;
+	loopTime_ms = ((end - start) + loopTime_ms)/2;
 
 	static TimePassedBy logTimer(5000);
 	if (logTimer.isDue()) {

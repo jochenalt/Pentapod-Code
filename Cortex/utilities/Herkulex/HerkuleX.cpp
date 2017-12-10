@@ -1020,10 +1020,11 @@ bool HerkulexClass::readData(int size)
 	int i = 0;
     int beginsave=0;
     int Time_Counter_us=0;
-	while((serial->available() < size) & (Time_Counter_us < TIME_OUT_MS*1000)){
+
+    // wait until number of bytes is there
+	while((serial->available() < size) && (Time_Counter_us < TIME_OUT_MS*1000)){
        	Time_Counter_us += 50;
        	delayMicroseconds(50);
-
 	}      	
 	while (serial->available() > 0){
 		byte inchar = (byte)serial->read();
@@ -1099,8 +1100,7 @@ int HerkulexClass::getDistance(int servoID, int &status) {
 
 		if (ck1 != dataEx[5]) return -1; //checksum verify
 		if (ck2 != dataEx[6]) return -2;
-
-			return distance;
+		return distance;
 	}
 	else {
 		return -3;	// could not read response, dont know why
@@ -1130,7 +1130,7 @@ void HerkulexClass::getDistanceRequest(int servoID) {
 	}
 
 	// send the request packet and wait that the packet is actually sent
-	sendData(packetSend,packetSize);
+	sendData(packetSend,packetSize, false);
 }
 
 int HerkulexClass::getDistanceResponse(int servoID, int& status) {

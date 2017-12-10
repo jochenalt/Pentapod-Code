@@ -231,7 +231,7 @@ void I2CSlave::executeRequest() {
 					response);
 
 			if (cmd == Cortex::MOVE)
-				controller.getCommunicationDuration_ms() = ((millis()-now) + controller.getCommunicationDuration_ms()*4)/5;
+				controller.getCommunicationDuration_ms() = ((millis()-now) + controller.getCommunicationDuration_ms())/2;
 
 			if (memory.logServo()) {
 				cmdSerial->print("END( ");
