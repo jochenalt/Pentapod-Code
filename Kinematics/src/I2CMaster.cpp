@@ -82,18 +82,25 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
     int totalBytesRead = 0;
     int bytesRead= 0;
     uint32_t start = clock_ms();
+    int tries = 0;
     do {
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
-        	ROS_INFO_STREAM ("receive_array failed, reply not yet there");
         	std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        	tries++;
     	}
     	if (bytesRead > 0) {
             totalBytesRead += bytesRead;
             RemainingBufferSize -= bytesRead;
         }
     } while ((clock_ms() < start + timeout_ms) && (RemainingBufferSize > 0));
+    if (RemainingBufferSize == 0) {
+    	if (tries > 0)
+    		ROS_WARN_STREAM ("receive_array used " << tries << " tries with " << clock_ms()-start << "ms");
+    } else {
+   		ROS_ERROR_STREAM ("receive_array did not succeed, bytes missing " << RemainingBufferSize);
+    }
 
     return totalBytesRead;
 }

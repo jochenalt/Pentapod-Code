@@ -72,7 +72,9 @@ int main(int argc, char * argv[]) {
 	TimeSamplerStatic engineTimer;
 
 	ROS_INFO_STREAM("entering pentapod engine's main loop with " << 1000.0/CORTEX_SAMPLE_RATE << "Hz");
-	ROS_INFO_STREAM("broadcast bot information and odom with " << 1000/10 << "Hz");
+
+	const int publishOdomFrequency = 10;
+	ROS_INFO_STREAM("broadcast bot information and odom with " << publishOdomFrequency << "Hz");
 
 	while (rosNode.ok()) {
 		// ensure that engine loop is timingwise correct since cortex
@@ -90,7 +92,7 @@ int main(int argc, char * argv[]) {
 			ros::spinOnce();
 
 			// now we have some time to publish odom and odom->base_link
-			if (lowPrioLoopTimer.isDue(1000/10)) {
+			if (lowPrioLoopTimer.isDue(1000/publishOdomFrequency)) {
 				odomPublisher.broadcastState();
 				odomPublisher.broadcastTransformation();
 				odomPublisher.broadcastOdom();
