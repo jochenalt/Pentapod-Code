@@ -42,7 +42,7 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	
 	// make servos stiffer by increasing P and I value of PI controller
 	herkulexMgr->setPositionKi(configData->herkulexMotorId, 220);
-	herkulexMgr->setPositionKp(configData->herkulexMotorId, 250);
+	herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
 
 	// do not use trapezoid but rectangular speed profile, speed profile is taken care of by cortex
 	// otherwise reacting to terrain or IMU changes takes too long
@@ -270,9 +270,17 @@ void HerkulexServoDrive::loop(uint32_t now) {
 
 	// run the low level loop of 1Hz returning the status of the servo
 	// take care that we request the status equally distributed
+	/*
 	if (statusReadTimer.isDue()) {
+		logger->print("stat(");
+		int legId = configData->leg;
+		int limbId = configData->id;
+		logger->print(legId);
+		logger->print("/");
+		logger->println(limbId);
 		readStatus();
 	}
+*/
 }
 
 // Each servo has a timer that takes care when the status of this servo is to be fetched.

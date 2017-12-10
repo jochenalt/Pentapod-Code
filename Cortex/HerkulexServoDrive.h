@@ -58,6 +58,8 @@ public:
 	// returns true, if servo has been setup'ed and reacts
 	bool isConnected() { return connected; };
 
+	void  readStatus();
+
 	// return the recently read status
 	ServoStatusType stat();
 
@@ -71,7 +73,6 @@ public:
 	void syncStatusTimer(uint32_t now);
 
 private:
-	void  readStatus();
 	float readServoTorque();
 	float convertUserAngle2HerkulexAngle(float herkulexAngle);
 	float convertHerkulexAngle2UserAngle(float userAngle);

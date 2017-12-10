@@ -55,6 +55,9 @@ void Controller::logConfiguration() {
 
 bool Controller::setup() {
 	loopTime_ms = 0;
+	round = 0;
+
+	communicationDuration_ms = 0;
 	servoLoopTimer.setRate(CORTEX_SAMPLE_RATE);
 
 	if (memory.persMem.logSetup) {
@@ -106,7 +109,10 @@ TimePassedBy& Controller::getTimer() {
 
 void Controller::sendCommandToServos() {
 	uint32_t now = millis();
+	// logger->print("fire=");
+	// logger->println(now);
 
+	round++;
 	// important: iterate over all legs limb-wise, such
 	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
 	// Each loop just sends a fire-and-forget command with the to-be position,
@@ -125,29 +131,59 @@ void Controller::sendCommandToServos() {
 		}
 	}
 
-	uint32_t middle = millis();
-	for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) {
+	uint32_t servoendtime = millis();
+	/*
+	for (int leg = 0;leg<NumberOfLegs;leg++) {
 		legs[leg].fetchDistance();
+	}
+	*/
+	// grab the current distance coming from laser distance sensors
+	// apply the same trick for performance: send the request to all serial lines
+	// and collect the answers in a second round
+	for (int leg = 0;leg<NumberOfLegs;leg++) {
+		legs[leg].fetchDistanceRequest(); // send request to serial line
+	}
+	for (int leg = 0;leg<NumberOfLegs;leg++) {
+		legs[leg].fetchDistanceResponse(); // collect distance from previous round
+	}
+
+	uint32_t distanceendtime = millis();
+
+	// run low level loop that asks one servo per loop for its status
+	// ( results in a 1.6 Hz loop per servo )
+	for (int limb = 0;limb<NumberOfLimbs;limb++) {
+		for (int leg = 0;leg<NUMBER_OF_LEGS;leg++) { // one leg, one serial line
+			int servoNumber = leg*NumberOfLimbs + limb;
+			if (round % NumberOfServos == servoNumber)
+				legs[leg].servos[limb].readStatus();
+		}
 	}
 
 	uint32_t end = millis();
 
-	static uint32_t distanceTime = 0;
-	static TimePassedBy logTimer(5000);
-
-	distanceTime = (end - middle + distanceTime)/2;
+	static uint32_t distanceTime_ms = 0;
+	distanceTime_ms = (distanceendtime - servoendtime)/2;
+	static uint32_t statusTime_ms = 0;
+	statusTime_ms = (end - distanceendtime)/2;
+	static uint32_t servoTime_ms = 0;
+	servoTime_ms = (end - servoendtime)/2;
 	loopTime_ms = ((end - now) + loopTime_ms)/2;
 
+	static TimePassedBy logTimer(5000);
 	if (logTimer.isDue()) {
-		cmdSerial->print("TIME(");
+		cmdSerial->print("TIME(loop=");
 		cmdSerial->print(loopTime_ms);
-		cmdSerial->print("(");
-		cmdSerial->print(distanceTime);
-		cmdSerial->println(")ms");
+		cmdSerial->print("ms ");
+		cmdSerial->print( " servo=");
+		cmdSerial->print(servoTime_ms);
+		cmdSerial->print( "ms stat=");
+		cmdSerial->print(statusTime_ms);
+		cmdSerial->print( "ms dist=");
+		cmdSerial->print(distanceTime_ms);
+		cmdSerial->print("ms comm=");
+		cmdSerial->print(controller.getCommunicationDuration_ms());
+		cmdSerial->println(" ms)");
 	}
-
-	// set timer such that next loop happens with designated rate unless another I2C request kicks in
-	servoLoopTimer.setDueTime(now + servoLoopTimer.getRate());
 }
 
 void Controller::loop(uint32_t now) {
@@ -165,7 +201,7 @@ void Controller::loop(uint32_t now) {
 }
 
 
-void Controller::adaptSynchronisation() {
+void Controller::adaptSynchronisation(uint32_t now) {
 	// Synchronize receiving commands and loop
 	// regardless how punctual this request comes in,
 	// in the long run it has a constant frequency.
@@ -176,23 +212,58 @@ void Controller::adaptSynchronisation() {
 	// right in the middle of two requests.
 	// filter the measurements to have a constant frequency.
 
-	uint32_t now = millis();
 
 	// get the time when the controller will fire the next loop
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
 
 	// the ideal timing is when the command comes in right between two move commands. Substract the runtime of a loop
-	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopTime_ms/2;
+	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopDuration_ms()/2;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.
 	// by this, the time will typcially never adapted but only when it moves out of
 	// the middle window between two requests.
-	if (asIsDueTime > toBeDueTime + servoLoopTimer.getRate()/4 ) {
-		servoLoopTimer.delayNextFire(-1);
+	int difference = toBeDueTime-asIsDueTime;
+
+	if (asIsDueTime > toBeDueTime + servoLoopTimer.getRate()/6 ) {
+		servoLoopTimer.delayNextFire(difference);
+		/*
+		logger->print("adapt t ");
+		logger->print(difference);
+		logger->print("now=");
+		logger->print(now);
+		logger->print( "asis=");
+		logger->print(asIsDueTime);
+		logger->print( "new asis=");
+		logger->print(servoLoopTimer.getDueTime());
+		logger->print(" tobe=");
+		logger->print(toBeDueTime);
+		logger->print(" limit=");
+		logger->print(toBeDueTime - servoLoopTimer.getRate()/6 );
+		logger->print("|");
+		logger->print(toBeDueTime + servoLoopTimer.getRate()/6 );
+		logger->println();
+		*/
 	}
-	if (asIsDueTime  < toBeDueTime - servoLoopTimer.getRate()/4) {
-		servoLoopTimer.delayNextFire(+1);
+	if (asIsDueTime  < toBeDueTime - servoLoopTimer.getRate()/6) {
+		servoLoopTimer.delayNextFire(difference);
+		/*
+		logger->print("adapt t ");
+		logger->print(difference);
+		logger->print("now=");
+		logger->print(now);
+		logger->print(" asis=");
+		logger->print(asIsDueTime);
+		logger->print( "new asis=");
+		logger->print(servoLoopTimer.getDueTime());
+		logger->print(" tobe=");
+		logger->print(toBeDueTime);
+		logger->print(" limit=");
+		logger->print(toBeDueTime - servoLoopTimer.getRate()/6 );
+		logger->print("|");
+		logger->print(toBeDueTime + servoLoopTimer.getRate()/6 );
+		logger->println();
+		*/
 	}
 	/*
 	cmdSerial->print("ctrl due t=");

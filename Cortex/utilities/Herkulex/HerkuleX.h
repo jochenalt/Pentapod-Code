@@ -100,7 +100,9 @@ public:
   void  set_ID(int ID_Old, int ID_New);
   void  clearError(int servoID);
 
-  int requestDistance(int servoID, int &status);
+  int getDistance(int servoID, int &status);
+  void getDistanceRequest(int servoID);
+  int getDistanceResponse(int servoID, int &status);
 
   void  torqueON(int servoID);
   void  torqueOFF(int servoID);

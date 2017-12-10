@@ -1056,7 +1056,7 @@ void HerkulexClass::clearBuffer()
 	}
 }
 
-int HerkulexClass::requestDistance(int servoID, int &status) {
+int HerkulexClass::getDistance(int servoID, int &status) {
 	uint8_t dataLength = 0;
 	uint8_t ID = 200;
 	uint8_t SENSOR_CMD_REQUEST_DISTANCE = 200;
@@ -1078,38 +1078,14 @@ int HerkulexClass::requestDistance(int servoID, int &status) {
 		packetSend[7 + i] = data[i];
 	}
 
-	/*
-	logger->print("TX");
-	for (int i = 0;i<packetSize;i++) {
-		logger->print(packetSend[i]);
-		logger->print(" ");
-	}
-	*/
-
 	// send the request packet and wait that the packet is actually sent
 	sendData(packetSend,packetSize);
 
 	// wait until reply of 9 characters has been sent.
 	waitTransmissionTime(9);
 
-	/*logger->print("RX");
-
-	delay(5);
-	while (Serial.available()) {
-		logger->print(Serial.read());
-		logger->print(' ');
-	}
-	*/
-
 	bool ok = readData(9);				// read 9 bytes from serial
 	if (ok) {
-		/*
-		for (int i = 0;i<9;i++) {
-			logger->print(dataEx[i]);
-			logger->print(" ");
-		}
-		logger->println();
-		*/
 										// 1.0xFF
 										// 2.0xFF
 		int size = dataEx[2];           // 3.Packet size 7-58
@@ -1121,27 +1097,65 @@ int HerkulexClass::requestDistance(int servoID, int &status) {
 		int ck1 = (size^ID^cmd ^ dataEx[7]^dataEx[8]) & 0xFE; 	// compute checksum1
 		int ck2 = (~ck1) & 0xFE;								// compute checksum2
 
-		/*
-		logger->print("distance=");
-		logger->print(distance);
-		logger->print("ck1=");
-		logger->print(ck1);
-		logger->print("ck2=");
-		logger->print(ck2);
-		*/
 		if (ck1 != dataEx[5]) return -1; //checksum verify
 		if (ck2 != dataEx[6]) return -2;
 
-		// logger->print("d=");
+			return distance;
+	}
+	else {
+		return -3;	// could not read response, dont know why
+	}
+}
 
-		// logger->println(distance);
+void HerkulexClass::getDistanceRequest(int servoID) {
+	uint8_t dataLength = 0;
+	uint8_t ID = 200;
+	uint8_t SENSOR_CMD_REQUEST_DISTANCE = 200;
 
+	uint8_t packetSize = 7 + dataLength; // Lengh of the request packet
+	uint8_t packetSend[packetSize]; // Request packet to send
+
+	// Request packet structure
+	packetSend[0] = 0xFF; // Header
+	packetSend[1] = 0xFF; // Header
+	packetSend[2] = packetSize; // Packet Size
+	packetSend[3] = ID; // ID of the servo
+	packetSend[4] = SENSOR_CMD_REQUEST_DISTANCE; // Instruction
+	packetSend[5] = (packetSize^ID^SENSOR_CMD_REQUEST_DISTANCE) & 0xFE;
+	packetSend[6] = (~packetSend[5]) & 0xFE;
+
+	// add data to packet
+	for(int i = 0 ; i < dataLength ; i++){
+		packetSend[7 + i] = data[i];
+	}
+
+	// send the request packet and wait that the packet is actually sent
+	sendData(packetSend,packetSize);
+}
+
+int HerkulexClass::getDistanceResponse(int servoID, int& status) {
+	bool ok = readData(9);				// read 9 bytes from serial
+	if (ok) {
+										// 1.0xFF
+										// 2.0xFF
+		int size = dataEx[2];           // 3.Packet size 7-58
+		int ID   = dataEx[3];	        // 4. Servo ID
+		int cmd  = dataEx[4];           // 5. CMD
+		int distance = dataEx[7];	 	// 6. measured sensor distance
+		status = dataEx[8];				// 7. istance sensor status
+
+		int ck1 = (size^ID^cmd ^ dataEx[7]^dataEx[8]) & 0xFE; 	// compute checksum1
+		int ck2 = (~ck1) & 0xFE;								// compute checksum2
+
+			if (ck1 != dataEx[5]) return -1; //checksum verify
+		if (ck2 != dataEx[6]) return -2;
 		return distance;
 	}
 	else {
 		return -3;	// could not read response, dont know why
 	}
 }
+
 
 void HerkulexClass::sendPacket(uint8_t ID, int CMD, const uint8_t data[], uint8_t dataLength){
 	uint8_t packetSize = 7 + dataLength; // Lengh of the request packet

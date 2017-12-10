@@ -404,7 +404,7 @@ void cmdBIN() {
 			controller.disable();
 			break;
 		case Cortex::MOVE: {
-			controller.adaptSynchronisation();
+			controller.adaptSynchronisation(millis());
 			LimbAnglesType legAngles;
 			for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
 				Leg& leg = controller.getLeg(legNo);
@@ -598,7 +598,7 @@ void cmdMOVE() {
 		else if (!controller.isEnabled())
 			replyError(SERVO_NOT_ENABLED);
 		else {
-			controller.adaptSynchronisation();
+			controller.adaptSynchronisation(millis());
 
 			// set the angles of the legs
 			for (int legNo = 0;legNo<NUMBER_OF_LEGS;legNo++) {
