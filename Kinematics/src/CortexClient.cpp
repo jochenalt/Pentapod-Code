@@ -312,7 +312,7 @@ bool CortexClient::cmdBinaryGetAll() {
 
 	cortexCommRetryCounter = 0;
 	do {
-		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 40 ,200);
+		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 45,100);
 	} while (retry(ok));
 
 	if (ok)
@@ -343,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 6,50);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 9,50);
     } while (retry(ok));
 
 	if (ok)
@@ -522,14 +522,6 @@ bool CortexClient::setupCortexCommunication(string i2cport, int i2cadr, string s
 
 	// now start command interface
 	serialCmd.disconnect();
-
-	/*
-	ok = serialCmd.connect(serialPort , baudRate);
-	if (!ok) {
-		ROS_ERROR_STREAM("connecting to " << serialPort << "(" << baudRate << ") failed");
-		setError(CORTEX_COM_FAILED);
-	}
-*/
 
 	if (cortexConnected) {
 		ok = cmdSETUP();
