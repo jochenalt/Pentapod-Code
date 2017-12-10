@@ -134,9 +134,9 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	// After this method, the map->odom transformation will be taken up by the main loop
 	ros::Time now = ros::Time::now();
 	ROS_INFO_STREAM("starting up move_base");
-
 	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - now < ros::Duration(10.0))) {
-		ROS_INFO_THROTTLE(2, "waiting for move base to come up");
+		if (ros::Time::now() - now > ros::Duration(4.0))
+			ROS_INFO_THROTTLE(1, "waiting for move base to come up");
 		broadcastTransformationMapToOdom();
 	}
 
@@ -641,7 +641,7 @@ void CommandDispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
 }
 
 void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
-	convertPoseStampedToTrajectory(og, odomFrame, globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
+	convertPoseStampedToTrajectory(og, Pose(), globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
 
 	// in case the need to set the goal orientation, do it now
 
