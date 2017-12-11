@@ -113,15 +113,16 @@ void Controller::sendCommandToServos() {
 	round++;
 
 	uint32_t distancestarttime = start;
-	// grab the current distance coming from laser distance sensors
-	// apply the trick for performance: send the request to all serial lines
+	// grab the current distance coming from distance sensors.
+	// first, send requests to all serial lines to save time
 	// and collect the answers in a second round
 	for (int leg = 0;leg<NumberOfLegs;leg++) {
-		legs[leg].fetchDistanceRequest(); // send request to serial line
+		legs[leg].fetchDistanceRequest();
 	}
+
 	// now collect all replies
 	for (int leg = 0;leg<NumberOfLegs;leg++) {
-		legs[leg].fetchDistanceResponse(); // collect distance from previous round
+		legs[leg].fetchDistanceResponse();
 	}
 	uint32_t distanceendtime = millis();
 
@@ -146,7 +147,7 @@ void Controller::sendCommandToServos() {
 	uint32_t servoendtime = millis();
 
 	// run low level loop that asks one servo per loop for its status
-	// ( results in a 1.6 Hz loop per servo )
+	// ( results in a 2.2 Hz loop per servo )
 	uint32_t statstarttime = millis();
 
 	for (int limb = 0;limb<NumberOfLimbs;limb++) {

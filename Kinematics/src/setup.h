@@ -65,8 +65,8 @@ const realnum maxAngularSpeed = maxSpeed/minFootTouchPointRadius; //  [rad/s]
 const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
 
 // limits of gait frequency (for beautiness of the gait mainly)
-const realnum minGaitFrequency = 0.3; 				// [Hz]
-const realnum maxGaitFrequency = 3.5; 				// [Hz]
+const realnum minGaitFrequency = 0.2; 				// [Hz]
+const realnum maxGaitFrequency = 4.0; 				// [Hz]
 
 // maximum speed of virtual foot ref point
 const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
@@ -91,11 +91,11 @@ const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
 const realnum moveToeWhenDistanceGreaterThan = 20.0;
 
-// must be bigger than moveToDistance, otherwise we end up in a deadlock in standing up where
+// must be bigger than moveToeWhenDistanceGreaterThan, otherwise we end up in a deadlock in standing up where
 // the toes do not not yet move due to a small difference but the distance is too big to stand up
 const realnum standUpWhenDistanceSmallerThan = moveToeWhenDistanceGreaterThan+5.0;
 
-// the zenith of the gait is reached at this ratio in time
+// the zenith of the gait is reached at this ratio in time. A symmetric movement would be 0.5
 const realnum postponeZenith = 0.7;					// [%]*100 of time
 
 #endif /* SETUP_H_ */

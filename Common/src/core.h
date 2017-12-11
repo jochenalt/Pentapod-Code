@@ -152,7 +152,7 @@ std::string getServoStatusTypeName(ServoStatusType stat);
 
 // every [ms] the motors get a new position. 11.2ms is the unit
 // Herkulex servos are working with, sample rate should be a multiple of that
-// With 28.75ms, we run at 35Hz
+// With 22.4ms, we run at 45Hz
 #define HERKULEX_MIN_SAMPLE 11.2
 #define CORTEX_SAMPLE_RATE  (2.0 * HERKULEX_MIN_SAMPLE)
 

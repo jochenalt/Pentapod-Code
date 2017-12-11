@@ -169,6 +169,13 @@ Point GaitController::interpolateLegMotion(
 	realnum currGroundPercentage = currentGroundPercentage[legNo];
 
 	realnum onePhaseBeat = (1.0-currGroundPercentage)/2.0;
+
+	// during normal gait take care that only one leg leaves or touches the ground at a time
+	// to keep the bot horizontally . Without that, the IMU has a hard time to compensate
+	// warping of legs.
+	if ((targetGaitType == SpiderWalk) || (targetGaitType == TwoLegsInTheAir))
+		onePhaseBeat = (1.0-currGroundPercentage*1.1)/2.0;
+
 	realnum localPhaseBeat = fmod(gaitProgress,onePhaseBeat)/onePhaseBeat;
 
 	// if we do not move but sort out the legs only, use small gait height only;
@@ -249,8 +256,10 @@ Point GaitController::interpolateLegMotion(
 					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
 
 				}
-				result = bezier[legNo].getCurrent((1.0-moderate(1.0-localPhaseBeat, 1))*postponeZenith);
 
+				// get next point within bezier curve. Apply moderation at the
+				// starting point to achieve an soft start up
+				result = bezier[legNo].getCurrent((1.0-moderate(1.0-localPhaseBeat, 1.0))*postponeZenith);
 
 				// if toe is close to the ground move leg with the ground during the first mm
 				if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance/3) {
@@ -278,8 +287,9 @@ Point GaitController::interpolateLegMotion(
 					if (abs(dDistance) > floatPrecision)
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
-					Point bezierPoint;
-					bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*(1.0-postponeZenith)+postponeZenith);
+					// get next point on bezier curve. Apply moderation to achieve
+					// a soft slow-down before touching the ground
+					Point bezierPoint = bezier[legNo].getCurrent(moderate(localPhaseBeat, 2.0)*(1.0-postponeZenith)+postponeZenith);
 
 					Point bezierTouchPoint = bezier[legNo].getEnd();
 					Point touchPointDifference = target-bezierTouchPoint;
@@ -302,20 +312,12 @@ Point GaitController::interpolateLegMotion(
 			case LegGaitDuty:
 			default:
 			{
-				// move along the ground
+				// move with the ground
 				result = getNextToePoint(currentToePoint, dT);
 				feetOnGround[legNo] = true;
-
 				break;
 			}
 		} // switch
-
-		// moderate the movement, unless we are on the ground where we must move very accurate
-		if ((phase != LegGaitDuty)) {
-			Point tmp(currentToePoint);
-			tmp.moveTo(result,dT, maxFootSpeed);
-			result = tmp;
-		}
 	}
 	return result;
 }

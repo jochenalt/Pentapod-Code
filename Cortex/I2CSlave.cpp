@@ -251,6 +251,7 @@ void I2CSlave::executeRequest() {
 
 }
 
+// this listener is called when a I2C request comes in
 void I2CSlave::onRequest() {
 	// if a response has been prepared, send it to the master
 	if (responsePending) {
