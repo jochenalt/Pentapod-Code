@@ -71,9 +71,6 @@ bool Engine::setupCommon() {
 	moderatedBodyPose = inputBodyPose;
 	currentBodyPose = inputBodyPose;
 
-	// before walking, we need to lift to standard walking height
-	inputBodyPose.position.z = standardBodyHeigh;
-
 	fourWalkLegRatio = 0; // we start with 5 legs mode. 0 % of 4 legs mode
 	spiderWalkLegRatio = 0; // we start with 5 legs mode.
 
@@ -113,6 +110,7 @@ void Engine::wakeUp() {
 	ROS_DEBUG_STREAM("wake up");
 	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
 		generalMode = LiftBody;
+		inputBodyPose.position.z = standardBodyHeigh;
 		bodyKinematics.startupPhase(true);
 		gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
@@ -774,8 +772,7 @@ void Engine::computeGaitSpeed() {
 }
 
 void Engine::computeWakeUpProcedure() {
-	if ((generalMode == BeingAsleep) ||
-		(generalMode == LiftBody) ||
+	if ((generalMode == LiftBody) ||
 		(generalMode == FallASleep)) {
 		currentGaitMode = OneLegInTheAir;
 		gaitControl.setTargetGaitMode(currentGaitMode);
@@ -799,9 +796,11 @@ void Engine::computeWakeUpProcedure() {
 		if ((gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < moveToeWhenDistanceGreaterThan)) {
 			// go down without adapting to gait
 			gaitControl.setAdaptionTypeToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
-			if (abs(moderatedBodyPose.position.z-minBodyHeight) < 1.0) {
+			if (abs(moderatedBodyPose.position.z-minBodyHeight) < floatPrecision) {
 				// falling asleep is done
 				generalMode = BeingAsleep;
+				inputBodyPose.null();
+				inputBodyPose.position.z = minBodyHeight;
 			};
 
 		}

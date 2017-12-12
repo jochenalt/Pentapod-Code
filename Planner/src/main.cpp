@@ -151,10 +151,14 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	if (remoteEngine)
+	if (remoteEngine) {
+		cout << "connecting to engine running at " << webserver_host << ":" << webserver_port << endl;
 		EngineProxy::getInstance().setupRemoteEngine(webserver_host,webserver_port);
-	else
+	}
+	else {
+		cout << "using local engine. Call with -h to change that" << endl;
 		EngineProxy::getInstance().setupSimulatedEngine();
+	}
 
 
 	// run one loop to get all initial data necessary to initialize UI
