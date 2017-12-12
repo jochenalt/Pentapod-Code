@@ -5,26 +5,26 @@
  *      Author: jochenalt
  */
 
-#include "DarkHoleFinder.h"
+#include "IntoDarkness.h"
 
 // in ros costmaps, lethal zones are 100
 const int LethalThreshold = 99;
 // according to our setting of inflation area in the costmap, 80 is a costmap value that is still reachable but close to a wall
 const int CandidateThreshold = 80;
 
-DarkHoleFinder::DarkHoleFinder() {
+IntoDarkness::IntoDarkness() {
 }
 
-DarkHoleFinder::~DarkHoleFinder() {
+IntoDarkness::~IntoDarkness() {
 }
 
 
-void DarkHoleFinder::setup(ros::NodeHandle handle) {
+void IntoDarkness::setup(ros::NodeHandle handle) {
 	handle.param<double>("dark_hole_finder/width", width, 6.0);
-	handle.param<double>("pentapod_server/dark_hole_finder/height", height, 6.0);
-	handle.param<double>("pentapod_server/dark_hole_finder/ray_min_distance", rayMinDistance, 0.35);
-	handle.param<double>("pentapod_server/dark_hole_finder/ray_max_distance", rayMaxDistance, 8.00);
-	handle.param<double>("pentapod_server/dark_hole_finder/scaryness_threshold", scarynessthreshold,0.50);
+	handle.param<double>("pentapod_server/into_darkness/height", height, 6.0);
+	handle.param<double>("pentapod_server/into_darkness/ray_min_distance", rayMinDistance, 0.35);
+	handle.param<double>("pentapod_server/into_darkness/ray_max_distance", rayMaxDistance, 8.00);
+	handle.param<double>("pentapod_server/into_darkness/scaryness_threshold", scarynessthreshold,0.50);
 
 
 	// convert to mm
@@ -34,13 +34,23 @@ void DarkHoleFinder::setup(ros::NodeHandle handle) {
 	rayMaxDistance *= 1000;
 }
 
-void DarkHoleFinder::feed(const Map& newSlamMap, const Map& newCostMap, const Pose& newPose) {
+void IntoDarkness::feedGlobalMap(const Map& newSlamMap, const Map& newCostMap, const Pose& newPose) {
 	// store the reference to the passed maps, do not copy for performance reasons
 	slamMap = (Map*)&newSlamMap;
 	costMap = (Map*)&newCostMap;
 	pose = newPose;
 
 	findDarkAndScaryHoles();
+}
+
+void IntoDarkness::feedLocalMap(const Map& newLocalMap) {
+	// store the reference to the passed maps, do not copy for performance reasons
+	localCostMap = (Map*)&newLocalMap;
+
+}
+
+void IntoDarkness::feedLaserMap(const LaserScan& newLaserScan) {
+	laserScan = (LaserScan*)&newLaserScan;
 }
 
 // find candidate by xor-ing each grid cell against the pattern below and take all cells with a result of at least 5 as candidates
@@ -50,7 +60,7 @@ void DarkHoleFinder::feed(const Map& newSlamMap, const Map& newCostMap, const Po
 //   1   1
 //    111
 
-bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
+bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
 	int pivotValue = costMap->getValueByWorld(x,y);
 	realnum holeValue = 0;
 	int wallCounter = 0;
@@ -76,10 +86,23 @@ bool DarkHoleFinder::isCandidate(millimeter_int x, millimeter_int y) {
 }
 
 // scariness is a metric between 0..1 identifying how tight the walls are around a location. 1 is the most scariness, kinda a coffin, 0 is free space
-realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
+realnum IntoDarkness::computeGlobalScariness(millimeter_int x, millimeter_int y) const {
+	return computeScariness(*slamMap, x,y);
+}
+
+realnum IntoDarkness::computeLocalScariness(millimeter_int x, millimeter_int y) const {
+	return computeScariness(*localCostMap, x,y);
+}
+
+realnum IntoDarkness::getCurrentScariness() {
+	return computeLocalScariness(pose.position.x,pose.position.y);
+}
+
+// scariness is a metric between 0..1 identifying how tight the walls are around a location. 1 is the most scariness, kinda a coffin, 0 is free space
+realnum IntoDarkness::computeScariness(const Map& map, millimeter_int x, millimeter_int y) const {
 	// send out 16 rays and measure the distance to the next wall
 	const int numberOfRays = 32;
-	int gridSize = slamMap->getGridSize();
+	int gridSize = map.getGridSize();
 	realnum scaryness = 0.0;
 	for (realnum alpha = 0; alpha < 2.0*M_PI;alpha += M_PI*2.0/numberOfRays) {
 		realnum s = sin(alpha);
@@ -87,7 +110,7 @@ realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
 		realnum gridDistance = sqrt(s*s + c*c)*gridSize;
 		bool found = false;
 		for (realnum distance = rayMinDistance+gridDistance;distance < rayMaxDistance;distance += gridDistance) {
-			if (slamMap->getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
+			if (map.getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
 				scaryness += 1000.0/(1000.0 + distance-rayMinDistance);
 				found = true;
 				break;
@@ -100,7 +123,7 @@ realnum DarkHoleFinder::computeScariness(millimeter_int x, millimeter_int y) {
 
 
 // diagonalize the 2d space into one hash code
-int DarkHoleFinder::getHashIdx(millimeter_int x, millimeter_int y) {
+int IntoDarkness::getHashIdx(millimeter_int x, millimeter_int y) {
 
 	int gridSize = slamMap->getGridSize();
 	int w = slamMap->getGridsWidth();
@@ -117,7 +140,7 @@ int DarkHoleFinder::getHashIdx(millimeter_int x, millimeter_int y) {
 }
 
 // reverse diagonalization, get 2d coordinates out of a hash code
-void DarkHoleFinder::getCoordByHashIdx(int hashIdx, millimeter_int& x, millimeter_int& y) {
+void IntoDarkness::getCoordByHashIdx(int hashIdx, millimeter_int& x, millimeter_int& y) {
 	int gridSize = slamMap->getGridSize();
 	int w = slamMap->getGridsWidth();
 	int h = slamMap->getGridsHeight();
@@ -129,25 +152,25 @@ void DarkHoleFinder::getCoordByHashIdx(int hashIdx, millimeter_int& x, millimete
 	y = (yi-h/2)*gridSize - gridSize/2;
 }
 
-realnum DarkHoleFinder::getScariness(millimeter_int x, millimeter_int y) {
+realnum IntoDarkness::getScariness(millimeter_int x, millimeter_int y) {
 	int hashIdx = getHashIdx(x,y);
 	return getScariness(hashIdx);
 }
 
-realnum DarkHoleFinder::getScariness(int hashIdx) {
+realnum IntoDarkness::getScariness(int hashIdx) {
 	std::map<int, realnum>::iterator holeIterator = foundDarkHoles.find(hashIdx);
 	if (holeIterator == foundDarkHoles.end())
 		return 0;
 	return holeIterator->second;
 }
 
-void DarkHoleFinder::addDarkScaryHole(millimeter_int x, millimeter_int y, realnum s) {
+void IntoDarkness::addDarkScaryHole(millimeter_int x, millimeter_int y, realnum s) {
 	int hashIdx = getHashIdx(x,y);
 	// dark hole is found, keep in temporary list before reducing this list
 	foundDarkHoles[hashIdx] = s;
 }
 
-void DarkHoleFinder::removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y) {
+void IntoDarkness::removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y) {
 	int gridSize = slamMap->getGridSize();
 	int w = slamMap->getGridsWidth();
 	int h = slamMap->getGridsHeight();
@@ -177,7 +200,7 @@ void DarkHoleFinder::removeIfBetterHoleInNeighbourhood(millimeter_int x, millime
 }
 
 // feed the hole finder with a new costmap and maintain the inner structure of all found holes
-void DarkHoleFinder::findDarkAndScaryHoles() {
+void IntoDarkness::findDarkAndScaryHoles() {
 	int gridSize = slamMap->getGridSize();
 	int w = slamMap->getGridsWidth();
 	int h = slamMap->getGridsHeight();
@@ -209,7 +232,7 @@ void DarkHoleFinder::findDarkAndScaryHoles() {
 			// check if pivot grid cell is a dark hole candidate
 			if (isCandidate(x,y)) {
 
-				realnum s = computeScariness(xGrid,yGrid);
+				realnum s = computeGlobalScariness(xGrid,yGrid);
 
 				if (s > scarynessthreshold) {
 					// dark hole is found, store in map and keep in temporary list as well
@@ -233,7 +256,7 @@ void DarkHoleFinder::findDarkAndScaryHoles() {
 	}
 }
 
-void DarkHoleFinder::getDarkScaryHoles(std::vector<Point>& holes) {
+void IntoDarkness::getDarkScaryHoles(std::vector<Point>& holes) {
 	holes.clear();
 
 	std::map<int, realnum>::iterator holeIterator = foundDarkHoles.begin();

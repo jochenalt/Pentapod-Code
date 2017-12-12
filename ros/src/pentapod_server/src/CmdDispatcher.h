@@ -43,7 +43,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 
 // navigation targets
-#include "DarkHoleFinder.h"
+#include "IntoDarkness.h"
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
@@ -76,7 +76,7 @@ public:
 
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
 
-	DarkHoleFinder& getDarkHoleFinder() { return holeFinder; };
+	IntoDarkness& getDarkHoleFinder() { return holeFinder; };
 
 	void setupNavigationStackTopics(ros::NodeHandle& handle);
 
@@ -147,7 +147,7 @@ private:
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
     Pose navigationGoal_world;
-	DarkHoleFinder holeFinder;
+	IntoDarkness holeFinder;
 	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;

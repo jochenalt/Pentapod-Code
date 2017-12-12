@@ -29,19 +29,22 @@
 #include "Engine.h"
 #include "spatial.h"
 #include <Map.h>
+#include <LaserScan.h>
 
-class DarkHoleFinder {
+class IntoDarkness {
 public:
-	DarkHoleFinder();
-	virtual ~DarkHoleFinder();
+	IntoDarkness();
+	virtual ~IntoDarkness();
 	void setup(ros::NodeHandle handle);
-	void feed(const Map& slamMap, const Map& globalCostmap, const Pose& pose);
+	void feedGlobalMap(const Map& slamMap, const Map& globalCostmap, const Pose& pose);
+	void feedLocalMap(const Map& localCostMap);
+	void feedLaserMap(const LaserScan& laserScan);
 
-
-	void findDarkAndScaryHoles();
 	void getDarkScaryHoles(std::vector<Point>& holes);
+	realnum getCurrentScariness();
 
 private:
+	void findDarkAndScaryHoles();
 	void removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y);
 	void removeLighterHole(int hashIdx);
 
@@ -53,7 +56,10 @@ private:
 	void getCoordByHashIdx(int hashIdx, millimeter_int& x, millimeter_int& y);
 
 	bool isCandidate(millimeter_int x, millimeter_int y);
-	realnum computeScariness(millimeter_int x, millimeter_int y);
+	realnum computeLocalScariness(millimeter_int x, millimeter_int y) const;
+	realnum computeGlobalScariness(millimeter_int x, millimeter_int y) const;
+	realnum computeScariness(const Map & localCostMap, millimeter_int x, millimeter_int y) const;
+
 
 
 	double width;
@@ -63,6 +69,8 @@ private:
 	double scarynessthreshold;
 	Map *slamMap = NULL;
 	Map *costMap = NULL;
+	Map *localCostMap = NULL;
+	LaserScan *laserScan = NULL;
 	Pose pose;
 
 	std::map<int, realnum> foundDarkHoles;

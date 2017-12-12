@@ -133,7 +133,7 @@ void Map::setGridDimension(int pWidth, int pHeight, millimeter pGridSize) {
 	mapSizeY= gridHeight*gridSize;
 }
 
-Map::GridState  Map::getOccupancyByWorld(int x,int y) {
+Map::GridState  Map::getOccupancyByWorld(int x,int y) const {
 	int gridX = (x/gridSize + gridWidth/2);
 	int gridY = (y/gridSize + gridHeight/2);
 
@@ -143,7 +143,7 @@ Map::GridState  Map::getOccupancyByWorld(int x,int y) {
 	return FREE;
 };
 
-int  Map::getValueByWorld(int x,int y) {
+int  Map::getValueByWorld(int x,int y) const {
 	int gridX = (x/gridSize + gridWidth/2);
 	int gridY = (y/gridSize + gridHeight/2);
 
@@ -161,7 +161,7 @@ void Map::setOccupancyByGridCoord(int gridX,int gridY, GridState p) {
 		pos = 0;
 };
 
-Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
+Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) const {
 	unsigned pos = gridHeight*gridX + gridY;
 	if ((pos >= 0) && (pos < occupancy.size()))
 		return (GridState)occupancy[pos];
@@ -170,7 +170,7 @@ Map::GridState Map::getOccupancyByGridCoord(int gridX,int gridY) {
 }
 
 
-int Map::getValueByGridCoord(int gridX,int gridY) {
+int Map::getValueByGridCoord(int gridX,int gridY) const {
 	unsigned pos = gridHeight*gridX + gridY;
 	if ((pos >= 0) && (pos < occupancy.size()))
 		return occupancy[pos];

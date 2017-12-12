@@ -4,10 +4,13 @@ global_costmap:
   # in order to be sure that a computed trajectory is easily feasable
   robot_radius: 0.400
 
-  global_frame: map
+  global_frame: /map
   robot_base_frame: base_link
   update_frequency: 5.0   # slam map is published with 2Hz
   publish_frequency: 2.0  # global cost map is used only when a new navigation goal is set. No need to go higher than 2Hz
+  # map is coming from hector slam
   static_map: true
   rolling_window: false
+  # If true the full costmap is published to "~<name>/grid" every update. If false only the part 
+  # of the costmap that has changed is published on the "~<name>/grid_updates" topic. 
   always_send_full_costmap: true

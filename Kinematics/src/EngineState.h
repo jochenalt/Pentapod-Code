@@ -26,6 +26,7 @@ public:
 		currentNoseOrientation = 0;
 		currentGaitMode = None;
 		engineMode = BeingAsleep;
+		currentScaryness = 0;
 		for (int i = 0;i < NumberOfLegs;i++) {
 			footAngle[i] = 0;
 			footOnGroundFlag[i] = 0;
@@ -48,6 +49,7 @@ public:
 		currentMapPose = state.currentMapPose;
 		currentGaitMode = state.currentGaitMode;
 		engineMode = state.engineMode;
+		currentScaryness = state.currentScaryness;
 		currentGaitRefPoints = state.currentGaitRefPoints;
 		for (int i = 0;i < NumberOfLegs;i++) {
 			legPhase[i] = state.legPhase[i];
@@ -97,6 +99,7 @@ public:
 	LegGaitPhase legPhase[NumberOfLegs];
 	realnum footAngle[NumberOfLegs];
 	PentaPointType toePointsWorld;
+	realnum currentScaryness;
 
 	// this is used for helper-indications in the UI
 	PentaPointType groundPoints;

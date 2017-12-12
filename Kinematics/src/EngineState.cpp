@@ -31,6 +31,7 @@ std::ostream& EngineState::serialize(std::ostream &out) const {
 	out << ",\"no\":" << floatToString(currentNoseOrientation,3);
 	out << ",\"gm\":" << intToString((int)currentGaitMode);
 	out << ",\"em\":" << intToString((int)engineMode);
+	out << ",\"cs\":" << floatToString(currentScaryness,3);
 
 	out << ",\"fog\":";
 	serializeArrayOfPrimitives(footOnGroundFlag, NumberOfLegs, out);
@@ -133,6 +134,12 @@ std::istream& EngineState::deserialize(std::istream &in) {
        	parseCharacter(in, ':', ok);
        	engineMode = (GeneralEngineModeType)parseInt(in, ok);
        	parseCharacter(in, ',', ok);
+
+       	parseString(in, ok); // "currentScariness"
+       	parseCharacter(in, ':', ok);
+       	currentScaryness = parseFloat(in, ok );
+       	parseCharacter(in, ',', ok);
+
 
        	parseString(in, ok); // "footonground"
        	parseCharacter(in, ':', ok);

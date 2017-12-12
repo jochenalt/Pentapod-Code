@@ -9,7 +9,7 @@
 #include "Map.h"
 #include "Trajectory.h"
 #include "Util.h"
-#include "DarkHoleFinder.h"
+#include "IntoDarkness.h"
 #include "CmdDispatcher.h"
 
 using namespace std;
@@ -602,7 +602,7 @@ void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::Co
 void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
-	holeFinder.feed(slamMap, globalCostMap, odomFrame);
+	holeFinder.feedGlobalMap(slamMap, globalCostMap, odomFrame);
 
 	vector<Point> holes;
 	holeFinder.getDarkScaryHoles(holes);
@@ -614,6 +614,7 @@ void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::Con
 
 void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
+	holeFinder.feedLocalMap(localCostMap);
 }
 
 void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan, const Pose& odomFrame, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
@@ -760,6 +761,7 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 	// ignore passed base_link and use odom_frame and /odom topic
 	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
  	engineState.currentMapPose = mapPose;
+ 	engineState.currentScaryness = holeFinder.getCurrentScariness();
 
  	// turn on the lidar if we wake up
  	// turn it off when we fall asleep

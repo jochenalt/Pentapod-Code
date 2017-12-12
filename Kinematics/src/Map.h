@@ -29,21 +29,21 @@ public:
 	void null();
 	bool isNull() const;
 	void setGridDimension(int pWidth, int pHeight, millimeter pResolution);
-	int getGridsWidth() { return gridWidth; };
-	int getGridsHeight() { return gridHeight; };
+	int getGridsWidth() const { return gridWidth; };
+	int getGridsHeight() const { return gridHeight; };
 
-	int getMapSizeX() { return mapSizeX;  };
-	int getMapSizeY() { return mapSizeY;  };
+	int getMapSizeX() const { return mapSizeX;  };
+	int getMapSizeY() const { return mapSizeY;  } ;
 
-	millimeter getGridSize() { return gridSize; };
-	int getGenerationNumber() { return generationNumber; };
+	millimeter getGridSize() const { return gridSize; };
+	int getGenerationNumber() const { return generationNumber; };
 	void setGenerationNumber(int no) { generationNumber = no; };
 
 	void setOccupancyByGridCoord(int x,int y, GridState p);
-	GridState getOccupancyByWorld(int x,int y);
-	GridState getOccupancyByGridCoord(int x,int y);
-	int getValueByWorld(int x,int y);
-	int getValueByGridCoord(int x,int y);
+	GridState getOccupancyByWorld(int x,int y) const ;
+	GridState getOccupancyByGridCoord(int x,int y) const;
+	int getValueByWorld(int x,int y) const;
+	int getValueByGridCoord(int x,int y) const;
 
 	virtual std::ostream& serialize(std::ostream &out) const;
 	virtual std::istream& deserialize(std::istream &in, bool& ok);
