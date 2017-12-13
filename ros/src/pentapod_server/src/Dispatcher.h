@@ -42,16 +42,18 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 
-// navigation targets
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+
+// look for dark scary holes
 #include "IntoDarkness.h"
 
-typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+#include "FreeWill.h"
 
 using namespace std;
 
-class CommandDispatcher {
+class Dispatcher {
 public:
-	CommandDispatcher();
+	Dispatcher();
 
 	void setup(ros::NodeHandle& handle);
 
@@ -90,8 +92,13 @@ public:
 	Pose getBaselink() { engineState.baseLinkInMapFrame; };
 
 	void broadcastTransformationMapToOdom();
+	NavigationStatusType getNavigationStatusType();
+	void advertiseBodyPose();
+
 
 private:
+
+	void advertiseBodyPoseToEngine(const Pose& bodyPose);
 	tf::TransformBroadcaster broadcaster;
 	std::string serializedLaserScan;
 
@@ -123,6 +130,7 @@ private:
 	Pose mapPose;
 	Pose odomFrame;
 	Pose odomPose;
+	Pose baseLinkInMapFrame;
 
 	ros::Publisher cmdVel;
 	ros::Publisher cmdBodyPose;
@@ -148,6 +156,7 @@ private:
 	Pose navigationGoal;
     Pose navigationGoal_world;
 	IntoDarkness holeFinder;
+	FreeWill will;
 	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;

@@ -146,8 +146,9 @@ include_directories(
 
 # Pentapod common library
 add_executable(${PROJECT_NAME}_node 
-   src/CmdDispatcher.cpp
+   src/Dispatcher.cpp
    src/IntoDarkness.cpp
+   src/FreeWill.cpp
    src/mongoose.c
    src/node.cpp
 )
