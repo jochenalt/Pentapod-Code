@@ -31,7 +31,7 @@ std::istream& LimbAngles::deserialize(std::istream &in, bool &ok) {
 
 ostream& operator<<(ostream& os, const LegPose& p)
 {
-	os << std::setprecision(3) << "( angles=" << p.angles << ", pos=" << p.position << ",ori=" << p.orientation << ")";
+	os << std::setprecision(3) << "( angles=" << p.angles << ", pos=" << p.position << ")";
 	return os;
 }
 
@@ -44,8 +44,6 @@ ostream& operator<<(ostream& os, const Pose& p)
 std::ostream& LegPose::serialize(std::ostream &out) const {
 	out << "{\"pos\":";
 	position.serialize(out);
-	out << ",\"ori\":";
-	orientation.serialize(out);
 	out << ",\"ang\":";
 	angles.serialize(out);
 	out << "}";
@@ -58,11 +56,6 @@ std::istream& LegPose::deserialize(std::istream &in, bool &ok) {
     	parseString(in, ok); // "position"
     	parseCharacter(in, ':', ok);
     	position.deserialize(in, ok);
-    	parseCharacter(in, ',', ok);
-
-    	parseString(in, ok); // "orientation"
-    	parseCharacter(in, ':', ok);
-    	orientation.deserialize(in, ok);
     	parseCharacter(in, ',', ok);
 
     	parseString(in, ok); // "angles"
@@ -284,7 +277,6 @@ void testSpatial() {
 
 	LegPose p1;
 	p1.position = Point(1.1,2.2,3.3);
-	p1.orientation = Rotation(4.4,5.5,6.6);
 	p1.angles = LimbAngles(7.7,8.8,9.9,10.10);
 
 	std::ostringstream out5;

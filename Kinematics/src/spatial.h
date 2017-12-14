@@ -1,7 +1,13 @@
 /*
  * spatial.h
  *
- * Spatial data structures like point, orientation, vector and matrix
+ * Spatial data structures
+ * - LimbAngles all angles of one leg
+ * - Pose           position and orientation. Also used as transformation containing a translation and a rotation
+ * - StampedPose    pose with timestamp
+ * - SpatialPID     PID controller for Rotation
+ * - LegPose		A pose of a leg (considerung the toe points position) and all joint angles
+ * - PentaType      A template making a class a 5-tuple
  *
  * Author: JochenAlt
  */
@@ -340,7 +346,6 @@ class LegPose : public Serializable  {
 		virtual ~LegPose() {};
 		LegPose(const LegPose& pose): LegPose() {
 			position = pose.position;
-			orientation = pose.orientation;
 			angles = pose.angles;
 		};
 		LegPose(const Point& pPosition) {
@@ -349,23 +354,15 @@ class LegPose : public Serializable  {
 		}
 		LegPose(const Point& pPosition, const Rotation& pOrientation) {
 			position = pPosition;
-			orientation = pOrientation;
 			angles.null();
-		};
-		LegPose(const Point& pPosition, const Rotation& pOrientation, const realnum pGripperDistance, const LimbAngles& pAngles, const Point& pTcpDeviation) {
-			position = pPosition;
-			orientation = pOrientation;
-			angles = pAngles;
 		};
 
 		void operator= (const LegPose& pose) {
 			position = pose.position;
-			orientation = pose.orientation;
 			angles = pose.angles;
 		}
 
 		void null() {
-			orientation.null();
 			position.null();
 			angles.null();
 
@@ -377,7 +374,6 @@ class LegPose : public Serializable  {
 
 		void moveTo(const LegPose& b, realnum dT, realnum maxSpeed, realnum maxRotateSpeed) {
 			position.moveTo(b.position, dT, maxSpeed);
-			orientation.moveTo(b.orientation, dT, maxRotateSpeed);
 		};
 
 		float distance(const LegPose& pPose) const {
@@ -391,8 +387,7 @@ class LegPose : public Serializable  {
 		}
 
 		bool operator==(const LegPose& pPose) {
-			return 	(position == pPose.position &&
-					orientation == pPose.orientation);
+			return 	(position == pPose.position);
 		};
 
 		bool operator!=(const LegPose& pos) {
@@ -401,25 +396,16 @@ class LegPose : public Serializable  {
 
 		void operator+=(const LegPose& pos) {
 			position += pos.position;
-			for (int i = 0;i<3;i++)
-				orientation[i] += pos.orientation[i];
 		};
 		void operator-=(const LegPose& pos) {
 			position -= pos.position;
-			for (int i = 0;i<3;i++)
-				orientation[i] -= pos.orientation[i];
 		};
 
 		void operator*=(const float x) {
 			position *= x;
-
-			for (int i = 0;i<3;i++)
-				orientation[i] *= x;
 		};
 		void operator/=(const float x) {
 			position /= x;
-			for (int i = 0;i<3;i++)
-				orientation[i] /= x;
 		};
 
 		LegPose operator*(float x) const {
@@ -449,7 +435,6 @@ class LegPose : public Serializable  {
 		virtual std::istream& deserialize(std::istream &in, bool &ok);
 
 		Point position;
-		Rotation orientation;
 		LimbAngles angles;
 };
 
@@ -487,7 +472,6 @@ typedef PentaType<LimbAngles> LegAnglesType;
 
 // some basic vector operations
 bool 	almostEqual(const Point& a, const Point& b, realnum precision);
-realnum distance(const Vector& a, const Vector& b);
 realnum triangleHypothenusisLength(realnum a, realnum b); 		// pythagoras
 realnum triangleHeightToC(realnum a, realnum b, realnum c);		// herons law
 Vector 	orthogonalVector(const Vector& a, realnum l);			// return orthogonal vector with length and z = 0
