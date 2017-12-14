@@ -9,8 +9,9 @@
 #include "Map.h"
 #include "Trajectory.h"
 #include "Util.h"
+
+#include "Dispatcher.h"
 #include "IntoDarkness.h"
-#include "CmdDispatcher.h"
 
 using namespace std;
 
@@ -46,7 +47,7 @@ void compileURLParameter(string uri, vector<string> &names, vector<string> &valu
 	}
 }
 
-CommandDispatcher::CommandDispatcher() {
+Dispatcher::Dispatcher() {
 	mapGenerationNumber = 0;
 	trajectoryGenerationNumber = 0;
 	lidarIsOn = false;
@@ -55,7 +56,7 @@ CommandDispatcher::CommandDispatcher() {
 }
 
 
-void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
+void Dispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 	localCostmapGenerationNumber = -1;
 	globalCostmapGenerationNumber = -1;
 	localPlanGenerationNumber = -1;
@@ -63,11 +64,11 @@ void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 
 	// subscribe to the navigation stack topic that delivers the global costmap
     ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
-	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &CommandDispatcher::listenerGlobalCostmap, this);
+	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Dispatcher::listenerGlobalCostmap, this);
 
 	// subscribe to the navigation stack topic that delivers the local costmap
     ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
-	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &CommandDispatcher::listenerLocalCostmap, this);
+	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Dispatcher::listenerLocalCostmap, this);
 
 	// subscribe to the right topic of the local planner used
 	std::string base_local_planner;
@@ -77,41 +78,41 @@ void CommandDispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 
 	// subscribe to path of local planner
     ROS_INFO_STREAM("subscribe to local plan from " << local_plan_topic_name);
-	localPathSubscriber = handle.subscribe(local_plan_topic_name, 1000, &CommandDispatcher::listenerLocalPlan, this);
+	localPathSubscriber = handle.subscribe(local_plan_topic_name, 1000, &Dispatcher::listenerLocalPlan, this);
 
 	// subscribe to path of global planner
 	ROS_INFO_STREAM("subscribe to global plan from " << global_plan_topic_name);
-	globalPathSubscriber = handle.subscribe(global_plan_topic_name, 1000, &CommandDispatcher::listenerGlobalPlan, this);
+	globalPathSubscriber = handle.subscribe(global_plan_topic_name, 1000, &Dispatcher::listenerGlobalPlan, this);
 }
 
-void CommandDispatcher::setup(ros::NodeHandle& handle) {
+void Dispatcher::setup(ros::NodeHandle& handle) {
 
 	//tell the action client that we want to spin a thread by default and wait until up and running
 	moveBaseClient = new MoveBaseClient("move_base", true);
 
 	// subscribe to the SLAM map coming from hector slamming
 	ROS_INFO_STREAM("subscribe to /map");
-	occupancyGridSubscriber = handle.subscribe("map", 1000, &CommandDispatcher::listenerOccupancyGrid, this);
+	occupancyGridSubscriber = handle.subscribe("map", 1000, &Dispatcher::listenerOccupancyGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	ROS_INFO_STREAM("subscribe to /scan");
-	laserScanSubscriber = handle.subscribe("scan", 1000, &CommandDispatcher::listenToLaserScan, this);
+	laserScanSubscriber = handle.subscribe("scan", 1000, &Dispatcher::listenToLaserScan, this);
 
 	// subscribe to the SLAM topic that deliveres the etimated position
 	ROS_INFO_STREAM("subscribe to /slam_out_pose");
-	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &CommandDispatcher::listenerSLAMout,  this);
+	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &Dispatcher::listenerSLAMout,  this);
 
 	// subscribe to the path
 	ROS_INFO_STREAM("subscribe to /trajectory");
-	pathSubscriber = handle.subscribe("/trajectory", 1000, &CommandDispatcher::listenToTrajectory,  this);
+	pathSubscriber = handle.subscribe("/trajectory", 1000, &Dispatcher::listenToTrajectory,  this);
 
 	// subscribe to the bots odom (without being fused with SLAM)
 	ROS_INFO_STREAM("subscribe to /odom");
-	odomSubscriber = handle.subscribe("odom", 1000, &CommandDispatcher::listenerOdometry, this);
+	odomSubscriber = handle.subscribe("odom", 1000, &Dispatcher::listenerOdometry, this);
 
 	// subscribe to the bots state
 	ROS_INFO_STREAM("subscribe to /engine/get_state");
-	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &CommandDispatcher::listenerBotState,  this);
+	stateSubscriber = handle.subscribe("/engine/get_state", 1000, &Dispatcher::listenerBotState,  this);
 
 	// service to start or stop the lidar motor
 	startLidarService = handle.serviceClient<std_srvs::Empty>("/start_motor");
@@ -146,19 +147,21 @@ void CommandDispatcher::setup(ros::NodeHandle& handle) {
 	else {
 	    ROS_ERROR("move_base did not come up!!!");
 	}
+
+	will.setup(slamMap, globalCostMap, localCostMap, odomFrame, baseLinkInMapFrame, engineState);
 }
 
 
-actionlib::SimpleClientGoalState CommandDispatcher::getNavigationGoalStatus() {
+actionlib::SimpleClientGoalState Dispatcher::getNavigationGoalStatus() {
 	return moveBaseClient->getState();
 }
 
-Pose CommandDispatcher::getNavigationGoal() {
+Pose Dispatcher::getNavigationGoal() {
 	return navigationGoal_world;
 }
 
 
-void CommandDispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
+void Dispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
 
 	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
 		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
@@ -209,7 +212,7 @@ string getResponse(bool ok) {
 // central dispatcher of all url requests arriving at the webserver
 // returns true, if request has been dispatched successfully. Otherwise the caller
 // should assume that static content is to be displayed.
-bool CommandDispatcher::dispatch(string uri, string query, string body, string &response, bool &okOrNOk) {
+bool Dispatcher::dispatch(string uri, string query, string body, string &response, bool &okOrNOk) {
 
 	response = "";
 	string urlPath = getPath(uri);
@@ -314,15 +317,7 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 			Pose bodyPose;
 			bodyPose.deserialize(in,ok);
 
-			geometry_msgs::Twist twist;
-			twist.linear.x = bodyPose.position.x/1000.0;
-			twist.linear.y = bodyPose.position.y/1000.0;
-			twist.linear.z = bodyPose.position.z/1000.0;
-
-			twist.angular.x = bodyPose.orientation.x;
-			twist.angular.y = bodyPose.orientation.y;
-			twist.angular.z = bodyPose.orientation.z;
-			cmdBodyPose.publish(twist);
+			advertiseBodyPoseToEngine(bodyPose);
 
 			response = getResponse(ok);
 			return true;
@@ -498,10 +493,7 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 		}
 		else if (hasPrefix(command,"goal/get")) {
 			std::ostringstream out;
-			int navStatus = NavigationStatusType::NavPending;
-			if (!getNavigationGoal().isNull()) {
-				navStatus = (int)getNavigationGoalStatus().state_;
-			}
+			int navStatus = (int)getNavigationStatusType();
 
 			getNavigationGoal().serialize(out);
 			out << ", \"status\":" << navStatus;
@@ -537,7 +529,13 @@ bool CommandDispatcher::dispatch(string uri, string query, string body, string &
 	return false;
 }
 
-void CommandDispatcher::listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr ) {
+NavigationStatusType Dispatcher::getNavigationStatusType() {
+	if (!getNavigationGoal().isNull())
+		return (NavigationStatusType)(int)getNavigationGoalStatus().state_;
+	return NavigationStatusType::NavPending;
+}
+
+void Dispatcher::listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr ) {
 	LaserScan laserScan;
 	std::vector<int_millimeter> newScan;
 	angle_rad startAngle = scanPtr->angle_min;
@@ -595,14 +593,14 @@ void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& inputMap
 	serializedMap = out.str();
 }
 
-void CommandDispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+void Dispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, SLAM_MAP_TYPE, slamMap, mapGenerationNumber, serializedMap);
 }
 
-void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
-	holeFinder.feedGlobalMap(slamMap, globalCostMap, odomFrame);
+	holeFinder.feedGlobalMap(slamMap, globalCostMap, odomFrame, odomPose);
 
 	vector<Point> holes;
 	holeFinder.getDarkScaryHoles(holes);
@@ -612,7 +610,7 @@ void CommandDispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::Con
 
 }
 
-void CommandDispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+void Dispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
 	holeFinder.feedLocalMap(localCostMap);
 }
@@ -637,11 +635,11 @@ void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan,
 	serializedPlan = out.str();
 }
 
-void CommandDispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
+void Dispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
 	convertPoseStampedToTrajectory(og, odomFrame, localPlan, localPlanGenerationNumber, localPlanSerialized);
 }
 
-void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
+void Dispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
 	convertPoseStampedToTrajectory(og, Pose(), globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
 
 	// in case the need to set the goal orientation, do it now
@@ -666,7 +664,7 @@ void CommandDispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) 
 	}
 }
 
-void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
+void Dispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
 
 	// mapPose of hector mapping is given in [m], we need [mm]
 	mapPose.position.x = og->pose.position.x*1000.0;
@@ -678,7 +676,7 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 	// compute odomFrame for map->odom transformation
 	odomFrame = mapPose.applyInverseTransformation(odomPose);
 
-	// check this
+	// check this (remove once it is working)
  	Pose test;
 	test = odomFrame.applyTransformation(odomPose);
 
@@ -694,7 +692,7 @@ void CommandDispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::Const
 }
 
 // subscription to path
-void CommandDispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path) {
+void Dispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path) {
 	Trajectory trajectory;
 	trajectory.clear();
 	for (unsigned int i = 0;i<path->poses.size();i++) {
@@ -714,7 +712,7 @@ void CommandDispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path)
 }
 
 // subscription to odom
-void CommandDispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
+void Dispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
 	// receive odometry from bot
 	odomPose.position.x = odom->pose.pose.position.x*1000.0;
 	odomPose.position.y = odom->pose.pose.position.y*1000.0;
@@ -727,7 +725,7 @@ void CommandDispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odo
 	realnum angularSpeedZ  = odom->twist.twist.angular.z;
 }
 
-void CommandDispatcher::startLidar(bool on) {
+void Dispatcher::startLidar(bool on) {
  	std_srvs::Empty srv;
 	if (on) {
 	    ROS_INFO("RPLidar is turned on");
@@ -742,26 +740,26 @@ void CommandDispatcher::startLidar(bool on) {
 }
 
 
-void CommandDispatcher::clearCostmaps() {
+void Dispatcher::clearCostmaps() {
  	std_srvs::Empty srv;
     ROS_INFO("clear costmaps");
 	clearCostmapService.call(srv);
 }
 
 // subscription to bots state
-void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {
+void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {
 	std::istringstream in(fullStateStr->data);
 	engineState.deserialize(in);
 
-	// update baselink pose and slam pose which does not come from pentapod engine
-	ROS_INFO_STREAM_THROTTLE(5, "base_link=" << engineState.baseLinkInMapFrame);
  	// engineState.currentBaselinkPose.position = odomFrame.position + odomPose.position.getRotatedAroundZ(odomFrame.orientation.z);
  	// engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
 
 	// ignore passed base_link and use odom_frame and /odom topic
-	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
+	baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
+	engineState.baseLinkInMapFrame = baseLinkInMapFrame;
  	engineState.currentMapPose = mapPose;
  	engineState.currentScaryness = holeFinder.getCurrentScariness();
+ 	cout << " " << holeFinder.getCurrentScariness() << endl;
 
  	// turn on the lidar if we wake up
  	// turn it off when we fall asleep
@@ -774,7 +772,7 @@ void CommandDispatcher::listenerBotState(const std_msgs::String::ConstPtr&  full
 }
 
 
-void CommandDispatcher::broadcastTransformationMapToOdom() {
+void Dispatcher::broadcastTransformationMapToOdom() {
 	broadcaster.sendTransform(
 		  tf::StampedTransform(
 			tf::Transform(tf::createQuaternionFromYaw(odomFrame.orientation.z),
@@ -782,3 +780,24 @@ void CommandDispatcher::broadcastTransformationMapToOdom() {
 			ros::Time::now(),"map", "odom"));
 }
 
+void Dispatcher::advertiseBodyPoseToEngine(const Pose& bodyPose) {
+	geometry_msgs::Twist twist;
+	twist.linear.x = bodyPose.position.x/1000.0;
+	twist.linear.y = bodyPose.position.y/1000.0;
+	twist.linear.z = bodyPose.position.z/1000.0;
+
+	twist.angular.x = bodyPose.orientation.x;
+	twist.angular.y = bodyPose.orientation.y;
+	twist.angular.z = bodyPose.orientation.z;
+	cmdBodyPose.publish(twist);
+}
+
+void Dispatcher::advertiseBodyPose() {
+	if (getNavigationStatusType() == NavigationStatusType::NavActive) {
+		Pose toBePose = will.getAutonomousBodyPose();
+		if (abs(toBePose.position.z - engineState.currentBodyPose.position.z) > floatPrecision) {
+			ROS_INFO_STREAM("advertise new body pose" << toBePose);
+			advertiseBodyPoseToEngine(toBePose);
+		}
+	}
+}

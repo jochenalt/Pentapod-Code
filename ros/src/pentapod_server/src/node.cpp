@@ -12,9 +12,6 @@
 #include "setup.h"
 
 // Pentapod/Server
-#include "CmdDispatcher.h"
-
-// basic ROS
 #include <ros/ros.h>
 
 // messages and services
@@ -31,12 +28,13 @@
 
 // used for publishing map->odom
 #include <tf/transform_broadcaster.h>
+#include "Dispatcher.h"
 
 using namespace std;
 
 static struct mg_serve_http_opts s_http_server_opts;
 
-CommandDispatcher* dispatcher_ptr = NULL;
+Dispatcher* dispatcher_ptr = NULL;
 // define an mongoose event handler function that is called whenever a request comes in
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
@@ -66,7 +64,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     				}
     			} else {
     				// no API call, serve static content
-    				mg_serve_http(nc, (http_message*) ev_data, s_http_server_opts);
+    				mg_serve_http(
+    						nc, (http_message*) ev_data, s_http_server_opts);
     			}
     		break;
     	}
@@ -80,7 +79,7 @@ int main(int argc, char * argv[]) {
 	ROS_INFO_STREAM("starting pentapod_server node");
 
 	ros::init(argc, argv, "pentapod_server_node");
-	CommandDispatcher cmdDispatcher;
+	Dispatcher cmdDispatcher;
 	dispatcher_ptr = &cmdDispatcher;
 
 	ros::NodeHandle rosNode;
@@ -142,6 +141,8 @@ int main(int argc, char * argv[]) {
 
 	// main loop that takes care of the webserver as well as ROS
 	TimeSamplerStatic odomTimer;
+	TimeSamplerStatic bodyPoseTimer;
+
 	while (rosNode.ok()) {
 		// pump callbacks of topics
 		ros::spinOnce();
@@ -150,7 +151,12 @@ int main(int argc, char * argv[]) {
 		// broadcast map -> odom transformation at 10 Hz
 		if (odomTimer.isDue(1000/10)) {
 			cmdDispatcher.broadcastTransformationMapToOdom();
+
+			if (bodyPoseTimer.isDue(500)) {
+				cmdDispatcher.advertiseBodyPose();
+			}
 		}
+
 
 
 		// check and dispatch incoming http requests (dispatched by CommandDispatcher) and wait for 10ms max.

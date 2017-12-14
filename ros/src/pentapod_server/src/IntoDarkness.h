@@ -36,7 +36,7 @@ public:
 	IntoDarkness();
 	virtual ~IntoDarkness();
 	void setup(ros::NodeHandle handle);
-	void feedGlobalMap(const Map& slamMap, const Map& globalCostmap, const Pose& pose);
+	void feedGlobalMap(const Map& slamMap, const Map& globalCostmap, const Pose& odomFrame, const Pose& pose);
 	void feedLocalMap(const Map& localCostMap);
 	void feedLaserMap(const LaserScan& laserScan);
 
@@ -58,7 +58,6 @@ private:
 	bool isCandidate(millimeter_int x, millimeter_int y);
 	realnum computeLocalScariness(millimeter_int x, millimeter_int y) const;
 	realnum computeGlobalScariness(millimeter_int x, millimeter_int y) const;
-	realnum computeScariness(const Map & localCostMap, millimeter_int x, millimeter_int y) const;
 
 
 
@@ -66,12 +65,15 @@ private:
 	double height;
 	double rayMinDistance;
 	double rayMaxDistance;
+	double wallClosenessMaxDistance;
+
 	double scarynessthreshold;
 	Map *slamMap = NULL;
 	Map *costMap = NULL;
 	Map *localCostMap = NULL;
 	LaserScan *laserScan = NULL;
-	Pose pose;
+	Pose* odomFrame = NULL;
+	Pose* pose = NULL;
 
 	std::map<int, realnum> foundDarkHoles;
 };

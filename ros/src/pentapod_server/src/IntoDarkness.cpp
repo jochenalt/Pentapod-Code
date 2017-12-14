@@ -13,6 +13,8 @@ const int LethalThreshold = 99;
 const int CandidateThreshold = 80;
 
 IntoDarkness::IntoDarkness() {
+	odomFrame = new Pose();
+	pose = new Pose();
 }
 
 IntoDarkness::~IntoDarkness() {
@@ -24,6 +26,7 @@ void IntoDarkness::setup(ros::NodeHandle handle) {
 	handle.param<double>("pentapod_server/into_darkness/height", height, 6.0);
 	handle.param<double>("pentapod_server/into_darkness/ray_min_distance", rayMinDistance, 0.35);
 	handle.param<double>("pentapod_server/into_darkness/ray_max_distance", rayMaxDistance, 8.00);
+	handle.param<double>("pentapod_server/into_darkness/close_wall_max_distance", wallClosenessMaxDistance, 1.00);
 	handle.param<double>("pentapod_server/into_darkness/scaryness_threshold", scarynessthreshold,0.50);
 
 
@@ -32,14 +35,16 @@ void IntoDarkness::setup(ros::NodeHandle handle) {
 	height *= 1000;
 	rayMinDistance *= 1000;
 	rayMaxDistance *= 1000;
+	wallClosenessMaxDistance *= 1000;
+
 }
 
-void IntoDarkness::feedGlobalMap(const Map& newSlamMap, const Map& newCostMap, const Pose& newPose) {
+void IntoDarkness::feedGlobalMap(const Map& newSlamMap, const Map& newCostMap, const Pose& newOdomFrame, const Pose& newPose) {
 	// store the reference to the passed maps, do not copy for performance reasons
 	slamMap = (Map*)&newSlamMap;
 	costMap = (Map*)&newCostMap;
-	pose = newPose;
-
+	pose = (Pose*)&newPose;
+	odomFrame = (Pose*)&newOdomFrame;
 	findDarkAndScaryHoles();
 }
 
@@ -87,39 +92,53 @@ bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
 
 // scariness is a metric between 0..1 identifying how tight the walls are around a location. 1 is the most scariness, kinda a coffin, 0 is free space
 realnum IntoDarkness::computeGlobalScariness(millimeter_int x, millimeter_int y) const {
-	return computeScariness(*slamMap, x,y);
-}
-
-realnum IntoDarkness::computeLocalScariness(millimeter_int x, millimeter_int y) const {
-	return computeScariness(*localCostMap, x,y);
-}
-
-realnum IntoDarkness::getCurrentScariness() {
-	return computeLocalScariness(pose.position.x,pose.position.y);
-}
-
-// scariness is a metric between 0..1 identifying how tight the walls are around a location. 1 is the most scariness, kinda a coffin, 0 is free space
-realnum IntoDarkness::computeScariness(const Map& map, millimeter_int x, millimeter_int y) const {
 	// send out 16 rays and measure the distance to the next wall
 	const int numberOfRays = 32;
-	int gridSize = map.getGridSize();
+	int gridSize = slamMap->getGridSize();
 	realnum scaryness = 0.0;
 	for (realnum alpha = 0; alpha < 2.0*M_PI;alpha += M_PI*2.0/numberOfRays) {
 		realnum s = sin(alpha);
 		realnum c = cos(alpha);
 		realnum gridDistance = sqrt(s*s + c*c)*gridSize;
-		bool found = false;
 		for (realnum distance = rayMinDistance+gridDistance;distance < rayMaxDistance;distance += gridDistance) {
-			if (map.getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
+			if (slamMap->getOccupancyByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
 				scaryness += 1000.0/(1000.0 + distance-rayMinDistance);
-				found = true;
 				break;
 			}
 		}
-
 	}
 	return (scaryness/numberOfRays);
 }
+
+realnum IntoDarkness::computeLocalScariness(millimeter_int x, millimeter_int y) const {
+	if (slamMap == NULL)
+		return -1;
+	// send out 16 rays and measure the distance to the next wall
+	const int numberOfRays = 32;
+	int gridSize = slamMap->getGridSize();
+	int gridWidth= slamMap->getGridsWidth();
+	int gridHeight= slamMap->getGridsHeight();
+
+	realnum scaryness = 0.0;
+	for (realnum alpha = 0; alpha < 2.0*M_PI;alpha += M_PI*2.0/numberOfRays) {
+		realnum s = sin(alpha);
+		realnum c = cos(alpha);
+		realnum gridDistance = sqrt(s*s + c*c)*gridSize;
+		for (realnum distance = rayMinDistance+gridDistance;distance < wallClosenessMaxDistance;distance += gridDistance) {
+			if (slamMap->getValueByWorld(x + c*distance, y + s*distance) == Map::OCCUPIED) {
+				scaryness += 1000.0/(1000.0 + distance-rayMinDistance);
+				break;
+			}
+		}
+	}
+	cout << " ";
+	return (scaryness/numberOfRays);
+}
+
+realnum IntoDarkness::getCurrentScariness() {
+	return computeLocalScariness(pose->position.x,pose->position.y);
+}
+
 
 
 // diagonalize the 2d space into one hash code
@@ -206,7 +225,7 @@ void IntoDarkness::findDarkAndScaryHoles() {
 	int h = slamMap->getGridsHeight();
 
 	// set position to a multiple of gridsize
-	Point origin = pose.position;
+	Point origin = pose->position;
 	origin.x = ((int)(origin.x/gridSize + 0.5)) * gridSize;
 	origin.y = ((int)(origin.y/gridSize + 0.5)) * gridSize;
 
