@@ -21,8 +21,7 @@
 #include "basics/serializer.h"
 #include "basics/point.h"
 #include "basics/orientation.h"
-
-#include "Util.h"
+#include "basics/util.h"
 
 // All angles of one leg
 class LimbAngles : public Serializable  {

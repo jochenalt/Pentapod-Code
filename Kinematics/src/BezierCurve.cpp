@@ -3,7 +3,7 @@
 
 #include "basics/point.h"
 #include "basics/logger.h"
-#include "basics/Util.h"
+#include "basics/util.h"
 #include "BezierCurve.h"
 
 BezierCurve::BezierCurve() {

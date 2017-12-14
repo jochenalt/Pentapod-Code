@@ -140,6 +140,8 @@ add_library(${PROJECT_NAME}
    ${pentapod_kinematics_path}/src/basics/stringhelper.cpp
    ${pentapod_kinematics_path}/src/basics/zip.cpp
    ${pentapod_kinematics_path}/src/basics/base64.cpp
+   ${pentapod_kinematics_path}/src/basics/spatial.cpp
+   ${pentapod_kinematics_path}/src/basics/util.cpp
    ${pentapod_kinematics_path}/src/rs232/SerialPort.cpp
    ${pentapod_kinematics_path}/src/rs232/rs232-linux.c
    ${pentapod_kinematics_path}/src/I2CMaster.cpp
@@ -152,8 +154,6 @@ add_library(${PROJECT_NAME}
    ${pentapod_kinematics_path}/src/EngineState.cpp
    ${pentapod_kinematics_path}/src/GaitController.cpp
    ${pentapod_kinematics_path}/src/LegKinematics.cpp
-   ${pentapod_kinematics_path}/src/spatial.cpp
-   ${pentapod_kinematics_path}/src/Util.cpp
    ${pentapod_kinematics_path}/src/Map.cpp
    ${pentapod_kinematics_path}/src/Trajectory.cpp
    ${pentapod_kinematics_path}/src/LaserScan.cpp

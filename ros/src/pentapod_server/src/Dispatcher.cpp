@@ -8,7 +8,7 @@
 #include "core.h"
 #include "Map.h"
 #include "Trajectory.h"
-#include "Util.h"
+#include "basics/util.h"
 
 #include "Dispatcher.h"
 #include "IntoDarkness.h"
@@ -485,7 +485,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			if (ok) {
 				setNavigationOrientation = latchOrientationStr == "true";
 			}
-			cout << "ok=" << ok << "latchsr=" << latchOrientationStr << "sno=" << setNavigationOrientation << endl;
+			// cout << "ok=" << ok << "latchsr=" << latchOrientationStr << "sno=" << setNavigationOrientation << endl;
 			setNavigationGoal(goalPose, setNavigationOrientation);
 			response = getResponse(true);
 			okOrNOk = true;
@@ -646,26 +646,26 @@ void Dispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
 
 	if (!navigationGoal.isNull() && latchedGoalOrientationToPath && (globalPlan.size() > 5)) {
 		// global path does not go straight to the goal, very often the last piece is bent
-		// so identify the direction the bot is coming from by taking the vector of the last piece that takes lastPieceLength
-		const milliseconds lastPieceLength = 3000;
+		// so identify the direction the bot is coming from by taking the vector of the last piece
+		const millimeter lastPieceLength = 400; // consider at least the radius of the bot as minimu distance
 		int curr = globalPlan.size()-1;
 		StampedPose lastPose = globalPlan[curr];
-		while ((curr > 0) && (globalPlan[curr].timestamp > lastPose.timestamp - lastPieceLength))
+		while ((curr > 0) && (globalPlan[curr].pose.position.distance(lastPose.pose.position) < lastPieceLength))
 			curr--;
+		cout << "size=" << globalPlan.size() << " curr=" << curr << endl;
 
 		StampedPose prevPose = globalPlan[curr]; // this pose is at least 3000ms earlier than the predicted goal arrival time
 
 		// compute the orientation
-		Point orientationVec = lastPose.pose.position - prevPose.pose.position;
+		Point orientationVec = navigationGoal.position - prevPose.pose.position;
 		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
 
 		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world );
-		// setNavigationGoal(navigationGoal_world, false);
+		setNavigationGoal(navigationGoal_world, false);
 	}
 }
 
 void Dispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
-
 	// mapPose of hector mapping is given in [m], we need [mm]
 	mapPose.position.x = og->pose.position.x*1000.0;
 	mapPose.position.y = og->pose.position.y*1000.0;
@@ -675,16 +675,6 @@ void Dispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  o
 
 	// compute odomFrame for map->odom transformation
 	odomFrame = mapPose.applyInverseTransformation(odomPose);
-
-	// check this (remove once it is working)
- 	Pose test;
-	test = odomFrame.applyTransformation(odomPose);
-
- 	if ((test.position.distance(mapPose.position) > 0.1 ))
- 		ROS_ERROR_STREAM("map->odom distance transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
- 	if ((abs(test.orientation.z - mapPose.orientation.z) > 0.1))
- 		ROS_ERROR_STREAM("map->odom orientation transformation wrong. map=" << mapPose << " odom=" << odomPose << " odomFrame" << odomFrame << " test=" << test);
-
 
 	engineState.currentMapPose = mapPose;
 	ROS_INFO_STREAM_THROTTLE(5, "/slam out odom_pose=" << odomPose);
@@ -759,7 +749,7 @@ void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateSt
 	engineState.baseLinkInMapFrame = baseLinkInMapFrame;
  	engineState.currentMapPose = mapPose;
  	engineState.currentScaryness = holeFinder.getCurrentScariness();
- 	cout << " " << holeFinder.getCurrentScariness() << endl;
+ 	//  	cout << " " << holeFinder.getCurrentScariness() << endl;
 
  	// turn on the lidar if we wake up
  	// turn it off when we fall asleep

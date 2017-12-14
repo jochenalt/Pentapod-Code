@@ -13,9 +13,10 @@
 #include <vector>
 #include <stdio.h>
 #include <string>
+#include "basics/spatial.h"
+
 #include "setup.h"
 #include "Engine.h"
-#include "spatial.h"
 #include <Map.h>
 #include <Trajectory.h>
 

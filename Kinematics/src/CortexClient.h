@@ -14,7 +14,7 @@
 #include "core.h"
 
 #include "rs232/SerialPort.h"
-#include "basics/Util.h"
+#include "basics/util.h"
 
 #include "I2CMaster.h"
 

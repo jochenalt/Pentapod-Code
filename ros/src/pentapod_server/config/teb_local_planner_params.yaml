@@ -21,8 +21,7 @@ acc_lim_y: 0.05
 acc_lim_theta: 0.1
 min_in_place_vel_theta: 0.3
 
-# Footprint model is a point in order to save CPU, distance is kept min_obstacle_dist
-# change that to a proper insect modelling without turning radius
+# Footprint model is a point in order to save CPU, consider a point and keep distance via min_obstacle_dist
 footprint_model: 
   type: point            # types: "point", "circular", "two_circles", "line", "polygon" type: "line"
 
@@ -31,15 +30,15 @@ xy_goal_tolerance: 0.02
 yaw_goal_tolerance: 0.1
   
 # Obstacles
-min_obstacle_dist: 0.30            # minumum distance from outer shape of robot to any obstacle.
-inflation_dist: 0.50               # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
+min_obstacle_dist: 0.30                     # minumum distance from outer shape of robot to any obstacle.
+inflation_dist: 0.50                        # Buffer zone around obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect). Also refer to the weight weight_inflation. Default 0.0
 include_costmap_obstacles: True
 
 # Optimization
 optimization_activate: True
 optimization_verbose: False
-penalty_epsilon: 0.03 # needs to be smaller than any acceleration limit (really strange parameter, since acceleration limits have not the same dimension ?!? )
-exact_arc_length: true # takes more cpu, but gives smoother movement. Default False
+penalty_epsilon: 0.03                       # needs to be smaller than any acceleration limit (really strange parameter, since acceleration limits have not the same dimension ?!? )
+exact_arc_length: true                      # takes more cpu, but gives smoother movement. Default False
     
 # do not acclerate faster than allowed, so increase the weight for that
 weight_acc_lim_x: 3.0     
@@ -47,9 +46,9 @@ weight_acc_lim_theta: 3.0
 
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
 weight_kinematics_nh: 1.0                   # do not create trajectories for car-like robots but for small pentapods with strifing. I feel that a factor below 1.0 more osscilations 
-weight_kinematics_forward_drive: 0.0        # do not try to drive forward.
+weight_kinematics_forward_drive: 0.5        # do not try to drive forward.
 weight_kinematics_turning_radius: 0.0       # do not try to optimize the turning radius
 weight_inflation: 0.8                       # weight how much the inflation_dist is considered (pretty much to avoid lurking too close too walls)
 
 # Homotopy Class Planner
-enable_homotopy_class_planning: False # would induce explosive cpu load 
+enable_homotopy_class_planning: False       # would induce explosive cpu load, too much for the Odroid 

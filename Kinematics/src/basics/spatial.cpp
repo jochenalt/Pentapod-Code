@@ -1,8 +1,8 @@
 #include "basics/serializer.h"
 #include "basics/stringhelper.h"
 
-#include "spatial.h"
-#include "Util.h"
+#include "basics/spatial.h"
+#include "basics/util.h"
 
 
 std::ostream& LimbAngles::serialize(std::ostream &out) const {

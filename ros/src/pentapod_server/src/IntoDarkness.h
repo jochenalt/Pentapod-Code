@@ -27,7 +27,7 @@
 #include <string>
 #include "setup.h"
 #include "Engine.h"
-#include "spatial.h"
+#include "basics/spatial.h"
 #include <Map.h>
 #include <LaserScan.h>
 
@@ -57,7 +57,7 @@ private:
 
 	bool isCandidate(millimeter_int x, millimeter_int y);
 	realnum computeLocalScariness(millimeter_int x, millimeter_int y) const;
-	realnum computeGlobalScariness(millimeter_int x, millimeter_int y) const;
+	realnum computeGlobalScariness(millimeter_int x, millimeter_int y, int numberOfRays, realnum maxRayDistance) const;
 
 
 
