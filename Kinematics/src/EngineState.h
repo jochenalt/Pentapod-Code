@@ -11,9 +11,9 @@
 #define ENGINESTATE_H_
 
 #include "basics/stringhelper.h"
+#include "basics/spatial.h"
 
 #include "setup.h"
-#include "spatial.h"
 #include "GaitController.h"
 
 class EngineState {

@@ -17,8 +17,7 @@
 #include <string.h>
 #include <mutex>
 
-#include "setup.h"
-
+#include <basics/types.h>
 using namespace std;
 
 #define LFCR '\n'

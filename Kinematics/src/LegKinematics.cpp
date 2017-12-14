@@ -2,11 +2,11 @@
 
 #include "core.h"
 #include "basics/logger.h"
-
+#include "basics/util.h"
+#include "basics/types.h"
 
 #include "setup.h"
 #include "LegKinematics.h"
-#include "Util.h"
 
 
 LegKinematics::LegKinematics() {}

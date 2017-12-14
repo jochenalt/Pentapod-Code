@@ -9,8 +9,8 @@
 #define DENAVITHARDENBERGPARAM_H_
 
 #include "setup.h"
-#include "Util.h"
-#include "spatial.h"
+#include "basics/util.h"
+#include "basics/spatial.h"
 
 class DenavitHardenbergParams{
 public:

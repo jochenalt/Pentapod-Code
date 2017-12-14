@@ -22,7 +22,6 @@
 #include "basics/point.h"
 #include "basics/orientation.h"
 
-#include "setup.h"
 #include "Util.h"
 
 // All angles of one leg
@@ -438,7 +437,7 @@ class LegPose : public Serializable  {
 		LimbAngles angles;
 };
 
-// A
+// make a type a 5-tuple
 template<class T> class PentaType: public Serializable  {
 public:
 	PentaType();

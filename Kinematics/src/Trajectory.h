@@ -11,7 +11,7 @@
 #include "basics/serializer.h"
 #include "basics/types.h"
 #include "basics/point.h"
-#include "spatial.h"
+#include "basics/spatial.h"
 
 #include <vector>
 #include "setup.h"

@@ -14,11 +14,12 @@
 #include "core.h"
 
 #include "rs232/SerialPort.h"
+#include "basics/Util.h"
+
 #include "I2CMaster.h"
 
 #include "setup.h"
-#include "Util.h"
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "CortexComPackage.h"
 
 using namespace std;

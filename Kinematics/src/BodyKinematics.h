@@ -8,7 +8,7 @@
 #ifndef BODYKINEMATICS_H_
 #define BODYKINEMATICS_H_
 
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "LegKinematics.h"
 #include "core.h"
 

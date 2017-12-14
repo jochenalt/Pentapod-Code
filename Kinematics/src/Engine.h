@@ -13,7 +13,7 @@
 #include "BodyKinematics.h"
 #include "GaitController.h"
 #include "CortexClient.h"
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "EngineState.h"
 
 class Engine {

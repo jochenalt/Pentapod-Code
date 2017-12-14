@@ -21,9 +21,10 @@
 #include "basics/stringhelper.h"
 #include "basics/logger.h"
 #include "rs232/SerialPort.h"
+#include "basics/util.h"
+#include "basics/types.h"
 
 #include "setup.h"
-#include "Util.h"
 #include "CortexClient.h"
 
 #include "CortexComPackage.h"

@@ -9,8 +9,9 @@
 
 #include "core.h"
 #include "basics/logger.h"
+#include "setup.h"
 
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "BezierCurve.h"
 
 class Engine;

@@ -17,7 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "DenavitHardenbergParam.h"
 #include "core.h"
 

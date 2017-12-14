@@ -18,8 +18,8 @@
 #define BEZIERCURVE_H_
 
 #include "basics/point.h"
-#include "spatial.h"
-#include "Util.h"
+#include "basics/spatial.h"
+#include "basics/util.h"
 
 class BezierCurve  {
 	public:
