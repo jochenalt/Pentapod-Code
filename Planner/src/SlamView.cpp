@@ -20,6 +20,7 @@
 #include "setup.h"
 #include "WindowController.h"
 #include "EngineProxy.h"
+#include "EngineState.h"
 #include "UIUtils.h"
 
 SlamView::SlamView() {

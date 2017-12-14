@@ -1,5 +1,4 @@
 #include "stdio.h"
-
 #include "basics/logger.h"
 
 #include "STLObject.h"

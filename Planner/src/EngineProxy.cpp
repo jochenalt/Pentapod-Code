@@ -308,6 +308,7 @@ void EngineProxy::updateEngineState(EngineState & state) {
 		remoteEngine.httpGET("/engine/get", responseStr, 5000);
 		std::istringstream in(responseStr);
 		data.deserialize(in);
+		cout << data.currentScaryness << " " << endl;
 	} else {
 		EngineState tmp;
 		engine.getState(tmp);

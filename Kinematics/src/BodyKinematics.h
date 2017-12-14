@@ -49,6 +49,7 @@ public:
 	// compute the kinematics of all legs and return poses of hips, angles, and ground points
 	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld);
 
+	// body pose is within the frame of the baselink, i.e. it is the relative position of the belly above the origin right below the bot
 	void setBodyPose(const Pose& bellyPose);
 
 	// compute the body pose by given foot points (used during start up)
@@ -67,17 +68,18 @@ public:
 	// multiplied with the measured distance
 	angle_deg getFootAngle(int legNo) { return footAngle[legNo]; };
 
-	// the foot is not a point but has dampener with diameter of 20mm. When the foot
+	// a toe is not a point but has dampener with a diameter of 20mm. When the foot
 	// touches the ground at a certain angle, we need to virtually adapt the ground height
 	// in order to compensate this.
+	// Returns the factor we have to correct the height due to that situation, which is sin(angle)*radius of dampener
 	realnum getFatFootCorrectionHeight(int legNo) const ;
 
-	// the nose-orientation defines the direction the bot is looking to
+	// the nose-orientation defines the direction the bot's noe (i.e. its front leg) is looking to
 	// (not necessarily the same like the walking direction)
 	angle_rad getCurrentNoseOrientation() { return  noseOrientation; };
 	void setCurrentNoseOrientation(angle_rad newNoseDirection) { noseOrientation = newNoseDirection; };
 
-	// during startup phase we move slowly and try to cope with invalid position kinematicswise
+	// during startup phase we move slowly and try to cope with invalid positions and singularities (kinematics-wise)
 	void startupPhase(bool onOff) { duringStartup = onOff; };
 
 private:

@@ -18,6 +18,7 @@
 #include "EngineProxy.h"
 #include "uiconfig.h"
 #include "util.h"
+#include "setup.h"
 
 INITIALIZE_EASYLOGGINGPP
 

@@ -346,7 +346,6 @@ void gaitSpeedCallback (int controlId) {
 	default:
 		break;
 	}
-
 }
 
 void mapCallback(int controlId) {
@@ -363,14 +362,17 @@ void copyMovementToView() {
 	}
 
 	if ((int)speed != gaitSpeedLiveVar) {
+
 		gaitSpeedSpinner->set_int_val(speed);
 	}
 
-	if ((int)(degrees(rotateZ) !=  gaitRotateLiveVar)) {
+	if ((int)degrees(rotateZ) !=  gaitRotateLiveVar) {
+
 		gaitRotateSpinner->set_int_val((int)degrees(rotateZ));
 	}
 
 	if ((int)(degrees(noseOrientation)) != gaitNoseOrientationLiveVar) {
+
 		gaitNoseOrientationSpinner->set_int_val(degrees(noseOrientation));
 	}
 }
@@ -525,11 +527,13 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 
 	gaitNoseOrientationSpinner= new GLUI_Spinner(movementPanel,"ori", GLUI_SPINNER_INT,&gaitNoseOrientationLiveVar,MovementOrientationID, gaitSpeedCallback);
 	gaitNoseOrientationSpinner->set_int_limits(-180,180);
+	gaitNoseOrientationSpinner->disable();
+
+	/* GLUI_Button* resetGaitButton = */ new GLUI_Button(movementPanel, "Null Gait", MovementResetID, gaitSpeedCallback);
 
 	mapControl = new GLUI_Checkbox(movementPanel,"map", &mapLiveVar, 4, mapCallback);
 	mapControl->set_int_val(0);
 
-	/* GLUI_Button* resetGaitButton = */ new GLUI_Button(movementPanel, "Null Gait", MovementResetID, gaitSpeedCallback);
 
 	windowHandle->add_column_to_panel(interactivePanel, false);
 
@@ -624,7 +628,7 @@ void WindowController::UIeventLoop() {
 	// create the SLAM window
 	wSLAMView = slamView.create(wMain,"");
 
-	uiReady = true; 							// tell calling thread to stop waiting for ui initialization
+	uiReady = true; 							// flag to tell calling thread to stop waiting for ui initialization
 	LOG(DEBUG) << "starting GLUT main loop";
 	glutMainLoop();
 }

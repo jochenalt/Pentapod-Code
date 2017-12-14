@@ -9,7 +9,7 @@
 #include <GL/freeglut.h>
 #include <GL/glut.h>
 
-// definition of all RAL colors, generated via Excel sheet Manfred_Bom.xlsx
+// definition of all RAL colors, generated via Excel sheet Pentapod_Bom.xlsx
 #define GreenBeige                0xCCCC99
 #define Beige                     0xD2AA5A
 #define SandYellow                0xD0A818
@@ -43,8 +43,8 @@
 #define PastelOrange              0xFF6336
 #define PureOrange                0xF23B1C
 #define LuminousOrange            0xFC1C14
-#define LuminousBrightOrange     0xFF7521
-#define BrightRedOrange          0xFA4F29
+#define LuminousBrightOrange      0xFF7521
+#define BrightRedOrange           0xFA4F29
 #define TrafficOrange             0xEB3B1C
 #define SignalOrange              0xD44529
 #define DeepOrange                0xED5C00
@@ -68,7 +68,7 @@
 #define TrafficRed                0xC71712
 #define SalmonPink                0xD9594F
 #define LuminousRed               0xFC0A1C
-#define LuminousBrightRed        0xFC1414
+#define LuminousBrightRed         0xFC1414
 #define RaspberryRed              0xB51233
 #define OrientRed                 0xA61C2E
 #define RedLilac                  0x824030
@@ -82,33 +82,33 @@
 #define PastelViolet              0x9E7394
 #define Telemagenta               0xBF1773
 #define VioletBlue                0x17336B
-#define GreenBlue                 0xA3354
-#define UltramarineBlue           0xF75
-#define SapphireBlue              0x1745
-#define BlackBlue                 0x30D1F
-#define SignalBlue                0x2E7A
+#define GreenBlue                 0x0A3354
+#define UltramarineBlue           0x000F75
+#define SapphireBlue              0x001745
+#define BlackBlue                 0x030D1F
+#define SignalBlue                0x002E7A
 #define BrillantBlue              0x264F87
 #define GrayBlue                  0x1A2938
 #define AzureBlue                 0x174570
-#define SteelBlue1                 0x2B70
+#define SteelBlue1                0x002B70
 #define LightBlue                 0x2973B8
-#define CobaltBlue                0x1245
+#define CobaltBlue                0x001245
 #define PigeonBlue                0x4D6999
 #define SkyBlue                   0x1761AB
-#define TrafficBlue               0x3B80
+#define TrafficBlue               0x003B80
 #define TurquoiseBlue             0x389482
-#define CapriBlue                 0xA4278
-#define SteelBlue2                 0x53333
+#define CapriBlue                 0x0A4278
+#define SteelBlue2                0x053333
 #define WaterBlue                 0x1A7A63
-#define NightBlue                 0x84F
+#define NightBlue                 0x00084F
 #define DistantBlue               0x2E528F
 #define PastelBlue                0x578CAB
 #define PatinaGreen               0x337854
 #define EmeraldGreen              0x266651
 #define LeafGreen                 0x265721
 #define OliveGreen                0x3D452E
-#define BlueGreen                 0xD3B2E
-#define MossGreen                 0xA381F
+#define BlueGreen                 0x0D3B2E
+#define MossGreen                 0x0A381F
 #define GreyOlive                 0x292B2E
 #define BottleGreen               0x1C2617
 #define BrownGreen                0x21211A
@@ -119,7 +119,7 @@
 #define ReedGreen                 0x75734F
 #define YellowOlive               0x333026
 #define BlackOlive                0x292B26
-#define TurquoiseGreen            0xF7033
+#define TurquoiseGreen            0x0F7033
 #define YellowGreen               0x408236
 #define MayGreen                  0x4FA833
 #define PastelGreen               0xBFE3BA
@@ -128,7 +128,7 @@
 #define OliveDrab                 0x2B261C
 #define TrafficGreen              0x249140
 #define FernGreen                 0x4A6E33
-#define OpalGreen                 0xA5C33
+#define OpalGreen                 0x0A5C33
 #define LightGreen                0x7DCCBD
 #define PineGreen                 0x264A33
 #define MintGreen                 0x127826
@@ -189,7 +189,7 @@
 #define MahoganyBrown             0x3D1F1C
 #define ChocolateBrown            0x2E1C1C
 #define GreyBrown                 0x2B2629
-#define BlackBrown                0xD080D
+#define BlackBrown                0x0D080D
 #define OrangeBrown               0x9C4529
 #define BeigeBrown                0x6E4030
 #define PaleBrown                 0x664A3D
@@ -198,11 +198,11 @@
 #define GreyWhite                 0xF0EDE6
 #define SignalWhite               0xFFFFFF
 #define SignalBlack               0x1C1C21
-#define JetBlack                  0x3050A
+#define JetBlack                  0x03050A
 #define WhiteAluminium            0xA6ABB5
 #define GreyAluminium             0x7D7A78
 #define PureWhite                 0xFAFFFF
-#define GraphiteBlack             0xD121A
+#define GraphiteBlack             0x0D121A
 #define TrafficWhite              0xFCFFFF
 #define TrafficBlack              0x14171C
 #define PapyrusWhite              0xDBE3DE

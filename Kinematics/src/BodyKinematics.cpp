@@ -13,6 +13,7 @@
 BodyKinematics::BodyKinematics() {
 }
 
+// setup needs to be called before anything else is called. Initializes the inner matrices.
 void BodyKinematics::setup(Engine& pMainController) {
 	mainController = &pMainController;
 	// set a default position of te belly button
@@ -34,7 +35,7 @@ void BodyKinematics::setup(Engine& pMainController) {
 
 	DenavitHardenbergParams dh(DenavitHardenbergParams::THETA,0,0,cos(radians(CAD::HipNickAngle))*(CAD::HipLength + CAD::HipCentreDistance),0.0);
 
-	// arrange the legs in a circle of equal angles
+	// arrange the legs in a circle
 	// if the number of legs is odd, have the middle leg at the front.
 	realnum startAngle;
 	if (NumberOfLegs % 2 == 0)
@@ -82,10 +83,10 @@ void BodyKinematics::computeForwardKinematics(const LegAnglesType& allLegsAngles
 		footPoints[legNo].z -= avrZ;
 
 	bodyPose.position.z -= avrZ;
-
-	// ToDO: take orientation out of IMU value
 }
 
+// set the local belly pose.
+// typically it has the form (Point(0,0,bodyHeight),Rotation(0,0,0)), but can also work with additional translations/rotations
 void BodyKinematics::setBodyPose(const Pose& bellyPose) {
 	currentBellyPose = bellyPose;
 
@@ -108,7 +109,7 @@ void BodyKinematics::setBodyPose(const Pose& bellyPose) {
 }
 
 
-// kinematics out of body pose and toe points
+// compute kinematics out of body pose and toe points (denoted in frame of baselink)
 bool BodyKinematics::computeKinematics(
 		const Pose& bellyPose, const PentaPointType& toeWorld, // in params
 		const PentaPointType& walkingTouchPoint,
@@ -159,8 +160,8 @@ bool BodyKinematics::computeKinematics(
 			}
 		} else {
 			// during normal walking the knee should be in a position such that
-			// when the leg goes down it touchs the ground as perpendicular as possible
-			// in order to have less walking by unstiff motor and legs3
+			// when the leg goes down it touches the ground as perpendicular as possible
+			// in order to have less warping by unstiff motor and legs3
 
 			// walkingTouchPointHipCoord is the position right above the point
 			// where the leg will touch the ground. Compute the to-be knee position
@@ -171,9 +172,8 @@ bool BodyKinematics::computeKinematics(
 			toBeAngle0 = atan2(knee.y, knee.x) * kneeZenitPointFactor;
 
 			// take the dampener into account which is not a point but a fat toe with a significant diameter
-			// @TODO check if this is working with terrain mode
+			// @TODO check if this is working with terrain mode as well
 			// toeHipCoord.position.z += getFatFootCorrectionHeight(legNo);
-
 			ok = kin.computeInverseKinematics(toeHipCoord,toBeAngle0);
 			if (!ok) {
 				ROS_ERROR_STREAM("kinematics of leg " << legNo << " with toe " << toeHipCoord << " could not be found");
@@ -211,7 +211,7 @@ const PentaPoseType& BodyKinematics::getHipPose() {
 }
 
 realnum BodyKinematics::getFatFootCorrectionHeight(int legNo) const {
-	// this is not really correct but an approximation that is mostly ok
+	// this is not really correct but an approximation that is ok
 	return sin(abs(footAngle[legNo])) * CAD::FootDampenerDiameter/2.0;
 }
 
