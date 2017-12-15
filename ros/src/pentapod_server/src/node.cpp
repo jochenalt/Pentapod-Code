@@ -34,7 +34,6 @@ using namespace std;
 
 static struct mg_serve_http_opts s_http_server_opts;
 
-Dispatcher* dispatcher_ptr = NULL;
 // define an mongoose event handler function that is called whenever a request comes in
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
@@ -50,7 +49,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data)
     			string response;
     			// if our dispatcher knows the command, it creates a response and returns true.
     			// Otherwise assume that we deliver static content.
-    			bool processed = dispatcher_ptr->dispatch(uri, query, body, response, ok);
+    			bool processed = Dispatcher::getInstance().dispatch(uri, query, body, response, ok);
     			if (processed) {
     				if (ok) {
     					mg_printf(nc, "HTTP/1.1 200 OK\r\n"
@@ -79,8 +78,6 @@ int main(int argc, char * argv[]) {
 	ROS_INFO_STREAM("starting pentapod_server node");
 
 	ros::init(argc, argv, "pentapod_server_node");
-	Dispatcher cmdDispatcher;
-	dispatcher_ptr = &cmdDispatcher;
 
 	ros::NodeHandle rosNode;
 	string cortexSerialPort;
@@ -119,7 +116,7 @@ int main(int argc, char * argv[]) {
 	TimeSamplerStatic setupTimer;
 
 	// setup all publishers and subscribers
-	cmdDispatcher.setup(rosNode);
+	Dispatcher::getInstance().setup(rosNode);
 
 	/*
 	Pose baselink (Point(450,0,0),Rotation(0,0,radians(00)));
@@ -150,10 +147,10 @@ int main(int argc, char * argv[]) {
 
 		// broadcast map -> odom transformation at 10 Hz
 		if (odomTimer.isDue(1000/10)) {
-			cmdDispatcher.broadcastTransformationMapToOdom();
+			Dispatcher::getInstance().broadcastTransformationMapToOdom();
 
 			if (bodyPoseTimer.isDue(500)) {
-				cmdDispatcher.advertiseBodyPose();
+				Dispatcher::getInstance().advertiseBodyPose();
 			}
 		}
 

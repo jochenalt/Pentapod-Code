@@ -22,7 +22,7 @@ public:
 	FreeWill();
 
 	// tell me all structures I need. These parameters are not copied but referred internally.
-	void setup(const Map& slamMap, const Map& globalCostMap, const Map& localCostMap, const Pose& odomFrame, const Pose& pose, const EngineState& state);
+	void setup();
 
 	// compute the body pose depending on the distance to walls: When a wall gets close, the body pose goes to upright position. In the free space, body pose is in standard position
 	Pose getAutonomousBodyPose();
@@ -44,7 +44,7 @@ private:
 	const Map* globalCostMap= NULL;
 	const Map* localCostMap= NULL;
 	const Pose* odomFrame= NULL;
-	const Pose* pose= NULL;
+	const Pose* baseLink= NULL;
 	const EngineState* engineState= NULL;
 	bool turnOn = false;
 	bool latchGoalReachable = false;

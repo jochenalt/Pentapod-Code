@@ -35,8 +35,8 @@ public:
 	IntoDarkness();
 	virtual ~IntoDarkness();
 	void setup(ros::NodeHandle handle);
-	void feedGlobalMap(const Map& slamMap, const Map& globalCostmap, const Pose& odomFrame, const Pose& pose);
-	void feedLocalMap(const Map& localCostMap);
+	void feedGlobalMap();
+	void feedLocalMap();
 	void feedLaserMap(const LaserScan& laserScan);
 
 	void getDarkScaryHoles(std::vector<Point>& holes);
