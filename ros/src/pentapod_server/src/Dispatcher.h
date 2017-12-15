@@ -76,10 +76,9 @@ public:
 	void setNavigationGoal(const Pose& goalPose, bool setOrientationToPath = false);
 
 	Pose getNavigationGoal();
+	void cancelNavigationGoal();
 
 	actionlib::SimpleClientGoalState getNavigationGoalStatus();
-
-	IntoDarkness& getDarkHoleFinder() { return holeFinder; };
 
 	void setupNavigationStackTopics(ros::NodeHandle& handle);
 
@@ -96,6 +95,7 @@ public:
 	NavigationStatusType getNavigationStatusType();
 	void advertiseBodyPose();
 
+	static Dispatcher& getInstance() { static Dispatcher dispatcher; return dispatcher; };
 
 private:
 
@@ -156,8 +156,6 @@ private:
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
     Pose navigationGoal_world;
-	IntoDarkness holeFinder;
-	FreeWill will;
 	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;

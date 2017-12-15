@@ -128,7 +128,7 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
 
 	// initialoze the dark hole finder
-	holeFinder.setup(handle);
+	IntoDarkness::getInstance().setup(handle);
 
     // wait for the action server to come up. Do this in a 10Hz loop while producing the
 	// identical map->odom transformation which is required by the navigation stack.
@@ -148,7 +148,7 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	    ROS_ERROR("move_base did not come up!!!");
 	}
 
-	will.setup(slamMap, globalCostMap, localCostMap, odomFrame, baseLinkInMapFrame, engineState);
+	FreeWill::getInstance().setup(slamMap, globalCostMap, localCostMap, odomFrame, baseLinkInMapFrame, engineState);
 }
 
 
@@ -161,13 +161,17 @@ Pose Dispatcher::getNavigationGoal() {
 }
 
 
-void Dispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
+void Dispatcher::cancelNavigationGoal() {
 
 	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
 		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
 		moveBaseClient->cancelGoal();
 	}
 
+}
+
+void Dispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
+	cancelNavigationGoal();
 
 	// advertise the initial position for the navigation stack everytime the navigation goal is set
 	navigationGoal_world = goalPose_world;
@@ -600,10 +604,10 @@ void Dispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr&
 void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
-	holeFinder.feedGlobalMap(slamMap, globalCostMap, odomFrame, odomPose);
+	IntoDarkness::getInstance().feedGlobalMap(slamMap, globalCostMap, odomFrame, odomPose);
 
 	vector<Point> holes;
-	holeFinder.getDarkScaryHoles(holes);
+	IntoDarkness::getInstance().getDarkScaryHoles(holes);
 	std::stringstream out;
 	serializeVectorOfSerializable(holes,out);
 	darkScaryHolesSerialized = out.str();
@@ -612,7 +616,7 @@ void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& 
 
 void Dispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
-	holeFinder.feedLocalMap(localCostMap);
+	IntoDarkness::getInstance().feedLocalMap(localCostMap);
 }
 
 void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan, const Pose& odomFrame, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
@@ -652,15 +656,13 @@ void Dispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
 		StampedPose lastPose = globalPlan[curr];
 		while ((curr > 0) && (globalPlan[curr].pose.position.distance(lastPose.pose.position) < lastPieceLength))
 			curr--;
-		cout << "size=" << globalPlan.size() << " curr=" << curr << endl;
 
 		StampedPose prevPose = globalPlan[curr]; // this pose is at least 3000ms earlier than the predicted goal arrival time
-
 		// compute the orientation
-		Point orientationVec = navigationGoal.position - prevPose.pose.position;
-		navigationGoal_world.orientation.z = engineState.currentBodyPose.orientation.z + engineState.currentNoseOrientation + M_PI + atan2(orientationVec.y, orientationVec.x);
+		Point orientationVec =  prevPose.pose.position-navigationGoal_world.position;
+		navigationGoal_world.orientation.z = 0*engineState.currentBodyPose.orientation.z + 0*engineState.currentNoseOrientation + atan2(orientationVec.y, orientationVec.x);
 
-		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world );
+		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world << " vec=" << orientationVec << " atan=" << atan2(orientationVec.y, orientationVec.x) << " nose=" << engineState.currentNoseOrientation );
 		setNavigationGoal(navigationGoal_world, false);
 	}
 }
@@ -748,7 +750,7 @@ void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateSt
 	baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
 	engineState.baseLinkInMapFrame = baseLinkInMapFrame;
  	engineState.currentMapPose = mapPose;
- 	engineState.currentScaryness = holeFinder.getCurrentScariness();
+ 	engineState.currentScaryness = IntoDarkness::getInstance().getCurrentScariness();
  	//  	cout << " " << holeFinder.getCurrentScariness() << endl;
 
  	// turn on the lidar if we wake up
@@ -784,7 +786,7 @@ void Dispatcher::advertiseBodyPoseToEngine(const Pose& bodyPose) {
 
 void Dispatcher::advertiseBodyPose() {
 	if (getNavigationStatusType() == NavigationStatusType::NavActive) {
-		Pose toBePose = will.getAutonomousBodyPose();
+		Pose toBePose = FreeWill::getInstance().getAutonomousBodyPose();
 		if (abs(toBePose.position.z - engineState.currentBodyPose.position.z) > floatPrecision) {
 			ROS_INFO_STREAM("advertise new body pose" << toBePose);
 			advertiseBodyPoseToEngine(toBePose);
