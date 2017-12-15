@@ -17,7 +17,7 @@
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 #include <GL/Glui.h>
 
-#include "spatial.h"
+#include "basics/spatial.h"
 #include "LegKinematics.h"
 #include "BotView.h"
 #include "SlamView.h"

@@ -11,12 +11,13 @@
 #include <GL/glut.h>
 #include <GL/Glui.h>
 
-#include <BaseView.h>
-#include "uiconfig.h"
+#include "basics/spatial.h"
+#include "basics/util.h"
 #include "setup.h"
 
-#include "spatial.h"
-#include "Util.h"
+#include <BaseView.h>
+#include "uiconfig.h"
+
 #include <WindowController.h>
 
 

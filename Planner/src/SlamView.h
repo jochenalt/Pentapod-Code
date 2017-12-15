@@ -11,7 +11,7 @@
 #include <string>
 #include <BaseView.h>
 #include <Map.h>
-#include <spatial.h>
+#include <basics/spatial.h>
 #include <EngineProxy.h>
 
 using namespace std;

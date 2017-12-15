@@ -9,15 +9,15 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "basics/logger.h"
+#include "core.h"
 
-#include "Util.h"
+#include "basics/logger.h"
+#include "basics/util.h"
+
 #include "LegKinematics.h"
 #include "WindowController.h"
-#include "core.h"
 #include "EngineProxy.h"
 #include "uiconfig.h"
-#include "util.h"
 #include "setup.h"
 
 INITIALIZE_EASYLOGGINGPP

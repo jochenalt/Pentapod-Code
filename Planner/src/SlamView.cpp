@@ -13,8 +13,8 @@
 #include <GL/glut.h>
 #include <GL/Glui.h>
 
-#include "spatial.h"
-#include "Util.h"
+#include "basics/spatial.h"
+#include "basics/util.h"
 
 #include "uiconfig.h"
 #include "setup.h"
