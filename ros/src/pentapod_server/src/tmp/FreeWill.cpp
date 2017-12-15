@@ -8,6 +8,7 @@
 #include "Dispatcher.h"
 #include "FreeWill.h"
 #include "IntoDarkness.h"
+#include "Navigator.h"
 
 FreeWill::FreeWill() {
 
@@ -16,14 +17,14 @@ FreeWill::FreeWill() {
 
 void FreeWill::setup() {
 	slamMap =  (Map*)&Dispatcher::getInstance().getSlamMap();;
-	localCostMap =   (Map*)&Dispatcher::getInstance().getLocalCostmap();
-	globalCostMap=  (Map*)&Dispatcher::getInstance().getGlobalCostmap();
+	localCostMap =   (Map*)&Navigator::getInstance().getLocalCostmap();
+	globalCostMap=  (Map*)&Navigator::getInstance().getGlobalCostmap();
 
 	odomFrame = (Pose*) &Dispatcher::getInstance().getOdomFrame();
-	baseLink = (Pose*) &Dispatcher::getInstance().getBaselink();
-	engineState = (EngineState*) &Dispatcher::getInstance().getEngineState();
+	pose = (Pose*) &Dispatcher::getInstance().getBaselink();
+	engineState = (EngineState*) &state;
 
-	  // needs to be turned on to do anything
+	// needs to be turned on to do anything
 	turnOn = false;
 }
 
@@ -70,7 +71,7 @@ Pose FreeWill::computeNavigationGoal() {
 		lastVisitDistance /= weightSum;
 
 		// scoring of distance to the current position and distance to last recently visited holes
-		realnum score = distanceWeight * abs(hole.distance(baseLink->position) - optimumDistance) +
+		realnum score = distanceWeight * abs(hole.distance(pose->position) - optimumDistance) +
 				        avoidRepeatedVisitsWeight * lastVisitDistance;
 		if (score > maxScore) {
 			score = maxScore;

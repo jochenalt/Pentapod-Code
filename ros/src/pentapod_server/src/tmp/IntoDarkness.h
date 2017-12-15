@@ -42,9 +42,8 @@ public:
 	void getDarkScaryHoles(std::vector<Point>& holes);
 	realnum getCurrentScariness();
 
-	static IntoDarkness& getInstance() { static IntoDarkness intoDarkness; return intoDarkness; };
+	static IntoDarkness& getInstance() { static IntoDarkness singleton; return singleton; };
 	std::string getDarkScaryHolesSerialized() { return darkScaryHolesSerialized; };
-
 private:
 	void findDarkAndScaryHoles();
 	void removeIfBetterHoleInNeighbourhood(millimeter_int x, millimeter_int y);

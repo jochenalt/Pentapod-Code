@@ -57,19 +57,18 @@ Dispatcher::Dispatcher() {
 
 
 void Dispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
-	// localCostmapGenerationNumber = -1;
-	// globalCostmapGenerationNumber = -1;
+	localCostmapGenerationNumber = -1;
+	globalCostmapGenerationNumber = -1;
 	localPlanGenerationNumber = -1;
 	globalPlanGenerationNumber = -1;
 
-	Navigator::getInstance().setup(handle);
 	// subscribe to the navigation stack topic that delivers the global costmap
-    // ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
-	// globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Dispatcher::listenerGlobalCostmap, this);
+    ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
+	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Dispatcher::listenerGlobalCostmap, this);
 
 	// subscribe to the navigation stack topic that delivers the local costmap
-    // ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
-	// localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Dispatcher::listenerLocalCostmap, this);
+    ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
+	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Dispatcher::listenerLocalCostmap, this);
 
 	// subscribe to the right topic of the local planner used
 	std::string base_local_planner;
@@ -125,8 +124,6 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
 
-
-
 	// publish initial position (required by navigation
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
 
@@ -151,7 +148,7 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	    ROS_ERROR("move_base did not come up!!!");
 	}
 
-	FreeWill::getInstance().setup();
+	FreeWill::getInstance().setup(engineState);
 }
 
 
@@ -366,7 +363,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < mapGenerationNumber)) {
 					// passed version is older than ours, deliver map
-					response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized()+ "," + 	IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+					response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -374,7 +371,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				}
 			} else {
 				// deliver map without version check
-				response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized() + "," + IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+				response = serializedMap + "," + globalCostMapSerialized + "," + darkScaryHolesSerialized + ","  + getResponse(true);
 			}
 			okOrNOk = true;
 			return true;
@@ -388,9 +385,9 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 			if (ok) {
 				int generationNumber = stringToInt(generationNumberStr,ok);
-				if (!ok || (generationNumber < Navigator::getInstance().getLocalCostmapGenerationNumber())) {
+				if (!ok || (generationNumber < localCostmapGenerationNumber)) {
 					// passed version is older than ours, deliver map
-					response = Navigator::getInstance().getLocalCostmapSerialized() + "," + getResponse(true);
+					response = localCostMapSerialized + "," + getResponse(true);
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -398,7 +395,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				}
 			} else {
 				// deliver map localCostMapSerialized version check
-				response = Navigator::getInstance().getLocalCostmapSerialized() + "," + getResponse(true);
+				response = localCostMapSerialized + "," + getResponse(true);
 			}
 			okOrNOk = true;
 			return true;
@@ -604,7 +601,6 @@ void Dispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr&
 	convertOccupancygridToMap(og, SLAM_MAP_TYPE, slamMap, mapGenerationNumber, serializedMap);
 }
 
-/*
 void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
@@ -615,15 +611,13 @@ void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& 
 	std::stringstream out;
 	serializeVectorOfSerializable(holes,out);
 	darkScaryHolesSerialized = out.str();
-}
-*/
 
-/*
+}
+
 void Dispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
 	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
-	IntoDarkness::getInstance().feedLocalMap();
+	IntoDarkness::getInstance().feedLocalMap(localCostMap);
 }
-*/
 
 void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan, const Pose& odomFrame, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
 	outputPlan.clear();
@@ -753,7 +747,8 @@ void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateSt
  	// engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
 
 	// ignore passed base_link and use odom_frame and /odom topic
-	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
+	baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
+	engineState.baseLinkInMapFrame = baseLinkInMapFrame;
  	engineState.currentMapPose = mapPose;
  	engineState.currentScaryness = IntoDarkness::getInstance().getCurrentScariness();
  	//  	cout << " " << holeFinder.getCurrentScariness() << endl;

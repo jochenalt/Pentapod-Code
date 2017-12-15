@@ -47,7 +47,6 @@ typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseCl
 
 // look for dark scary holes
 #include "IntoDarkness.h"
-#include "Navigator.h"
 
 #include "FreeWill.h"
 
@@ -90,20 +89,18 @@ public:
 	void clearCostmaps();
 
 
+
 	void broadcastTransformationMapToOdom();
 	NavigationStatusType getNavigationStatusType();
 	void advertiseBodyPose();
 
 	static Dispatcher& getInstance() { static Dispatcher dispatcher; return dispatcher; };
 
-	Pose& getOdomFrame() { return odomFrame; };
-	Pose& getOdomPose() { return odomPose; };
-	Map& getSlamMap() { return slamMap; };
-	Map& getGlobalCostmap() { return Navigator::getInstance().getGlobalCostmap(); };
-	Map& getLocalCostmap() { return Navigator::getInstance().getLocalCostmap(); };
-	EngineState& getEngineState() { return engineState; };
+	Pose& getOdomPose() const { return odomPose; };
+	Pose& getOdomFrame() const { return odomFrame; };
+	Map& getSlamMap() const { return slamMap; };
 	// return the fused position of slam outcome and odometry
-	Pose& getBaselink() { engineState.baseLinkInMapFrame; };
+	Pose& getBaselink() const { engineState.baseLinkInMapFrame; };
 
 private:
 
@@ -113,13 +110,13 @@ private:
 
 	Map slamMap;
 	std::string serializedMap;
-	// Map globalCostMap;
-	// std::string globalCostMapSerialized;
+	Map globalCostMap;
+	std::string globalCostMapSerialized;
 
-	// Map localCostMap;
-	// std::string localCostMapSerialized;
-	// int localCostmapGenerationNumber;
-	// int globalCostmapGenerationNumber;
+	Map localCostMap;
+	std::string localCostMapSerialized;
+	int localCostmapGenerationNumber;
+	int globalCostmapGenerationNumber;
 
 	Trajectory localPlan;
 	std::string localPlanSerialized;
@@ -140,6 +137,7 @@ private:
 	Pose mapPose;
 	Pose odomFrame;
 	Pose odomPose;
+	Pose baseLinkInMapFrame;
 
 	ros::Publisher cmdVel;
 	ros::Publisher cmdBodyPose;
@@ -164,6 +162,7 @@ private:
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
     Pose navigationGoal_world;
+	string darkScaryHolesSerialized;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;
 	bool latchedGoalOrientationToPath;

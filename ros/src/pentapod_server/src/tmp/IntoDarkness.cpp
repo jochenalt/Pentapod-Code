@@ -7,6 +7,7 @@
 
 #include "IntoDarkness.h"
 #include "Dispatcher.h"
+#include "Navigator.h"
 
 // in ros costmaps, lethal zones are 100
 const int LethalThreshold = 99;
@@ -41,13 +42,11 @@ void IntoDarkness::setup(ros::NodeHandle handle) {
 
 void IntoDarkness::feedGlobalMap() {
 	// store the reference to the passed maps, do not copy for performance reasons
-
 	slamMap = (Map*)&Dispatcher::getInstance().getSlamMap();
-	costMap = (Map*)&Dispatcher::getInstance().getGlobalCostmap();
+	costMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
 	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	odomFrame = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	findDarkAndScaryHoles();
-
 
 	std::stringstream out;
 	vector<Point> holes;
@@ -56,9 +55,10 @@ void IntoDarkness::feedGlobalMap() {
 	darkScaryHolesSerialized = out.str();
 }
 
-void IntoDarkness::feedLocalMap() {
+void IntoDarkness::feedLocalMap(const Map& newLocalMap) {
 	// store the reference to the passed maps, do not copy for performance reasons
-	localCostMap = (Map*)&Dispatcher::getInstance().getLocalCostmap();
+	localCostMap = (Map*)&newLocalMap;
+
 }
 
 void IntoDarkness::feedLaserMap(const LaserScan& newLaserScan) {
