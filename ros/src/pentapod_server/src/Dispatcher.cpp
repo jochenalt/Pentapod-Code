@@ -148,7 +148,7 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	    ROS_ERROR("move_base did not come up!!!");
 	}
 
-	FreeWill::getInstance().setup(slamMap, globalCostMap, localCostMap, odomFrame, baseLinkInMapFrame, engineState);
+	FreeWill::getInstance().setup(slamMap, globalCostMap, localCostMap, odomFrame, engineState.baseLinkInMapFrame, engineState);
 }
 
 
@@ -747,8 +747,7 @@ void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateSt
  	// engineState.currentBaselinkPose.orientation = odomFrame.orientation  + odomPose.orientation;
 
 	// ignore passed base_link and use odom_frame and /odom topic
-	baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
-	engineState.baseLinkInMapFrame = baseLinkInMapFrame;
+	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
  	engineState.currentMapPose = mapPose;
  	engineState.currentScaryness = IntoDarkness::getInstance().getCurrentScariness();
  	//  	cout << " " << holeFinder.getCurrentScariness() << endl;

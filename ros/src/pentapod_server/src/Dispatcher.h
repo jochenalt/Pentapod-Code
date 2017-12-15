@@ -88,8 +88,6 @@ public:
 	// call the move_base service to clear all costmaps.
 	void clearCostmaps();
 
-	// return the fused position of slam outcome and odometry
-	Pose getBaselink() { engineState.baseLinkInMapFrame; };
 
 	void broadcastTransformationMapToOdom();
 	NavigationStatusType getNavigationStatusType();
@@ -97,6 +95,14 @@ public:
 
 	static Dispatcher& getInstance() { static Dispatcher dispatcher; return dispatcher; };
 
+	Pose& getOdomFrame() { return odomFrame; };
+	Pose& getOdomPose() { return odomPose; };
+	Map& getSlamMap() { return slamMap; };
+	Map& getGlobalCostmap() { return globalCostMap; };
+	Map& getLocalCostmap() { return localCostMap; };
+	EngineState& getEngineState() { return engineState; };
+	// return the fused position of slam outcome and odometry
+	Pose& getBaselink() { engineState.baseLinkInMapFrame; };
 private:
 
 	void advertiseBodyPoseToEngine(const Pose& bodyPose);
@@ -132,7 +138,6 @@ private:
 	Pose mapPose;
 	Pose odomFrame;
 	Pose odomPose;
-	Pose baseLinkInMapFrame;
 
 	ros::Publisher cmdVel;
 	ros::Publisher cmdBodyPose;
