@@ -110,23 +110,24 @@ private:
 
 	Map localCostMap;
 	std::string localCostMapSerialized;
+	int localCostmapGenerationNumber;
+	int globalCostmapGenerationNumber;
 
 	Trajectory localPlan;
 	std::string localPlanSerialized;
 
 	Trajectory globalPlan;
 	std::string globalPlanSerialized;
+	std::string serializedTrajectory;
 
 	int mapGenerationNumber;
-	int localCostmapGenerationNumber;
-	int globalCostmapGenerationNumber;
 
 	int localPlanGenerationNumber;
 	int globalPlanGenerationNumber;
 	int trajectoryGenerationNumber;
 
 	std::string serializedLaserData;
-	std::string serializedTrajectory;
+
 	EngineState engineState;
 	Pose mapPose;
 	Pose odomFrame;

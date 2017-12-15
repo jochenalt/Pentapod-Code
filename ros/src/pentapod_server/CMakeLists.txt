@@ -148,6 +148,7 @@ include_directories(
 add_executable(${PROJECT_NAME}_node 
    src/Dispatcher.cpp
    src/IntoDarkness.cpp
+   src/Navigator.cpp
    src/FreeWill.cpp
    src/mongoose.c
    src/node.cpp
