@@ -63,13 +63,6 @@ void Dispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
 	globalPlanGenerationNumber = -1;
 
 	Navigator::getInstance().setup(handle);
-	// subscribe to the navigation stack topic that delivers the global costmap
-    // ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
-	// globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Dispatcher::listenerGlobalCostmap, this);
-
-	// subscribe to the navigation stack topic that delivers the local costmap
-    // ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
-	// localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Dispatcher::listenerLocalCostmap, this);
 
 	// subscribe to the right topic of the local planner used
 	std::string base_local_planner;
@@ -362,11 +355,12 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			string generationNumberStr ;
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 			int generationNumber;
+			bool deliverContent = false;
 			if (ok) {
 				generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < mapGenerationNumber)) {
 					// passed version is older than ours, deliver map
-					response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized()+ "," + 	IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+					deliverContent = true;
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -374,8 +368,11 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				}
 			} else {
 				// deliver map without version check
-				response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized() + "," + IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+				deliverContent = true;
 			}
+			if (deliverContent)
+				response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized() + "," + IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+
 			okOrNOk = true;
 			return true;
 		}
@@ -385,12 +382,13 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 		string mapCommand = uri.substr(string("/costmap/").length());
 		string generationNumberStr ;
 			if (hasPrefix(mapCommand, "local/get")) {
+			bool deliverContent = false;
 			bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 			if (ok) {
 				int generationNumber = stringToInt(generationNumberStr,ok);
 				if (!ok || (generationNumber < Navigator::getInstance().getLocalCostmapGenerationNumber())) {
 					// passed version is older than ours, deliver map
-					response = Navigator::getInstance().getLocalCostmapSerialized() + "," + getResponse(true);
+					deliverContent = true;
 				}
 				else {
 					// client has already the current map version, dont deliver it again
@@ -398,8 +396,11 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				}
 			} else {
 				// deliver map localCostMapSerialized version check
-				response = Navigator::getInstance().getLocalCostmapSerialized() + "," + getResponse(true);
+				deliverContent = true;
 			}
+			if (deliverContent)
+				response = Navigator::getInstance().getLocalCostmapSerialized() + "," + getResponse(true);
+
 			okOrNOk = true;
 			return true;
 		}

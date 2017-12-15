@@ -16,8 +16,8 @@ FreeWill::FreeWill() {
 
 void FreeWill::setup() {
 	slamMap =  (Map*)&Dispatcher::getInstance().getSlamMap();;
-	localCostMap =   (Map*)&Dispatcher::getInstance().getLocalCostmap();
-	globalCostMap=  (Map*)&Dispatcher::getInstance().getGlobalCostmap();
+	localCostMap  =  (Map*)&Navigator::getInstance().getLocalCostmap();
+	globalCostMap =  (Map*)&Navigator::getInstance().getGlobalCostmap();
 
 	odomFrame = (Pose*) &Dispatcher::getInstance().getOdomFrame();
 	baseLink = (Pose*) &Dispatcher::getInstance().getBaselink();

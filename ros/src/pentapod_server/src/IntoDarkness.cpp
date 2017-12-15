@@ -43,7 +43,7 @@ void IntoDarkness::feedGlobalMap() {
 	// store the reference to the passed maps, do not copy for performance reasons
 
 	slamMap = (Map*)&Dispatcher::getInstance().getSlamMap();
-	costMap = (Map*)&Dispatcher::getInstance().getGlobalCostmap();
+	costMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
 	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	odomFrame = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	findDarkAndScaryHoles();
@@ -58,7 +58,7 @@ void IntoDarkness::feedGlobalMap() {
 
 void IntoDarkness::feedLocalMap() {
 	// store the reference to the passed maps, do not copy for performance reasons
-	localCostMap = (Map*)&Dispatcher::getInstance().getLocalCostmap();
+	localCostMap = (Map*)&Navigator::getInstance().getLocalCostmap();
 }
 
 void IntoDarkness::feedLaserMap(const LaserScan& newLaserScan) {

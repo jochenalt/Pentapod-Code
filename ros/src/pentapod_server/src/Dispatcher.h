@@ -99,8 +99,6 @@ public:
 	Pose& getOdomFrame() { return odomFrame; };
 	Pose& getOdomPose() { return odomPose; };
 	Map& getSlamMap() { return slamMap; };
-	Map& getGlobalCostmap() { return Navigator::getInstance().getGlobalCostmap(); };
-	Map& getLocalCostmap() { return Navigator::getInstance().getLocalCostmap(); };
 	EngineState& getEngineState() { return engineState; };
 	// return the fused position of slam outcome and odometry
 	Pose& getBaselink() { engineState.baseLinkInMapFrame; };
@@ -113,14 +111,6 @@ private:
 
 	Map slamMap;
 	std::string serializedMap;
-	// Map globalCostMap;
-	// std::string globalCostMapSerialized;
-
-	// Map localCostMap;
-	// std::string localCostMapSerialized;
-	// int localCostmapGenerationNumber;
-	// int globalCostmapGenerationNumber;
-
 	Trajectory localPlan;
 	std::string localPlanSerialized;
 
