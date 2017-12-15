@@ -3,8 +3,7 @@
  *
  * This is the tough one. Computes forward and inverse kinematics of a leg.
  * By reading code only, this is hard to understand.
- * Try kinematics.xlsx or the kinematics documentation for
- * further explanations.
+ * Try kinematics.xlsx or the kinematics documentation if you need to understand what is behind the code
  *
  * Author: JochenAlt
  */
@@ -22,7 +21,7 @@
 #include "core.h"
 
 
-class Engine;
+class Engine; // required to resolve a cyclic dependency. The engine contains 5 instances of LegKinematics
 /**
  * Leg kinematics can compute the kinematics of a single leg. It works in the coordinate
  * system which origin is in the hip. The joints are called hip/thigh/knee/foot.
@@ -87,13 +86,13 @@ private:
 
 	Point getHipPoseWorld();
 
+	// compute the inverse of a transformation matrix.
 	void computeInverseTransformationMatrix(HomMatrix m, HomMatrix& inv);
 
 	// the foot is not a point but has dampener with diameter of 20mm. When the foot
 	// touches the ground at a certain angle, we need to virtually adapt the ground height
 	// in order to compensate this.
 	realnum getFatFootCorrectionHeight(const LegPose &ftp) ;
-
 
 	DenavitHardenbergParams origin2Hip;					// DH from origin to Hip
 	HomMatrix origin2HipTransformation;					// transformation from body to Hip

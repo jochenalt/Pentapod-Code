@@ -1,6 +1,7 @@
 #ifndef ORIENTATION_H_
 #define ORIENTATION_H_
 
+
 #include "basics/serializer.h"
 #include "basics/types.h"
 #include "basics/point.h"

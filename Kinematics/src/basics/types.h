@@ -9,7 +9,7 @@ typedef double realnum;
 typedef double angle_rad;
 typedef double angle_deg;
 
-const realnum qnan  = std::numeric_limits<double>::quiet_NaN();
+const realnum qnan = std::numeric_limits<double>::quiet_NaN();
 const realnum inf  = std::numeric_limits<double>::infinity();
 const realnum ninf = -std::numeric_limits<double>::infinity();
 
@@ -19,7 +19,7 @@ typedef realnum mmPerMillisecond;				// speed
 typedef realnum mmPerSecond;					// speed
 typedef realnum radPerSecond;					// angualar speed
 
-typedef int millimeter_int;					// distance
+typedef int millimeter_int;				     	// distance
 typedef realnum millimeter;						// distance
 typedef realnum mmPerMillisecondPerMillisecond;	// acceleration
 typedef int int_millimeter;						// distance
@@ -29,13 +29,12 @@ const int floatPrecisionDigits=8;
 const realnum floatPrecision=pow(10.0,-floatPrecisionDigits);
 const realnum floatPrecisionSqrt=sqrt(floatPrecision);
 
-
+// include matrix library
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreorder"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #include "matrix/cmatrix"
 #pragma GCC diagnostic pop
-
 
 using techsoft::mslice;
 typedef techsoft::matrix<realnum>  Matrix;

@@ -49,7 +49,6 @@ std::ostream& Map::serialize(std::ostream &out) const {
 	serializePrim(out, generationNumber);
 	out << ",\"og\":\"";
 
-
 	int len = gridWidth*gridHeight;
 	std::ostringstream occupancyGridOut;
 

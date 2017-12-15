@@ -1,6 +1,8 @@
 /*
  * Trajectory.h
  *
+ * A trajectory is a vector of stamped poses
+ *
  *  Created on: 27.07.2017
  *      Author: JochenAlt
  */

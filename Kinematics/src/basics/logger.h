@@ -1,6 +1,15 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
+// this can be included from ROS source code as well as other source code. It provides the macros
+//
+// ROS_DEBUG_STREAM(args)
+// ROS_INFO_STREAM(args)
+// ROS_ERROR_STREAM(args)
+// ROS_WARN_STREAM(args)
+//
+// which are mapped to ROS macros if ROS is found or to EasyLogger if not.
+
 
 #if defined(ROS_BUILD) || defined(ROS_BUILD_SHARED_LIBS) || defined(ROS_PACKAGE_NAME)
 	// Nothing to do, use the ROS functionality

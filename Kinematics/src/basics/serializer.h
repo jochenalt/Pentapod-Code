@@ -129,7 +129,6 @@ std::istream& deserializeArrayOfSerializable(std::istream &in, T list[], int &le
 	return in;
 }
 
-
 template<class T>
 std::istream& deserializeVectorOfSerializable(std::istream &in, vector<T>& list, bool& ok) {
 	if (in) {

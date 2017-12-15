@@ -6,5 +6,4 @@
 std::string compressAndEncode(const std::string & s);
 std::string decodeAndUncompress(const std::string & s, int maxBufferSize);
 
-
 #endif

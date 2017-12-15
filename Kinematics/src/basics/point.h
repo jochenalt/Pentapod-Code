@@ -4,7 +4,7 @@
 #include "basics/serializer.h"
 #include "basics/types.h"
 
-enum CoordDimType { X=0, Y=1, Z=2, W=3 };
+enum CoordDimType { X=0, Y=1, Z=2, W=3 }; // index values used for various dimensions in an array. W is intended for quaternions
 
 class Point  : public Serializable {
 	 friend ostream& operator<<(ostream&, const Point&);
