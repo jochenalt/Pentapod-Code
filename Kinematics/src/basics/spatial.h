@@ -450,7 +450,6 @@ public:
 	void null();
 	bool isNull();
 	PentaType<T> getRotatedAroundZ(angle_rad ori) const;
-	void rotateAroundZ(angle_rad ori) ;
 
 	friend ostream& operator<<(ostream& os, const PentaType<T>& p) {
 		os << std::setprecision(2) <<  "(" << p[0] << "," << p[1] << "," << p[2] << "," << p[3]<< "," << p[4] << ")";

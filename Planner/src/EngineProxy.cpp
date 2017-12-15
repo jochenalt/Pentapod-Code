@@ -380,7 +380,7 @@ LegGaitPhase EngineProxy::getLegsGaitPhase(int legNo) {
 
 LegPose EngineProxy::getFrontLegPoseWorld() {
 	LegPose pose = data.frontLegPose;
-	pose.position.rotateAroundZ(data.currentNoseOrientation);
+	pose.position = data.frontLegPose.position.getRotatedAroundZ(data.currentNoseOrientation);
 	return pose;
 }
 

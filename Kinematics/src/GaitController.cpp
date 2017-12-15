@@ -135,11 +135,8 @@ Point GaitController::getNextToePoint(const Point& currentPoint, seconds dT) {
 	// what angle are we rotating in one loop?
 	realnum loopAngle = currentAngularSpeed*dT;
 
-	// compute new point
-	Point newPosition = currentPoint;
-
-	// now rotate by delta angle around origin
-	newPosition.rotateAroundZ(-loopAngle);
+	// rotate by delta angle around origin
+	Point newPosition = currentPoint.getRotatedAroundZ(-loopAngle);
 
 	// and add the regular speed vector (from perspective of the bot, the ground moves backwards)
 	newPosition -= Point(speedX, speedY,0)*dT;

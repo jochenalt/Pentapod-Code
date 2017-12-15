@@ -76,14 +76,6 @@ PentaType<T> PentaType<T>::getRotatedAroundZ(angle_rad ori) const {
 	return result;
 }
 
-template<class T>
-void PentaType<T>::rotateAroundZ(angle_rad ori) {
-	PentaType<T> result;
-	for (int i = 0;i<NumberOfLegs;i++)
-		result.a[i] = a[i].rotateAroundZ(ori);
-	return result;
-}
-
 
 template<class T>
 std::ostream& PentaType<T>::serialize(std::ostream &out) const {

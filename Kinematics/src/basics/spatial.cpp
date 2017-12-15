@@ -78,7 +78,7 @@ Pose Pose::applyTransformation(const Pose& add) const {
 Pose Pose::inverse() const {
 	Pose result;
 	result.position -= position;
-	result.position.rotateAroundZ(-orientation.z);
+	result.position = result.position.getRotatedAroundZ(-orientation.z);
 	result.orientation -= orientation;
  	return result;
 }

@@ -133,17 +133,10 @@ Point Point::getRotatedAroundZ(realnum alpha) const {
 	realnum sa = sin(alpha);
 	realnum ca = cos(alpha);
 
-	Point rotated((ca*x - sa*y),(sa*x + ca*y),z );
+	Point rotated((ca*x - sa*y),
+			      (sa*x + ca*y),
+			      z );
 	return rotated;
-}
-
-void Point::rotateAroundZ(realnum alpha) {
-	realnum sa = sin(alpha);
-	realnum ca = cos(alpha);
-
-	Point copy(*this);
-	x = ca*copy.x - sa*copy.y;
-	y = sa*copy.x + ca*copy.y;
 }
 
 

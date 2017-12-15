@@ -26,7 +26,6 @@ class Point  : public Serializable {
 		bool isNull() const;
 
 		Point getRotatedAroundZ(angle_rad alpha) const;
-		void rotateAroundZ(angle_rad alpha);
 
 		void operator= (const Point& p);
 		void operator= (const HomVector& p);

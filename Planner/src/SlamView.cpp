@@ -615,7 +615,7 @@ void SlamView::MotionCallback(int x, int y) {
 		if (mousePlaneXY) {
 			Point lookAt = getLookAtPosition();
 			Point lookAtDiff = Point(-diffY,-diffX,0 )*getCurrentEyeDistance()/1200; // WindowSize
-			lookAtDiff.rotateAroundZ(getXYPaneAngle());
+			lookAtDiff = lookAtDiff.getRotatedAroundZ(getXYPaneAngle());
 			lookAt += lookAtDiff;
 			Map& map = EngineProxy::getInstance().getMap();
 			lookAt.x = constrain(lookAt.x, (realnum)-map.getMapSizeX()/2, (realnum)map.getMapSizeX()/2);

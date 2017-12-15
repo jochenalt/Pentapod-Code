@@ -8,6 +8,7 @@
 #ifndef ENGINEPROXY_H_
 #define ENGINEPROXY_H_
 
+#include "basics/spatial.h"
 #include "Engine.h"
 #include "Map.h"
 #include "Trajectory.h"
