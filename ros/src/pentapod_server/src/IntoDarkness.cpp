@@ -15,7 +15,7 @@ const int CandidateThreshold = 80;
 
 IntoDarkness::IntoDarkness() {
 	odomFrame = new Pose();
-	pose = new Pose();
+	baselink = new Pose();
 }
 
 IntoDarkness::~IntoDarkness() {
@@ -43,8 +43,8 @@ void IntoDarkness::feedGlobalMap() {
 	// store the reference to the passed maps, do not copy for performance reasons
 
 	slamMap = (Map*)&Dispatcher::getInstance().getSlamMap();
-	costMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
-	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
+	globalCostMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
+	baselink = (Pose*)&Dispatcher::getInstance().getBaselink();
 	odomFrame = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	findDarkAndScaryHoles();
 
@@ -73,7 +73,7 @@ void IntoDarkness::feedLaserMap(const LaserScan& newLaserScan) {
 //    111
 
 bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
-	int pivotValue = costMap->getValueByWorld(x,y);
+	int pivotValue = globalCostMap->getValueByWorld(x,y);
 	realnum holeValue = 0;
 	int wallCounter = 0;
 	const int radius = 2;
@@ -81,7 +81,7 @@ bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
 		for (int xc = -radius;xc <= radius; xc++) {
 			for (int yc = -radius;yc <= radius; yc++) {
 				if (((abs(xc) == radius) || (abs(yc) == radius)) && (abs(yc) != abs(xc))) {
-					int value = costMap->getValueByWorld(x+xc*slamMap->getGridSize(),y+yc*slamMap->getGridSize());
+					int value = globalCostMap->getValueByWorld(x+xc*slamMap->getGridSize(),y+yc*slamMap->getGridSize());
 					if (value > pivotValue) {
 						if (value > LethalThreshold)
 							wallCounter += 2;
@@ -120,7 +120,7 @@ realnum IntoDarkness::computeGlobalScariness(millimeter_int x, millimeter_int y,
 
 
 realnum IntoDarkness::getCurrentScariness() {
-	return computeGlobalScariness(pose->position.x,pose->position.y, 32, wallClosenessMaxDistance );
+	return computeGlobalScariness(baselink->position.x,baselink->position.y, 32, wallClosenessMaxDistance );
 }
 
 
@@ -209,7 +209,7 @@ void IntoDarkness::findDarkAndScaryHoles() {
 	int h = slamMap->getGridsHeight();
 
 	// set position to a multiple of gridsize
-	Point origin = pose->position;
+	Point origin = baselink->position;
 	origin.x = ((int)(origin.x/gridSize + 0.5)) * gridSize;
 	origin.y = ((int)(origin.y/gridSize + 0.5)) * gridSize;
 
