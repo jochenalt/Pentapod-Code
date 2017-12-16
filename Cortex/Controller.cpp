@@ -14,6 +14,7 @@
 #include "core.h"
 #include "limits.h"
 #include "PowerVoltage.h"
+#include "CortexComPackage.h"
 
 Controller controller;
 
@@ -218,7 +219,14 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
 
 	// the ideal timing is when the command comes in right between two move commands. Substract the runtime of a loop
-	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopDuration_ms()/2;
+	// additionally, we need to add the time for the response of the I2C call,  which takes 2ms
+	// during the i2c communication, we avoid any other interrupts
+
+	// i2c has 400KHz, requires approx 10 bits per byte, + 1 is for rounding
+	const uint32_t cortexCommunicationResponseDuration_ms = 400000/1000/10/Cortex::ResponsePackageData::Size + 1;
+
+	// final computation to have equal gaps between communication and duty. Give 1ms buffer in case of clock stretching
+	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopDuration_ms()/2 + cortexCommunicationResponseDuration_ms + 1;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.

@@ -220,8 +220,6 @@ void I2CSlave::executeRequest() {
 				}
 			}
 
-
-
 			// create response
 			ok = Cortex::ComPackage::createResponse(
 					status, angles, distance, servoStatus,
