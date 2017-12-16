@@ -83,7 +83,7 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
-        	delay_ms(1);
+        	delay_ms(2);
         	tries++;
     	}
     	if (bytesRead > 0) {
