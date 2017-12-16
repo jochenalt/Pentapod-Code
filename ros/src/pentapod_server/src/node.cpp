@@ -112,9 +112,29 @@ int main(int argc, char * argv[]) {
 	// setup log
 	ROS_INFO_STREAM("pentapod webserver running on port " << webserverPort << " in " << pwd);
 
+	// timer to limit frequency of subsequent setup calls in case they are failling
+	TimeSamplerStatic setupTimer;
+
 	// setup all publishers and subscribers
 	Dispatcher::getInstance().setup(rosNode);
 
+	/*
+	Pose baselink (Point(450,0,0),Rotation(0,0,radians(00)));
+	Pose goal(Point(450,150,0), Rotation(0,0,radians(90)));
+
+	Pose bli = baselink.inverse();
+	Pose gi = goal.inverse();
+	Pose gii = gi.inverse();
+
+	Pose goalRel = goal.applyTransformation(bli);
+	ROS_DEBUG_STREAM("g=" << goal << " gi=" << gi << "gii=" << gii);
+
+	ROS_DEBUG_STREAM("bli=" << bli << " gi=" << gi << "goalRel=" << goalRel
+			   << " goal-1*(bli)-1=" << goal.inverse().applyTransformation(bli.inverse()).inverse()
+			   << " aaa-goal-1*(bli)-1=" << bli.applyTransformation(goal)
+
+	);
+	*/
 
 	// main loop that takes care of the webserver as well as ROS
 	TimeSamplerStatic odomTimer;
@@ -130,9 +150,11 @@ int main(int argc, char * argv[]) {
 			Dispatcher::getInstance().broadcastTransformationMapToOdom();
 
 			if (bodyPoseTimer.isDue(500)) {
-				Navigator::getInstance().advertiseBodyPose();
+				Dispatcher::getInstance().advertiseBodyPose();
 			}
 		}
+
+
 
 		// check and dispatch incoming http requests (dispatched by CommandDispatcher) and wait for 10ms max.
 		mg_mgr_poll(&mgr, 10);

@@ -94,7 +94,7 @@ void FreeWill::publish() {
 	if (turnOn == lastTurnedOn) {
 		if (turnOn) {
 			// check if navigation is finished
-			if (Navigator::getInstance().getNavigationGoalStatus().isDone()) {
+			if (Dispatcher::getInstance().getNavigationGoalStatus().isDone()) {
 
 				if (latchGoalReachable) {
 					// goal could not be reached, but this does not make a difference here, we select the next one
@@ -103,18 +103,18 @@ void FreeWill::publish() {
 				// find a new dark scary hole
 				Pose nextGoal = computeNavigationGoal();
 				if (nextGoal.isNull()) {
-					Navigator::getInstance().setNavigationGoal(nextGoal, true);
+					Dispatcher::getInstance().setNavigationGoal(nextGoal, true);
 					latchGoalReachable = true; // check asynchronously if goal can be reached.
 				}
 			} else {
-				if (latchGoalReachable && (Navigator::getInstance().getNavigationGoalStatus() == actionlib::SimpleClientGoalState::ACTIVE)) {
+				if (latchGoalReachable && (Dispatcher::getInstance().getNavigationGoalStatus() == actionlib::SimpleClientGoalState::ACTIVE)) {
 					latchGoalReachable = false; // goal can be reached
 				}
 			}
 		}
 	} else {
 		if (!turnOn) { // free will has been switched off, cancel the current goal
-			Navigator::getInstance().cancelNavigationGoal();
+			Dispatcher::getInstance().cancelNavigationGoal();
 
 		}
 	}
