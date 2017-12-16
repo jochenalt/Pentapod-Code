@@ -343,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 7,2*CORTEX_SAMPLE_RATE);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 10 ,2*CORTEX_SAMPLE_RATE);
     } while (retry(ok));
 
 	if (ok)
@@ -693,7 +693,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
 	if ((expectedResponse > 0) && (fullDuration > expectedResponse))
-		ROS_ERROR_STREAM("cortex-call took too long:" << sendEnd - sendStart << "ms/" << receiveEnd - receiveStart << "ms/" << fullDuration << "ms. Expected: " << expectedResponse << "ms" );
+		ROS_WARN_STREAM("cortex-call took too long:" << sendEnd - sendStart << "ms/" << receiveEnd - receiveStart << "ms/" << fullDuration << "ms. Expected: " << expectedResponse << "ms" );
 
 	return ok;
 }
