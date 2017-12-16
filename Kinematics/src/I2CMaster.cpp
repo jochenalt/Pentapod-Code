@@ -22,12 +22,6 @@
 using namespace std;
 
 
-static uint32_t clock_ms() {
-	static uint32_t clockPerMs = (CLOCKS_PER_SEC)/1000;
-	uint32_t c = clock();
-	return c/clockPerMs;
-}
-
 I2CMaster::I2CMaster() {
 }
 
@@ -83,20 +77,20 @@ int I2CMaster::sendString(string str) {
 int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeout_ms) {
     int totalBytesRead = 0;
     int bytesRead= 0;
-    uint32_t start = clock_ms();
+    uint32_t start = millis();
     int tries = 0;
     do {
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
-        	delay_ms(2);
+        	delay_ms(1);
         	tries++;
     	}
     	if (bytesRead > 0) {
             totalBytesRead += bytesRead;
             RemainingBufferSize -= bytesRead;
         }
-    } while ((clock_ms() < start + timeout_ms) && (RemainingBufferSize > 0));
+    } while ((millis() < start + timeout_ms) && (RemainingBufferSize > 0));
     if (RemainingBufferSize == 0) {
     	// if (tries > 0)
     	// 	ROS_WARN_STREAM ("receive_array used " << tries << " tries with " << clock_ms()-start << "ms");
