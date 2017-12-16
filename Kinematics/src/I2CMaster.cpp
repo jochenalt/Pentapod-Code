@@ -15,6 +15,8 @@
 #include "core.h"
 #include "I2CMaster.h"
 #include "basics/logger.h"
+
+#include "basics/util.h"
 #include "CortexComPackage.h"
 
 using namespace std;
@@ -87,7 +89,7 @@ int I2CMaster::receiveArray(uint8_t* buffer, int RemainingBufferSize, int timeou
     	bytesRead= getArray(&buffer[totalBytesRead], RemainingBufferSize);
     	if ((bytesRead > 0) && (buffer[totalBytesRead] ==  Cortex::NotYetReadyMagicNumber)) {
         	bytesRead = 0;
-        	std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        	delay_ms(2);
         	tries++;
     	}
     	if (bytesRead > 0) {
