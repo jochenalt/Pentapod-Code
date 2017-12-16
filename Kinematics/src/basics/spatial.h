@@ -327,6 +327,7 @@ public:
 
 	void reset();
 	Rotation getPID(Rotation error, realnum p, realnum i, realnum d, const Rotation &outMax);
+	Rotation getErrorIntegral() { return errorIntegral; };
 private:
 	Rotation lastError;
 	Rotation errorIntegral;

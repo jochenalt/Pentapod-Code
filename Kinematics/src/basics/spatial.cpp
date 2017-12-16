@@ -321,7 +321,7 @@ void SpatialPID::reset() {
 
 Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFactor, realnum derivativeFactor, const Rotation &outMax) {
 		Rotation outMin = outMax * -1.0;
-		realnum dT = pidSampler.dT();
+		seconds dT = pidSampler.dT();
 		Rotation imuCompensation ;
 		if (dT > floatPrecision) { // first round is for the road
 			Rotation prop = error;
@@ -332,8 +332,10 @@ Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFac
 			imuCompensation = prop*propFactor + integ * IntegFactor + deriv*derivativeFactor / dT;
 			imuCompensation.limit(outMin, outMax);
 
-			lastError = error;
 			errorIntegral += error*dT;
+			errorIntegral.limit(outMin, outMax);
+
+			lastError = error;
 		}
 
 		return imuCompensation;

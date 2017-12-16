@@ -71,11 +71,8 @@ private:
 
 	double scarynessthreshold;
 	Map *slamMap = NULL;
-	Map *globalCostMap = NULL;
-	Map *localCostMap = NULL;
 	LaserScan *laserScan = NULL;
-	Pose* odomFrame = NULL;
-	Pose* baselink = NULL;
+	Pose* pose = NULL;
 
 	std::map<int, realnum> foundDarkHoles;
 	std::string darkScaryHolesSerialized;
