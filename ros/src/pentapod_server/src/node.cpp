@@ -118,23 +118,6 @@ int main(int argc, char * argv[]) {
 	// setup all publishers and subscribers
 	Dispatcher::getInstance().setup(rosNode);
 
-	/*
-	Pose baselink (Point(450,0,0),Rotation(0,0,radians(00)));
-	Pose goal(Point(450,150,0), Rotation(0,0,radians(90)));
-
-	Pose bli = baselink.inverse();
-	Pose gi = goal.inverse();
-	Pose gii = gi.inverse();
-
-	Pose goalRel = goal.applyTransformation(bli);
-	ROS_DEBUG_STREAM("g=" << goal << " gi=" << gi << "gii=" << gii);
-
-	ROS_DEBUG_STREAM("bli=" << bli << " gi=" << gi << "goalRel=" << goalRel
-			   << " goal-1*(bli)-1=" << goal.inverse().applyTransformation(bli.inverse()).inverse()
-			   << " aaa-goal-1*(bli)-1=" << bli.applyTransformation(goal)
-
-	);
-	*/
 
 	// main loop that takes care of the webserver as well as ROS
 	TimeSamplerStatic odomTimer;

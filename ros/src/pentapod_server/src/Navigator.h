@@ -17,6 +17,7 @@
 #include "basics/spatial.h"
 #include "setup.h"
 #include "Map.h"
+#include "Trajectory.h"
 
 // ros basic types
 #include "std_msgs/String.h"
@@ -37,8 +38,6 @@ public:
   void setup(ros::NodeHandle& handle);
 
   static Navigator& getInstance() { static Navigator singleton; return singleton; };
-  void listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
-  void listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
 
   Map& getGlobalCostmap() { return globalCostMap; };
   Map& getLocalCostmap() { return localCostMap; };
@@ -49,23 +48,52 @@ public:
   int getLocalCostmapGenerationNumber() { return localCostmapGenerationNumber; };
   int getGlobalCostmapGenerationNumber() { return globalCostmapGenerationNumber; };
 
+  int getLocalPlanGenerationNumber() { return localPlanGenerationNumber; };
+  int getGlobalPlanGenerationNumber() { return globalPlanGenerationNumber; };
+
+  std::string getLocalPlanSerialized() { return localPlanSerialized; };
+  std::string getGlobalPlanSerialized() { return globalPlanSerialized; };
+
   // call the move_base service to clear all costmaps.
   void clearCostmaps();
 
+  void setNavigationGoal(const Pose& goalPose, bool setOrientationToPath = false);
+
+  Pose getNavigationGoal();
+  void cancelNavigationGoal();
+
+  actionlib::SimpleClientGoalState getNavigationGoalStatus();
+  NavigationStatusType getNavigationStatusType();
+
 private:
-  Map globalCostMap;
-  std::string globalCostMapSerialized;
+	void listenerLocalPlan(const nav_msgs::Path::ConstPtr& og );
+	void listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og );
+	void listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
 
-  Map localCostMap;
-  std::string localCostMapSerialized;
-  int localCostmapGenerationNumber;
-  int globalCostmapGenerationNumber;
+	Map globalCostMap;
+	std::string globalCostMapSerialized;
 
+	Map localCostMap;
+	std::string localCostMapSerialized;
+	int localCostmapGenerationNumber;
+	int globalCostmapGenerationNumber;
+	ros::ServiceClient clearCostmapService;
+	MoveBaseClient* moveBaseClient;
+	int localPlanGenerationNumber;
+	int globalPlanGenerationNumber;
+	Pose navigationGoal;
+	ros::Subscriber globalPathSubscriber;
+	ros::Subscriber localCostmapSubscriber;
+	ros::Subscriber globalCostmapSubscriber;
+	ros::Subscriber localPathSubscriber;
+    Pose navigationGoal_world;
+	bool latchedGoalOrientationToPath;
+	Trajectory localPlan;
+	std::string localPlanSerialized;
 
-  ros::Subscriber globalCostmapSubscriber;
-  ros::Subscriber localCostmapSubscriber;
-ros::ServiceClient clearCostmapService;
-
+	Trajectory globalPlan;
+	std::string globalPlanSerialized;
 };
 
 #endif /* PENTAPOD_SERVER_SRC_NAVIGATOR_H_ */

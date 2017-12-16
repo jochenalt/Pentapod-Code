@@ -61,33 +61,10 @@ public:
 
 	bool dispatch(string uri, string query, string body, string &response, bool &okOrNOk);
 
-	void listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
-	void listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
-	void listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og );
-	void listenerLocalPlan(const nav_msgs::Path::ConstPtr& og );
-	void listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og );
-
-	void listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
-
-	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
-	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
-	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
-	void listenToTrajectory(const nav_msgs::Path::ConstPtr& path);
-
-	void setNavigationGoal(const Pose& goalPose, bool setOrientationToPath = false);
-
-	Pose getNavigationGoal();
-	void cancelNavigationGoal();
-
-	actionlib::SimpleClientGoalState getNavigationGoalStatus();
-
-	void setupNavigationStackTopics(ros::NodeHandle& handle);
-
 	// call a service to start/stop the motor of the lidar
 	void startLidar(bool on);
 
 	void broadcastTransformationMapToOdom();
-	NavigationStatusType getNavigationStatusType();
 	void advertiseBodyPose();
 
 	static Dispatcher& getInstance() { static Dispatcher dispatcher; return dispatcher; };
@@ -100,27 +77,20 @@ public:
 	Pose& getBaselink() { engineState.baseLinkInMapFrame; };
 
 private:
-
+	void listenerSlamGrid (const nav_msgs::OccupancyGrid::ConstPtr& og );
+	void listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr );
+	void listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og );
+	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
+	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
 	void advertiseBodyPoseToEngine(const Pose& bodyPose);
 	tf::TransformBroadcaster broadcaster;
 	std::string serializedLaserScan;
 
 	Map slamMap;
-	std::string serializedMap;
-	Trajectory localPlan;
-	std::string localPlanSerialized;
-
-	Trajectory globalPlan;
-	std::string globalPlanSerialized;
-	std::string serializedTrajectory;
-
-	int mapGenerationNumber;
-
-	int localPlanGenerationNumber;
-	int globalPlanGenerationNumber;
-	int trajectoryGenerationNumber;
-
-	std::string serializedLaserData;
+	std::string serializedSlamMap;
+	int slamMapGenerationNumber;
+	ros::Subscriber slamMapSubscriber;
+	ros::Subscriber slamPoseSubscriber;
 
 	EngineState engineState;
 	Pose mapPose;
@@ -132,24 +102,18 @@ private:
 	ros::Publisher cmdModePub;
 	ros::Publisher initalPosePub;
 
-	ros::Subscriber occupancyGridSubscriber;
-	ros::Subscriber globalPathSubscriber;
-	ros::Subscriber localPathSubscriber;
 	ros::Subscriber laserScanSubscriber;
+	std::string serializedLaserData;
 
-	ros::Subscriber estimatedSLAMPoseSubscriber;
 	ros::Subscriber odomSubscriber;
 	ros::Subscriber stateSubscriber;
-	ros::Subscriber pathSubscriber;
 
 	ros::ServiceClient startLidarService;
 	ros::ServiceClient stopLidarService;
-	MoveBaseClient* moveBaseClient;
-	Pose navigationGoal;
-    Pose navigationGoal_world;
 	bool lidarIsOn;
 	bool lastLidarShouldBeOn;
-	bool latchedGoalOrientationToPath;
+
+	Pose advertisedAutonomousBodyPose;
 };
 
 

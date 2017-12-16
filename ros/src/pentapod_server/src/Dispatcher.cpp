@@ -48,45 +48,18 @@ void compileURLParameter(string uri, vector<string> &names, vector<string> &valu
 }
 
 Dispatcher::Dispatcher() {
-	mapGenerationNumber = 0;
-	trajectoryGenerationNumber = 0;
+	slamMapGenerationNumber = 0;
 	lidarIsOn = false;
 	lastLidarShouldBeOn = false;
-	latchedGoalOrientationToPath = false;
+	advertisedAutonomousBodyPose.null();
 }
 
-
-void Dispatcher::setupNavigationStackTopics(ros::NodeHandle& handle) {
-	// localCostmapGenerationNumber = -1;
-	// globalCostmapGenerationNumber = -1;
-	localPlanGenerationNumber = -1;
-	globalPlanGenerationNumber = -1;
-
-	Navigator::getInstance().setup(handle);
-
-	// subscribe to the right topic of the local planner used
-	std::string base_local_planner;
-	ros::param::get("/move_base/base_local_planner", base_local_planner);
-	std::string local_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/local_plan";
-	std::string global_plan_topic_name = "/move_base" + base_local_planner.substr(base_local_planner.find("/")) + "/global_plan";
-
-	// subscribe to path of local planner
-    ROS_INFO_STREAM("subscribe to local plan from " << local_plan_topic_name);
-	localPathSubscriber = handle.subscribe(local_plan_topic_name, 1000, &Dispatcher::listenerLocalPlan, this);
-
-	// subscribe to path of global planner
-	ROS_INFO_STREAM("subscribe to global plan from " << global_plan_topic_name);
-	globalPathSubscriber = handle.subscribe(global_plan_topic_name, 1000, &Dispatcher::listenerGlobalPlan, this);
-}
 
 void Dispatcher::setup(ros::NodeHandle& handle) {
 
-	//tell the action client that we want to spin a thread by default and wait until up and running
-	moveBaseClient = new MoveBaseClient("move_base", true);
-
 	// subscribe to the SLAM map coming from hector slamming
 	ROS_INFO_STREAM("subscribe to /map");
-	occupancyGridSubscriber = handle.subscribe("map", 1000, &Dispatcher::listenerOccupancyGrid, this);
+	slamMapSubscriber = handle.subscribe("map", 1000, &Dispatcher::listenerSlamGrid, this);
 
 	// subscribe to the laser scaner directly in order to display the nice red pointcloud
 	ROS_INFO_STREAM("subscribe to /scan");
@@ -94,11 +67,7 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 
 	// subscribe to the SLAM topic that deliveres the etimated position
 	ROS_INFO_STREAM("subscribe to /slam_out_pose");
-	estimatedSLAMPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &Dispatcher::listenerSLAMout,  this);
-
-	// subscribe to the path
-	ROS_INFO_STREAM("subscribe to /trajectory");
-	pathSubscriber = handle.subscribe("/trajectory", 1000, &Dispatcher::listenToTrajectory,  this);
+	slamPoseSubscriber = handle.subscribe("slam_out_pose", 1000, &Dispatcher::listenerSLAMout,  this);
 
 	// subscribe to the bots odom (without being fused with SLAM)
 	ROS_INFO_STREAM("subscribe to /odom");
@@ -117,82 +86,16 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
 
-
-
 	// publish initial position (required by navigation
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
 
 	// initialoze the dark hole finder
+	Navigator::getInstance().setup(handle);
+
+	// initialize the dark hole finder
 	IntoDarkness::getInstance().setup(handle);
 
-    // wait for the action server to come up. Do this in a 10Hz loop while producing the
-	// identical map->odom transformation which is required by the navigation stack.
-	// After this method, the map->odom transformation will be taken up by the main loop
-	ros::Time now = ros::Time::now();
-	ROS_INFO_STREAM("starting up move_base");
-	while (!moveBaseClient->waitForServer(ros::Duration(0.1)) && (ros::Time::now() - now < ros::Duration(10.0))) {
-		if (ros::Time::now() - now > ros::Duration(4.0))
-			ROS_INFO_THROTTLE(1, "waiting for move base to come up");
-		broadcastTransformationMapToOdom();
-	}
-
-	if (moveBaseClient->isServerConnected()) {
-		setupNavigationStackTopics(handle);
-	}
-	else {
-	    ROS_ERROR("move_base did not come up!!!");
-	}
-
 	FreeWill::getInstance().setup();
-}
-
-
-actionlib::SimpleClientGoalState Dispatcher::getNavigationGoalStatus() {
-	return moveBaseClient->getState();
-}
-
-Pose Dispatcher::getNavigationGoal() {
-	return navigationGoal_world;
-}
-
-
-void Dispatcher::cancelNavigationGoal() {
-
-	if (!navigationGoal.isNull() && (!getNavigationGoalStatus().isDone())) {
-		ROS_INFO_STREAM("cancel previous goal " << navigationGoal.position);
-		moveBaseClient->cancelGoal();
-	}
-
-}
-
-void Dispatcher::setNavigationGoal(const Pose& goalPose_world,  bool setOrientationToPath) {
-	cancelNavigationGoal();
-
-	// advertise the initial position for the navigation stack everytime the navigation goal is set
-	navigationGoal_world = goalPose_world;
-
-	// navigation goal is set from the base_links perspective. Convert goalPose into base_links frame
-	navigationGoal = engineState.baseLinkInMapFrame.inverse().applyTransformation(goalPose_world);
-	ROS_INFO_STREAM("convert goal(world)" << goalPose_world << " from base_link=" << engineState.baseLinkInMapFrame << " = navigation gaol(base_link)" << navigationGoal);
-
-
-	move_base_msgs::MoveBaseGoal goal;
-	goal.target_pose.header.frame_id = "base_link";
-	goal.target_pose.header.stamp = ros::Time::now();
-
-	goal.target_pose.pose.position.x = navigationGoal.position.x/1000.0;
-	goal.target_pose.pose.position.y = navigationGoal.position.y/1000.0;
-	goal.target_pose.pose.position.z = 0;
-
-	geometry_msgs::Quaternion goalPoseQuat  = tf::createQuaternionMsgFromYaw(navigationGoal.orientation.z);
-	goal.target_pose.pose.orientation = goalPoseQuat;
-
-	moveBaseClient->sendGoal(goal);
-
-	ROS_INFO_STREAM("setting navigation goal (" << goalPose_world << ") " << navigationGoal.position << string(setOrientationToPath?" (latched orientation)":""));
-
-	// latch the flag indicating that once the global path has been computed by navigation stack, set the orientation
-	latchedGoalOrientationToPath = setOrientationToPath;
 }
 
 
@@ -357,7 +260,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			bool deliverContent = false;
 			if (ok) {
 				generationNumber = stringToInt(generationNumberStr,ok);
-				if (!ok || (generationNumber < mapGenerationNumber)) {
+				if (!ok || (generationNumber < slamMapGenerationNumber)) {
 					// passed version is older than ours, deliver map
 					deliverContent = true;
 				}
@@ -370,7 +273,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				deliverContent = true;
 			}
 			if (deliverContent)
-				response = serializedMap + "," + Navigator::getInstance().getGlobalCostmapSerialized() + "," + IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
+				response = serializedSlamMap + "," + Navigator::getInstance().getGlobalCostmapSerialized() + "," + IntoDarkness::getInstance().getDarkScaryHolesSerialized() + ","  + getResponse(true);
 
 			okOrNOk = true;
 			return true;
@@ -421,43 +324,16 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 		}
 	}
 
-	// delivery the trajectory
-	if (hasPrefix(uri, "/trajectory/")) {
-		string command = uri.substr(string("/trajectory/").length());
-		// map/get
-		if (hasPrefix(command, "get")) {
-			bool deliverContent = false;
-			if (serializedTrajectory != "") {
-				string generationNumberStr ;
-				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
-				if (ok) {
-					int generationNumber = stringToInt(generationNumberStr,ok);
-					if (!ok || (generationNumber < trajectoryGenerationNumber))
-						deliverContent = true;
-				} else
-					deliverContent = true;
-			}
-
-			response = getResponse(true);
-			if (deliverContent)
-				response = serializedTrajectory + "," + response;
-
-
-			okOrNOk = true;
-			return true;
-		}
-	}
-
 	if (hasPrefix(uri, "/plan/")) {
 		string command = uri.substr(string("/plan/").length());
 		if (hasPrefix(command, "get")) {
 			bool deliverContent = false;
-			if (localPlanSerialized != "") {
+			if (Navigator::getInstance().getLocalPlanSerialized() != "") {
 				string generationNumberStr ;
 				bool ok = getURLParameter(urlParamName, urlParamValue, "no", generationNumberStr);
 				if (ok) {
 					int generationNumber = stringToInt(generationNumberStr,ok);
-					if (!ok || (generationNumber < localPlanGenerationNumber))
+					if (!ok || (generationNumber < Navigator::getInstance().getLocalPlanGenerationNumber()))
 						deliverContent = true;
 				} else
 					deliverContent = true;
@@ -465,7 +341,7 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 
 			response = getResponse(true);
 			if (deliverContent)
-				response = globalPlanSerialized +"," + localPlanSerialized + "," + response;
+				response = Navigator::getInstance().getGlobalPlanSerialized() +"," + Navigator::getInstance().getLocalPlanSerialized() + "," + response;
 
 
 			okOrNOk = true;
@@ -493,16 +369,16 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 				setNavigationOrientation = latchOrientationStr == "true";
 			}
 			// cout << "ok=" << ok << "latchsr=" << latchOrientationStr << "sno=" << setNavigationOrientation << endl;
-			setNavigationGoal(goalPose, setNavigationOrientation);
+			Navigator::getInstance().setNavigationGoal(goalPose, setNavigationOrientation);
 			response = getResponse(true);
 			okOrNOk = true;
 			return true;
 		}
 		else if (hasPrefix(command,"goal/get")) {
 			std::ostringstream out;
-			int navStatus = (int)getNavigationStatusType();
+			int navStatus = (int)Navigator::getInstance().getNavigationStatusType();
 
-			getNavigationGoal().serialize(out);
+			Navigator::getInstance().getNavigationGoal().serialize(out);
 			out << ", \"status\":" << navStatus;
 			response = out.str() + "," + getResponse(true);
 			okOrNOk = true;
@@ -536,11 +412,6 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 	return false;
 }
 
-NavigationStatusType Dispatcher::getNavigationStatusType() {
-	if (!getNavigationGoal().isNull())
-		return (NavigationStatusType)(int)getNavigationGoalStatus().state_;
-	return NavigationStatusType::NavPending;
-}
 
 void Dispatcher::listenToLaserScan (const sensor_msgs::LaserScan::ConstPtr& scanPtr ) {
 	LaserScan laserScan;
@@ -600,78 +471,10 @@ void convertOccupancygridToMap(const nav_msgs::OccupancyGrid::ConstPtr& inputMap
 	serializedMap = out.str();
 }
 
-void Dispatcher::listenerOccupancyGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	convertOccupancygridToMap(og, SLAM_MAP_TYPE, slamMap, mapGenerationNumber, serializedMap);
+void Dispatcher::listenerSlamGrid (const nav_msgs::OccupancyGrid::ConstPtr& og ) {
+	convertOccupancygridToMap(og, SLAM_MAP_TYPE, slamMap, slamMapGenerationNumber, serializedSlamMap);
 }
 
-/*
-void Dispatcher::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	convertOccupancygridToMap(og, COSTMAP_TYPE, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
-
-	IntoDarkness::getInstance().feedGlobalMap();
-
-	vector<Point> holes;
-	IntoDarkness::getInstance().getDarkScaryHoles(holes);
-	std::stringstream out;
-	serializeVectorOfSerializable(holes,out);
-	darkScaryHolesSerialized = out.str();
-}
-*/
-
-/*
-void Dispatcher::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
-	convertOccupancygridToMap(og, COSTMAP_TYPE, localCostMap, localCostmapGenerationNumber, localCostMapSerialized);
-	IntoDarkness::getInstance().feedLocalMap();
-}
-*/
-
-void convertPoseStampedToTrajectory( const nav_msgs::Path::ConstPtr&  inputPlan, const Pose& odomFrame, Trajectory& outputPlan, int& generationNumber,  string& serializedPlan) {
-	outputPlan.clear();
-	for (unsigned int i = 0;i<inputPlan->poses.size();i++) {
-		Point p(inputPlan->poses[i].pose.position.x*1000.0,inputPlan->poses[i].pose.position.y*1000.0,0);
-		Quaternion q(inputPlan->poses[i].pose.orientation.x,
-					 inputPlan->poses[i].pose.orientation.y,
-					 inputPlan->poses[i].pose.orientation.z,
-					 inputPlan->poses[i].pose.orientation.w);
-
-		StampedPose sp(odomFrame.applyTransformation(Pose(p,q)),inputPlan->poses[i].header.stamp.toSec()*1000.0);
-		outputPlan.add(sp);
-	}
-
-	outputPlan.setGenerationNumber(++generationNumber);
-
-	std::stringstream out;
-	outputPlan.serialize(out);
-	serializedPlan = out.str();
-}
-
-void Dispatcher::listenerLocalPlan(const nav_msgs::Path::ConstPtr& og ) {
-	convertPoseStampedToTrajectory(og, odomFrame, localPlan, localPlanGenerationNumber, localPlanSerialized);
-}
-
-void Dispatcher::listenerGlobalPlan(const nav_msgs::Path::ConstPtr& og ) {
-	convertPoseStampedToTrajectory(og, Pose(), globalPlan, globalPlanGenerationNumber, globalPlanSerialized);
-
-	// in case the need to set the goal orientation, do it now
-
-	if (!navigationGoal.isNull() && latchedGoalOrientationToPath && (globalPlan.size() > 5)) {
-		// global path does not go straight to the goal, very often the last piece is bent
-		// so identify the direction the bot is coming from by taking the vector of the last piece
-		const millimeter lastPieceLength = 400; // consider at least the radius of the bot as minimu distance
-		int curr = globalPlan.size()-1;
-		StampedPose lastPose = globalPlan[curr];
-		while ((curr > 0) && (globalPlan[curr].pose.position.distance(lastPose.pose.position) < lastPieceLength))
-			curr--;
-
-		StampedPose prevPose = globalPlan[curr]; // this pose is at least 3000ms earlier than the predicted goal arrival time
-		// compute the orientation
-		Point orientationVec =  prevPose.pose.position-navigationGoal_world.position;
-		navigationGoal_world.orientation.z = 0*engineState.currentBodyPose.orientation.z + 0*engineState.currentNoseOrientation + atan2(orientationVec.y, orientationVec.x);
-
-		ROS_INFO_STREAM("setting new goal'orientation " << navigationGoal_world << " vec=" << orientationVec << " atan=" << atan2(orientationVec.y, orientationVec.x) << " nose=" << engineState.currentNoseOrientation );
-		setNavigationGoal(navigationGoal_world, false);
-	}
-}
 
 void Dispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  og ) {
 	// mapPose of hector mapping is given in [m], we need [mm]
@@ -689,25 +492,6 @@ void Dispatcher::listenerSLAMout (const geometry_msgs::PoseStamped::ConstPtr&  o
 	engineState.baseLinkInMapFrame = mapPose; // reset base_link to slam pose, odomFrame stored the new deviation of odometry
 }
 
-// subscription to path
-void Dispatcher::listenToTrajectory(const nav_msgs::Path::ConstPtr& path) {
-	Trajectory trajectory;
-	trajectory.clear();
-	for (unsigned int i = 0;i<path->poses.size();i++) {
-		Point p(path->poses[i].pose.position.x*1000.0,path->poses[i].pose.position.y*1000.0,path->poses[i].pose.position.z*1000.0);
-		Quaternion q(path->poses[i].pose.orientation.x,
-				     path->poses[i].pose.orientation.y,
-					 path->poses[i].pose.orientation.z,
-					 path->poses[i].pose.orientation.w);
-
-		StampedPose sp(Pose(p,q),path->poses[i].header.stamp.toSec()*1000.0);
-		trajectory.add(sp);
-	}
-
-	std::stringstream out;
-	trajectory.serialize(out);
-	serializedTrajectory = out.str();
-}
 
 // subscription to odom
 void Dispatcher::listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom) {
@@ -785,11 +569,12 @@ void Dispatcher::advertiseBodyPoseToEngine(const Pose& bodyPose) {
 }
 
 void Dispatcher::advertiseBodyPose() {
-	if (getNavigationStatusType() == NavigationStatusType::NavActive) {
+	if (Navigator::getInstance().getNavigationStatusType() == NavigationStatusType::NavActive) {
 		Pose toBePose = FreeWill::getInstance().getAutonomousBodyPose();
-		if (abs(toBePose.position.z - engineState.currentBodyPose.position.z) > floatPrecision) {
-			ROS_INFO_STREAM("advertise new body pose" << toBePose);
+		if (abs(toBePose.position.z - advertisedAutonomousBodyPose.position.z) > floatPrecision) {
+			ROS_INFO_STREAM("advertise new autonoous body pose" << toBePose);
 			advertiseBodyPoseToEngine(toBePose);
+			advertisedAutonomousBodyPose = toBePose;
 		}
 	}
 }
