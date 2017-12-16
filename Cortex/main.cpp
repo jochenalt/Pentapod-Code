@@ -273,7 +273,7 @@ void loop() {
 
 	// high priority jobs
 	uint32_t now = millis();
-	i2cSlave.loop();			// check for for command from ODroid
+	i2cSlave.loop();			// first loop is for receiving commands
 	controller.loop(now);		// run the actuators
 	hostComm.loop();			// wait for commands via serial interface
 	orientationSensor.loop(now);// fetch orientation from IMU
