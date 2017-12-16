@@ -72,6 +72,8 @@ private:
 	double scarynessthreshold;
 	Map *slamMap = NULL;
 	LaserScan *laserScan = NULL;
+	Map *costMap = NULL;
+	Map *localCostMap = NULL;
 	Pose* pose = NULL;
 
 	std::map<int, realnum> foundDarkHoles;

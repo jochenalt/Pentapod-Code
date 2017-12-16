@@ -334,7 +334,6 @@ Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFac
 
 			errorIntegral += error*dT;
 			errorIntegral.limit(outMin, outMax);
-
 			lastError = error;
 		}
 

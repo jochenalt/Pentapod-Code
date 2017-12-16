@@ -9,13 +9,14 @@
 #include <cstdarg>
 #include <iostream>
 #include <sstream>
+#include <thread>
+#include <chrono>
 
 #include "basics/stringhelper.h"
 
 void ExclusiveMutex::lock() {
 	isInBlock = true;
 };
-
 
 void ExclusiveMutex::unlock() {
 	isInBlock = false;
@@ -119,18 +120,8 @@ realnum ellipseCircumference(realnum a, realnum b) {
 
 
 void delay_ms(long ms) {
-	// usleeps works below 1000000 only.
-
-	while (ms > 0) {
-		if (ms >= 1000) {
-			sleep(1);
-			ms -= 1000;
-		}
-		else {
-			usleep(ms*1000);
-			ms = 0;
-		}
-	}
+	if (ms > 0)
+		std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void delay_us(long us) {

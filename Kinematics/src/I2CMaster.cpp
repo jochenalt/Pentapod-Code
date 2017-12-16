@@ -110,7 +110,7 @@ int I2CMaster::receive(string& str) {
 	const int bufferSize = 512;
 	char buffer[bufferSize];
 
-	int len = receiveArray((uint8_t*)buffer, bufferSize, 1000);
+	int len = receiveArray((uint8_t*)buffer, bufferSize, 1000 /* timeout [ms] */);
 	string s (buffer);
 	str = s;
 	return len;

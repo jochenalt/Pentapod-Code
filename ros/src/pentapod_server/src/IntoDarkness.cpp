@@ -43,6 +43,8 @@ void IntoDarkness::feedGlobalMap() {
 
 	slamMap = (Map*)&Dispatcher::getInstance().getSlamMap();
 	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
+	costMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
+	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	findDarkAndScaryHoles();
 
 
