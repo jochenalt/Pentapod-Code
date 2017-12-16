@@ -313,7 +313,7 @@ bool CortexClient::cmdBinaryGetAll() {
 
 	cortexCommRetryCounter = 0;
 	do {
-		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 64,100);
+		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 70,100);
 	} while (retry(ok));
 
 	if (ok)
@@ -343,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 0,CORTEX_SAMPLE_RATE*2);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 10 ,2*CORTEX_SAMPLE_RATE);
     } while (retry(ok));
 
 	if (ok)
@@ -663,24 +663,23 @@ void CortexClient::sendString(string str) {
 	serialCmd.sendString(str);
 }
 
-bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize, uint8_t response[], int responseSize, int delayTime_ms, int timeout_ms) {
+bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize, uint8_t response[], int responseSize, int expectedResponse, int timeout_ms) {
 	resetError();
 
-	uint32_t start = millis();
+	uint32_t sendStart = millis();
     stringstream requestStream;
 	for (int i = 0;i<requestSize;i++) {
 		requestStream << (int)request[i] << ' ';
 	}
 
 	i2cPort.sendArray(request,requestSize);
-	uint32_t sendDuration = millis() - start;
-	if (delayTime_ms > 0)
-		delay_ms(delayTime_ms);
+	uint32_t sendEnd = millis();
+
 	uint32_t receiveStart = millis();
-	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - sendDuration);
+	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - (sendEnd - sendStart));
 	uint32_t receiveEnd= millis();
 
-	uint32_t fullDuration = receiveEnd - start;
+	uint32_t fullDuration = receiveEnd - sendStart;
 
 	bool ok = true;
 	if (bytesRead  == responseSize) {
@@ -693,7 +692,8 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		setError(CORTEX_RESPONSE_SIZE_WRONG);
 		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
-	ROS_DEBUG_STREAM("cortex-call " << sendDuration << "ms/" << receiveEnd - receiveStart << "/" << fullDuration << "ms");
+	if ((expectedResponse > 0) && (fullDuration > expectedResponse))
+		ROS_WARN_STREAM("cortex-call took too long:" << sendEnd - sendStart << "ms/" << receiveEnd - receiveStart << "ms/" << fullDuration << "ms. Expected: " << expectedResponse << "ms" );
 
 	return ok;
 }
