@@ -509,7 +509,7 @@ void Engine::computeBodyPose() {
 		}
 		currentBodyPose = toBePose;
 		currentBodyPose.orientation += imuCompensation.orientation;
-		ROS_DEBUG_STREAM("IMU(" << std::setprecision(2) << degrees(imu.x) << "," << degrees(imu.y) << "|" << degrees(imuPID.getErrorIntegral().x) << "," << degrees(imuPID.getErrorIntegral().x) << ") error=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y)
+		ROS_DEBUG_STREAM("IMU(" << std::setprecision(2) << degrees(imu.x) << "," << degrees(imu.y) << "|" << degrees(imuPID.getErrorIntegral().x) << "," << degrees(imuPID.getErrorIntegral().y) << ") error=("<< std::setprecision(3) << degrees(imu.x) << "," << degrees(imu.y)
 				         << "), PID=(" << degrees(imuCompensation.orientation.x) << "," << degrees(imuCompensation.orientation.y) << ")"
 				         << ") after=(" << degrees(currentBodyPose.orientation.x) << "," << degrees(currentBodyPose.orientation.y) << ")");
 	}
