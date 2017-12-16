@@ -15,6 +15,8 @@
 #include "core.h"
 #include "I2CMaster.h"
 #include "basics/logger.h"
+
+#include "basics/util.h"
 #include "CortexComPackage.h"
 
 using namespace std;
