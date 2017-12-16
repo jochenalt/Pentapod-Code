@@ -14,14 +14,13 @@
 #include "Navigator.h"
 #include "IntoDarkness.h"
 
+#include <move_base_msgs/MoveBaseAction.h>
+#include "std_srvs/Empty.h"
 
 Navigator::Navigator() {
-  // TODO Auto-generated constructor stub
-
 }
 
 Navigator::~Navigator() {
-  // TODO Auto-generated destructor stub
 }
 
 
@@ -51,9 +50,6 @@ void Navigator::listenerGlobalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& o
 	convertOccupancygridToMap(og, globalCostMap, globalCostmapGenerationNumber, globalCostMapSerialized);
 
 	IntoDarkness::getInstance().feedGlobalMap();
-
-
-
 }
 
 void Navigator::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og ) {
@@ -62,16 +58,25 @@ void Navigator::listenerLocalCostmap(const nav_msgs::OccupancyGrid::ConstPtr& og
 }
 
 void Navigator::setup(ros::NodeHandle& handle) {
-  localCostmapGenerationNumber = -1;
-  globalCostmapGenerationNumber = -1;
+	localCostmapGenerationNumber = -1;
+	globalCostmapGenerationNumber = -1;
 
-  // subscribe to the navigation stack topic that delivers the global costmap
+	// subscribe to the navigation stack topic that delivers the global costmap
     ROS_INFO_STREAM("subscribe to /move_base/global_costmap/costmap");
-  globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Navigator::listenerGlobalCostmap, this);
+	globalCostmapSubscriber = handle.subscribe("/move_base/global_costmap/costmap", 1000, &Navigator::listenerGlobalCostmap, this);
 
-  // subscribe to the navigation stack topic that delivers the local costmap
-    ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
-  localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Navigator::listenerLocalCostmap, this);
+	// subscribe to the navigation stack topic that delivers the local costmap
+	ROS_INFO_STREAM("subscribe to /move_base/local_costmap/costmap");
+	localCostmapSubscriber = handle.subscribe("/move_base/local_costmap/costmap", 1000, &Navigator::listenerLocalCostmap, this);
 
+	clearCostmapService = handle.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
+
+}
+
+
+void Navigator::clearCostmaps() {
+ 	std_srvs::Empty srv;
+    ROS_INFO("clear costmaps");
+	clearCostmapService.call(srv);
 }
 

@@ -111,7 +111,6 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	// service to start or stop the lidar motor
 	startLidarService = handle.serviceClient<std_srvs::Empty>("/start_motor");
 	stopLidarService = handle.serviceClient<std_srvs::Empty>("/stop_motor");
-	clearCostmapService = handle.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
 
 	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
@@ -739,11 +738,6 @@ void Dispatcher::startLidar(bool on) {
 }
 
 
-void Dispatcher::clearCostmaps() {
- 	std_srvs::Empty srv;
-    ROS_INFO("clear costmaps");
-	clearCostmapService.call(srv);
-}
 
 // subscription to bots state
 void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateStr) {

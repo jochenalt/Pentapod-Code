@@ -86,10 +86,6 @@ public:
 	// call a service to start/stop the motor of the lidar
 	void startLidar(bool on);
 
-	// call the move_base service to clear all costmaps.
-	void clearCostmaps();
-
-
 	void broadcastTransformationMapToOdom();
 	NavigationStatusType getNavigationStatusType();
 	void advertiseBodyPose();
@@ -137,8 +133,6 @@ private:
 	ros::Publisher initalPosePub;
 
 	ros::Subscriber occupancyGridSubscriber;
-	ros::Subscriber globalCostmapSubscriber;
-	ros::Subscriber localCostmapSubscriber;
 	ros::Subscriber globalPathSubscriber;
 	ros::Subscriber localPathSubscriber;
 	ros::Subscriber laserScanSubscriber;
@@ -150,7 +144,6 @@ private:
 
 	ros::ServiceClient startLidarService;
 	ros::ServiceClient stopLidarService;
-	ros::ServiceClient clearCostmapService;
 	MoveBaseClient* moveBaseClient;
 	Pose navigationGoal;
     Pose navigationGoal_world;

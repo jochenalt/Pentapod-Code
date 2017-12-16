@@ -49,6 +49,9 @@ public:
   int getLocalCostmapGenerationNumber() { return localCostmapGenerationNumber; };
   int getGlobalCostmapGenerationNumber() { return globalCostmapGenerationNumber; };
 
+  // call the move_base service to clear all costmaps.
+  void clearCostmaps();
+
 private:
   Map globalCostMap;
   std::string globalCostMapSerialized;
@@ -61,6 +64,7 @@ private:
 
   ros::Subscriber globalCostmapSubscriber;
   ros::Subscriber localCostmapSubscriber;
+ros::ServiceClient clearCostmapService;
 
 };
 
