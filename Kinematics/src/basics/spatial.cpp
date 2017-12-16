@@ -334,6 +334,8 @@ Rotation SpatialPID::getPID(Rotation error, realnum propFactor, realnum IntegFac
 
 			lastError = error;
 			errorIntegral += error*dT;
+			errorIntegral.limit(outMin, outMax);
+
 		}
 
 		return imuCompensation;
