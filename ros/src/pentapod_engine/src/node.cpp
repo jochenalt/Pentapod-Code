@@ -76,14 +76,19 @@ int main(int argc, char * argv[]) {
 	const int publishOdomFrequency = 10;
 	ROS_INFO_STREAM("broadcast bot information and odom with " << publishOdomFrequency << "Hz");
 
+	uint32_t loopTime = 0;
 	while (rosNode.ok()) {
 		// ensure that engine loop is timingwise correct since cortex
 		// can tolerate only CORTEX_SAMPLE_RATE/2 ms = 10ms difference only.
 		// so call engine.loop() right after sleep
 		// mainLoopRate.sleep();
 		if (engineTimer.isDue(CORTEX_SAMPLE_RATE)) {
+			uint32_t loopStart = millis();
 			engine.loop(); // send move commands to cortex
+			uint32_t loopEnd= millis();
+			loopTime = (loopTime + (loopEnd - loopStart))/2;
 
+			ROS_INFO_STREAM_THROTTLE(10,"engine loop time " << loopTime << "ms");
 			// pump callbacks and topics
 			// - listen to speed, bodypose and move commands coming from pentapod_server
 			// - broadcast odom2base_link to be consumed by navigation
