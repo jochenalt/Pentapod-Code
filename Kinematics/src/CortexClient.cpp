@@ -341,7 +341,6 @@ bool CortexClient::cmdBinaryMOVE(
     long startTime = millis();
     ok = Cortex::ComPackage::createMoveRequest(flatDegAngles, duration_ms, request);
 
-
     cortexCommRetryCounter = 0;
     do {
         ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 0,CORTEX_SAMPLE_RATE*2);
@@ -678,6 +677,8 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		delay_ms(delayTime_ms);
 	uint32_t sendDuration = millis() - start;
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - sendDuration);
+	uint32_t fullDuration = millis() - start;
+
 	bool ok = true;
 	if (bytesRead  == responseSize) {
 	    stringstream responseStream;
@@ -689,6 +690,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 		setError(CORTEX_RESPONSE_SIZE_WRONG);
 		ROS_ERROR_STREAM("binaryCallMicroController:response size wrong:" << bytesRead << " instead of " << responseSize);
 	}
+	ROS_DEBUG_STREAM("cortex-call " << sendDuration << "ms/" << fullDuration << "ms");
 
 	return ok;
 }
