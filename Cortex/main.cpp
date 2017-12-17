@@ -273,9 +273,11 @@ void loop() {
 
 	// high priority jobs
 	uint32_t now = millis();
-	i2cSlave.loop();			// first loop is for receiving commands
+	i2cSlave.loop();			// loop is for receiving commands
 	controller.loop(now);		// run the actuators
+	i2cSlave.loop();			// loop is for receiving commands
 	hostComm.loop();			// wait for commands via serial interface
+	i2cSlave.loop();			// loop is for receiving commands
 	orientationSensor.loop(now);// fetch orientation from IMU
 
 	// low priority jobs

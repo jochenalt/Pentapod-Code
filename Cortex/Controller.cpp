@@ -15,6 +15,7 @@
 #include "limits.h"
 #include "PowerVoltage.h"
 #include "CortexComPackage.h"
+#include "I2CSlave.h"
 
 Controller controller;
 
@@ -127,6 +128,8 @@ void Controller::sendCommandToServos() {
 	}
 	uint32_t distanceendtime = millis();
 
+	I2CSlave::getInstance().loop();			// loop is for receiving commands
+
 	// iterate over all legs limb-wise, such
 	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
 	// Each loop just sends a fire-and-forget command with the to-be position,
@@ -146,6 +149,8 @@ void Controller::sendCommandToServos() {
 		}
 	}
 	uint32_t servoendtime = millis();
+
+	I2CSlave::getInstance().loop();			// loop is for receiving commands
 
 	// run low level loop that asks one servo per loop for its status
 	// ( results in a 2.2 Hz loop per servo )
@@ -222,19 +227,27 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	// additionally, we need to add the time for the response of the I2C call,  which takes 2ms
 	// during the i2c communication, we avoid any other interrupts
 
-	// i2c has 400KHz, requires approx 10 bits per byte, + 1 is for rounding
-	const uint32_t cortexCommunicationResponseDuration_ms = 400000/1000/10/Cortex::ResponsePackageData::Size + 1;
+	// final timing scheme:
+	// 1. communication comes in 2ms
+	// 2. process communication and prepare reply 1ms
+	// 3. wait for request of reply and send reply 3ms
+	// 4. time buffer 2ms
+	// 5. send command to server, get distance and get imu 12ms
+	// 6. time buffer 2ms
+	// cortex i2c has 400KHz, requires approx 9 bits per byte, + 1 is for rounding, the road and the address/ack stuff
+	const uint32_t cortexI2CFrequency = 400000;
+	const uint32_t cortexCommunicationResponseDuration_ms = cortexI2CFrequency/1000/9/Cortex::ResponsePackageData::Size + 1;
 
-	// final computation to have equal gaps between communication and duty. Give 1ms buffer in case of clock stretching
-	uint32_t toBeDueTime = now + servoLoopTimer.getRate()/2 - loopDuration_ms()/2 + cortexCommunicationResponseDuration_ms + 1;
+	// final computation to have equal gaps between communication and duty. Give 2ms buffer for clock stretching
+	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms+1;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.
-	// by this, the time will typcially never adapted but only when it moves out of
+	// by this, the time will typically never adapted but only when it moves out of
 	// the middle window between two requests.
 	int difference = toBeDueTime-asIsDueTime;
 
-	if (asIsDueTime > toBeDueTime + servoLoopTimer.getRate()/6 ) {
+	if (asIsDueTime > toBeDueTime + 3) {
 		servoLoopTimer.delayNextFire(difference);
 		/*
 		logger->print("adapt t ");
@@ -254,7 +267,7 @@ void Controller::adaptSynchronisation(uint32_t now) {
 		logger->println();
 		*/
 	}
-	if (asIsDueTime  < toBeDueTime - servoLoopTimer.getRate()/6) {
+	if (asIsDueTime  < toBeDueTime - 3) {
 		servoLoopTimer.delayNextFire(difference);
 		/*
 		logger->print("adapt t ");
