@@ -27,6 +27,9 @@ public:
 	// call me upfront
 	void setup(Engine& pMainController);
 
+	// bot has been turned on. Initialize timers etc.
+	void reset();
+
 	// call me to compute the next iteration of the gait
 	void loop();
 

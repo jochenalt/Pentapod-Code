@@ -124,7 +124,6 @@ void Engine::fallAsleep() {
 	targetAngularSpeed = 0;
 	targetSpeed = 0;
 	gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
-
 }
 
 void Engine::terrainMode(bool terrainModeOn) {
@@ -183,6 +182,8 @@ void Engine::turnOn() {
 		}
 	}
 
+	gaitControl.reset();
+	gaitSpeedSampler.reset();
 	turnedOn = true;
 }
 
@@ -288,8 +289,8 @@ void Engine::loop() {
 	}
 
 	if (isTurnedOn()) {
-		computeBodyPose();
 		computeGaitRefPointRadius();
+		computeBodyPose();
 		computeGaitSpeed();
 		computeGaitHeight();
 		computeGaitMode();
@@ -717,7 +718,6 @@ void Engine::computeGaitRefPointRadius() {
 					bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(hipOffset);
 					bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
 				}
-
 			}
 			break;
 	}
@@ -783,7 +783,6 @@ void Engine::computeWakeUpProcedure() {
 		(generalMode == FallASleep)) {
 		currentGaitMode = OneLegInTheAir;
 		gaitControl.setTargetGaitMode(currentGaitMode);
-		// gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
 
 	// After lifting the body, when close to the target position, stop with wake-up-Procedure
@@ -808,8 +807,8 @@ void Engine::computeWakeUpProcedure() {
 				generalMode = BeingAsleep;
 				inputBodyPose.null();
 				inputBodyPose.position.z = minBodyHeight;
+				gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 			};
-
 		}
 	}
 }

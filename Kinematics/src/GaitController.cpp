@@ -213,8 +213,7 @@ Point GaitController::interpolateLegMotion(
 
 	// We move when
 	// - speed is != 0
-	// - our current ref point from to-be ref point is very different or the leg is up
-	// - gait mode is switched
+	// - our current ref point from to-be ref point is different or the leg is up
 	realnum moveLength = diffToePoint.length();
 
 	bool doMove =  (moveLength > floatPrecision)
@@ -237,7 +236,7 @@ Point GaitController::interpolateLegMotion(
 				if (abs(dDistance) > floatPrecision) {
 					// we could take fullsteplength, but this does not yet consider the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
-					// step length (following the computed step length this is not THAT important)
+					// step length (following the computed step length is not that important)
 					nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
 				}
 
@@ -251,7 +250,7 @@ Point GaitController::interpolateLegMotion(
 					rightSupportPoint.z = gaitHeight + gaitRefPoint.z;
 
 					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
-
+					cout << "AAA leg=" << legNo << "lb=" << localPhaseBeat << " prev=" << prevTouchPoint << " next=" << nextTouchPoint << " d=" << prevTouchPoint.distance(nextTouchPoint) << endl;
 				}
 
 				// get next point within bezier curve. Apply moderation at the
@@ -312,6 +311,9 @@ Point GaitController::interpolateLegMotion(
 				// move with the ground
 				result = getNextToePoint(currentToePoint, dT);
 				feetOnGround[legNo] = true;
+				if (newPhase)
+					cout << "BBB leg=" << legNo << "lb=" << localPhaseBeat << " curr=" << currentToePoint << " next=" << result << " dt=" <<dT*1000 << "ms" << endl;
+
 				break;
 			}
 		} // switch
@@ -385,9 +387,13 @@ realnum GaitController::getFootOnTheGroundRatio(realnum footSpeed, GaitModeType 
 	return getFootOnTheGroundRatio(getActualGaitMode(footSpeed));
 }
 
+void GaitController::reset() {
+	gaitLoopSample.reset();
+}
+
 void GaitController::loop() {
 	seconds dT = gaitLoopSample.dT();
-	if (dT != 0) {
+	if (dT > floatPrecision) {
 		realnum maxFootDistance = 0;
 		realnum loopFootDistance[NumberOfLegs];
 		PentaPointType loopFootMoveVector;
