@@ -479,9 +479,12 @@ void Engine::computeBodyPose() {
 
 		// move towards the target body pose
 		// but: if we are in lift or fall asleep mode, wait until all legs are on the ground
-		if (((generalMode != LiftBody) &&  (generalMode != FallASleep))
-			|| ((generalMode == LiftBody)   && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && ((gaitControl.getAdaptionTypeToGaitRefPoint() == DO_NOT_ADAPT_GAIT_POINT) || (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan)))
-			|| ((generalMode == FallASleep) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && ((gaitControl.getAdaptionTypeToGaitRefPoint() == DO_NOT_ADAPT_GAIT_POINT) || (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan)) && (gaitControl.getCurrentSpeed() < floatPrecision) )) {
+		bool readyForLifting = (gaitControl.getFeetOnTheGround() == NumberOfLegs)
+				               && ((gaitControl.getAdaptionTypeToGaitRefPoint() == DO_NOT_ADAPT_GAIT_POINT) || (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan))
+							   && (gaitControl.getCurrentSpeed() < floatPrecision);
+		if (((generalMode != LiftBody) && (generalMode != FallASleep))
+			|| ((generalMode == LiftBody)  && readyForLifting)
+			|| ((generalMode == FallASleep) && readyForLifting)) {
 			realnum bodySpeed = maxBodyPositionSpeed;
 
 			if ((generalMode != WalkingMode) && (generalMode != TerrainMode))
@@ -587,11 +590,8 @@ void Engine::computeGaitMode() {
 						gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 					}
 				}
-
 				return;
 			}
-
-
 			return;
 		}
 		if (currentGaitMode == SpiderWalk) {
@@ -609,7 +609,6 @@ void Engine::computeGaitMode() {
 						gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 					}
 				}
-
 				return;
 			}
 
@@ -621,11 +620,8 @@ void Engine::computeGaitMode() {
 					gaitControl.setTargetGaitMode(SpiderWalk);
 					gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE); // switching done, do not force gait anymore
 				}
-
 				return;
 			}
-
-
 			return;
 		}
 		if (currentGaitMode == OneLegInTheAir) {
