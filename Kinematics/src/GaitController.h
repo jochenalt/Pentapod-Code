@@ -82,6 +82,8 @@ public:
 		return sum/NumberOfLegs;
 	}
 
+	void assignTargetGaitRefPoints();
+
 	PentaPointType getCurrentWalkingTouchPoints() { return currentWalkingTouchPoints; };
 
 	PentaPointType getGaitRefPointsWorld() ;

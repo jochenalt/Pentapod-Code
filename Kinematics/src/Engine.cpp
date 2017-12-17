@@ -13,7 +13,6 @@ Engine::Engine() {
 	isSetup = false;
 }
 
-
 bool Engine::setupProduction(string i2cport, int i2cadr, string cortextSerialPort, int cortexSerialBaudRate) {
 	ROS_DEBUG_STREAM("Engin::setupProduction");
 
@@ -672,11 +671,13 @@ void Engine::computeGaitRefPointRadius() {
 	switch (generalMode) {
 		case FallASleep:
 			gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitRefPoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
 		case BeingAsleep:
 			gaitControl.setTargetGaitRefPointsRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitRefPoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;

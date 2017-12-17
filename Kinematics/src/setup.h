@@ -48,7 +48,6 @@ const realnum uprightBodyHeigh = 220.0;		    // default height when walking upri
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 200.0;
-// const realnum maxFootTouchPointRadius = 320.0;
 const realnum standUpFootTouchPointRadius = 260;
 const realnum sitDownTouchPointRadius = 300;
 

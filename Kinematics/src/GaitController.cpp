@@ -129,6 +129,12 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius, realnum spide
 	}
 }
 
+void GaitController::assignTargetGaitRefPoints() {
+	for (int i =0; i< NumberOfLegs; i++) {
+		currentGaitRefPoints[i] = targetGaitRefPoints[i];
+	}
+}
+
 
 // compute position of passed point after the passed duration
 Point GaitController::getNextToePoint(const Point& currentPoint, seconds dT) {
@@ -162,9 +168,8 @@ Point GaitController::interpolateLegMotion(
 	// normalize gaitProcess such that it is between 0 and 1
 	gaitProgress = fmod(gaitProgress, 1.0);
 
-	// determine current phase
+	// determine the ratio between 0..1 indicating where we are within one gait phase
 	realnum currGroundPercentage = currentGroundPercentage[legNo];
-
 	realnum onePhaseBeat = (1.0-currGroundPercentage)/2.0;
 
 	// during normal gait take care that only one leg leaves or touches the ground at a time
@@ -250,7 +255,6 @@ Point GaitController::interpolateLegMotion(
 					rightSupportPoint.z = gaitHeight + gaitRefPoint.z;
 
 					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
-					cout << "AAA leg=" << legNo << "lb=" << localPhaseBeat << " prev=" << prevTouchPoint << " next=" << nextTouchPoint << " d=" << prevTouchPoint.distance(nextTouchPoint) << endl;
 				}
 
 				// get next point within bezier curve. Apply moderation at the
@@ -311,12 +315,15 @@ Point GaitController::interpolateLegMotion(
 				// move with the ground
 				result = getNextToePoint(currentToePoint, dT);
 				feetOnGround[legNo] = true;
-				if (newPhase)
-					cout << "BBB leg=" << legNo << "lb=" << localPhaseBeat << " curr=" << currentToePoint << " next=" << result << " dt=" <<dT*1000 << "ms" << endl;
 
 				break;
 			}
 		} // switch
+	} // if doMove
+	else {
+		Point supportPoint = currentToePoint;
+		supportPoint.z = gaitHeight + gaitRefPoint.z;
+		bezier[legNo].set(currentToePoint, currentToePoint, currentToePoint, currentToePoint);
 	}
 	return result;
 }
