@@ -343,7 +343,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 10 ,2*CORTEX_SAMPLE_RATE);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 7 ,2*CORTEX_SAMPLE_RATE);
     } while (retry(ok));
 
 	if (ok)

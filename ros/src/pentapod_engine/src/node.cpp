@@ -88,7 +88,7 @@ int main(int argc, char * argv[]) {
 			uint32_t loopEnd= millis();
 			loopTime = (loopTime + (loopEnd - loopStart))/2;
 
-			ROS_INFO_STREAM_THROTTLE(10,"engine loop time " << loopTime << "ms");
+			ROS_INFO_STREAM_THROTTLE(5,"engine loop time " << loopTime << "ms");
 			// pump callbacks and topics
 			// - listen to speed, bodypose and move commands coming from pentapod_server
 			// - broadcast odom2base_link to be consumed by navigation
