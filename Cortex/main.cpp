@@ -275,13 +275,9 @@ void loop() {
 	uint32_t now = millis();
 	i2cSlave.loop();			// loop is for receiving commands
 	controller.loop(now);		// run the actuators
-	i2cSlave.loop();			// loop is for receiving commands
 	hostComm.loop();			// wait for commands via serial interface
-	i2cSlave.loop();			// loop is for receiving commands
 	orientationSensor.loop(now);// fetch orientation from IMU
 
 	// low priority jobs
-	voltage.loop(now);			// check the voltage with 1Hz
-	memory.loop(now);			// check if something has to be written to EEPROM
 	ledBlinker.loop(now);    	// LED on Teensy board and LED on power switch
 }

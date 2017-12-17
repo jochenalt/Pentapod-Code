@@ -220,7 +220,7 @@ Point GaitController::interpolateLegMotion(
 	bool doMove =  (moveLength > floatPrecision)
 				   || !feetOnGround[legNo]
  				   || (adaptToGaitRefPointType == ADAPT_TO_GAIT_POINT)
-                   || ((moveLength < floatPrecision) && (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
+                   || ((moveLength < floatPrecision) && ((sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan)) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
 
 	/*
 	LOG(DEBUG) << "[" << legNo << "] move=" << doMove << " ml=" << moveLength << "|" << (moveLength > floatPrecision) << " fog" << !feetOnGround[legNo]
@@ -235,9 +235,9 @@ Point GaitController::interpolateLegMotion(
 				// next touch point is gait ref point + half a step forward
 				Point nextTouchPoint (gaitRefPoint);
 				if (abs(dDistance) > floatPrecision) {
-					// formally we take the fullsteplength, but this does not yet calculate the
+					// we could take fullsteplength, but this does not yet consider the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
-					// step length (precisely following the computed step length this is not THAT important)
+					// step length (following the computed step length this is not THAT important)
 					nextTouchPoint -= diffToePoint*(fullStepLength_mm*(0.5 + moveWithGroundBelowThisGroundDistance/gaitHeight)/dDistance);
 				}
 

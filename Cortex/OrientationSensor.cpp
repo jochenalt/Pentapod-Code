@@ -139,6 +139,7 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	accelerationEvent.orientation.z = 0;
 
 	upgradeCalibrationTimer.setDueTime(millis()-5000);
+	fetchTime_ms = 5;
 }
 
 
@@ -292,8 +293,17 @@ float OrientationSensor::getZAccel() {
 	return currZAcceleration;
 }
 
+void OrientationSensor::setDueTime(uint32_t dueTime) {
+	sensorTimer.setDueTime(dueTime);
+}
+
+uint32_t OrientationSensor::getFetchTime_ms() {
+	return fetchTime_ms;
+}
+
 void OrientationSensor::fetchData() {
 	if (setupOk) {
+		uint32_t start = millis();
 		/* Get a new sensor event */
 		orientationEvent.orientation.x = 0;
 		orientationEvent.orientation.y = 0;
@@ -305,6 +315,9 @@ void OrientationSensor::fetchData() {
 
 		bno->getOrientationEvent(&orientationEvent);
 
+		uint32_t end = millis();
+
+		fetchTime_ms = (fetchTime_ms + (end - start))/2;
 		sensorTimer.setDueTime(millis() + sensorTimer.getRate());
 
 		// bno->getAccelerationEvent(&accelerationEvent);

@@ -41,10 +41,27 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	movement.setNull();
 	
 	// make servos stiffer by increasing P and I value of PI controller
-	herkulexMgr->setPositionKi(configData->herkulexMotorId, 200);
-	herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
+	// (dont dare to set D, all my trials ended up in jerks and vibration)
+	switch (newConfigData->id) {
+	// Thigh and Foot must be very reactive to IMU tilt
+	case THIGH:
+		herkulexMgr->setPositionKi(configData->herkulexMotorId, 450);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 400);
+		break;
+	case FOOT:
+		herkulexMgr->setPositionKi(configData->herkulexMotorId, 250);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 220);
+		break;
+	// Knee and HIP can be softer
+	case KNEE:
+	case HIP:
+		herkulexMgr->setPositionKi(configData->herkulexMotorId, 200);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 100);
+		break;
 
-	// do not use trapezoid but rectangular speed profile, speed profile is taken care of by cortex
+	}
+
+	// do not use trapezoid but rectangular speed profile in order to keep moving without vibration
 	// otherwise reacting to terrain or IMU changes takes too long
 	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // ratio of acceleration within in one loop (default: 25[%])
 
@@ -132,7 +149,7 @@ void HerkulexServoDrive::enable() {
 	herkulexMgr->torqueON(configData->herkulexMotorId);
 
 	// now servo is in a valid angle range. Set this angle as starting point
-	setUserAngle(currentUserAngle,CORTEX_SAMPLE_RATE);
+	setUserAngle(currentUserAngle,CORTEX_SAMPLE_RATE+1);
 
 	enabled = true;
 }

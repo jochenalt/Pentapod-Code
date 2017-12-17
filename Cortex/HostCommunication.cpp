@@ -750,8 +750,7 @@ void HostCommunication::setup() {
 }
 
 void HostCommunication::loop() {
-	// start receiving commands 500ms after setup
-	// since we need to wait for IMU to settle, its first values are kind of messed up
+	// start receiving commands 1000ms after setup
 	if (millis() > setupTime + 1000)
 		sCmd.readSerial();     // there's not much done, just processing of serial commands.
 }

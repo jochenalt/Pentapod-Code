@@ -480,8 +480,8 @@ void Engine::computeBodyPose() {
 		// move towards the target body pose
 		// but: if we are in lift or fall asleep mode, wait until all legs are on the ground
 		if (((generalMode != LiftBody) &&  (generalMode != FallASleep))
-			|| ((generalMode == LiftBody) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan))
-			|| ((generalMode == FallASleep) && (gaitControl.getCurrentSpeed() < floatPrecision) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && (gaitControl.distanceToGaitRefPoints() < moveToeWhenDistanceGreaterThan))) {
+			|| ((generalMode == LiftBody)   && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && ((gaitControl.getAdaptionTypeToGaitRefPoint() == DO_NOT_ADAPT_GAIT_POINT) || (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan)))
+			|| ((generalMode == FallASleep) && (gaitControl.getFeetOnTheGround() == NumberOfLegs) && ((gaitControl.getAdaptionTypeToGaitRefPoint() == DO_NOT_ADAPT_GAIT_POINT) || (gaitControl.distanceToGaitRefPoints() < standUpWhenDistanceSmallerThan)) && (gaitControl.getCurrentSpeed() < floatPrecision) )) {
 			realnum bodySpeed = maxBodyPositionSpeed;
 
 			if ((generalMode != WalkingMode) && (generalMode != TerrainMode))
@@ -670,8 +670,12 @@ void Engine::computeGaitMode() {
 void Engine::computeGaitRefPointRadius() {
 	switch (generalMode) {
 		case FallASleep:
-		case BeingAsleep:
 			gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			inputBodyPose.orientation = Rotation(0,0,0);
+			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
+			break;
+		case BeingAsleep:
+			gaitControl.setTargetGaitRefPointsRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
@@ -679,7 +683,9 @@ void Engine::computeGaitRefPointRadius() {
 				if ((generalMode != LiftBody) && (generalMode != FallASleep)) {
 					realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
 					heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
-					realnum radius = minFootTouchPointRadius + (maxBodyHeight - heightOverGround-minBodyHeight)/(maxBodyHeight-minBodyHeight)*(maxFootTouchPointRadius-minFootTouchPointRadius);
+					realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
+					realnum radius = 0.75*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
+
 					gaitControl.setTargetGaitRefPointsRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
 				} else {
 					if (generalMode == LiftBody)
@@ -734,6 +740,8 @@ void Engine::computeGaitSpeed() {
 		// later on, this leads to small steps as long as the disturbance takes
 		realnum gaitStepLength =  130.0
 								  - 30.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
+								  - 75.0*sqr(minBodyHeight/moderatedBodyPose.position.z) // if close to the ground, reduce gait length
+
 								  - 30.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration
 								  - 30.0*abs(speedAcc)/maxAcceleration;
 		gaitStepLength =  constrain(gaitStepLength, 40.0, 130.0); // take care that there is a minimum gait step length
@@ -775,7 +783,7 @@ void Engine::computeWakeUpProcedure() {
 		(generalMode == FallASleep)) {
 		currentGaitMode = OneLegInTheAir;
 		gaitControl.setTargetGaitMode(currentGaitMode);
-		gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+		// gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
 
 	// After lifting the body, when close to the target position, stop with wake-up-Procedure
@@ -784,7 +792,7 @@ void Engine::computeWakeUpProcedure() {
 			(gaitControl.getFeetOnTheGround() == NumberOfLegs))  {
 			currentGaitMode = TwoLegsInTheAir;
 			generalMode = WalkingMode;
-			gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
+			gaitControl.setAdaptionTypeToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			bodyKinematics.startupPhase(false);
 		}
 	}

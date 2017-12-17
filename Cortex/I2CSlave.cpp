@@ -95,12 +95,6 @@ void I2CSlave::executeRequest() {
 		for (unsigned int i = 0;i<receiveBufferLen;i++)
 			request.data[i] = receiveBuffer[i];
 
-		// collect IMU data
-		float imuX,imuY,zAccel;
-		uint8_t newSystem, newGyro, newAcc;
-		orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
-		int imuStatus = newSystem*100 + newGyro*10 + newAcc;
-
 		Cortex::Command cmd;
 		float angles[NumberOfLimbs*NumberOfLegs];
 		int duration_ms;
@@ -119,6 +113,7 @@ void I2CSlave::executeRequest() {
 				break;
 			case Cortex::MOVE: {
 				controller.adaptSynchronisation(now);
+
 				LimbAnglesType legAngles;
 				if (memory.logServo()) {
 					cmdSerial->print("MOVE(");
@@ -147,18 +142,7 @@ void I2CSlave::executeRequest() {
 					}
 					leg.setAngles(legAngles, duration_ms);
 				}
-				if (memory.logServo()) {
-					cmdSerial->print("IMU((");
-					cmdSerial->print(millis()-now);
-					cmdSerial->print("ms)");
 
-					cmdSerial->print(imuX,1);
-					cmdSerial->print(',');
-					cmdSerial->print(imuY,1);
-					cmdSerial->print(',');
-					cmdSerial->print(imuStatus);
-					cmdSerial->print(')');
-				}
 				static TimePassedBy timer(2000);
 				if (timer.isDue() && memory.logServo()) {
 					cmdSerial->print("STATUS(");
@@ -180,6 +164,7 @@ void I2CSlave::executeRequest() {
 					}
 					cmdSerial->print(')');
 				}
+
 
 				break;
 			}
@@ -218,6 +203,25 @@ void I2CSlave::executeRequest() {
 						cmdSerial->println(stat);
 					}
 				}
+			}
+
+			// fetch IMU now in order to return most recent data for tilt compensation
+			float imuX,imuY,zAccel;
+			uint8_t newSystem, newGyro, newAcc;
+			orientationSensor.fetchData();
+			orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
+			int imuStatus = newSystem*100 + newGyro*10 + newAcc;
+
+			if (memory.logServo()) {
+				cmdSerial->print("IMU((");
+				cmdSerial->print(millis()-now);
+				cmdSerial->print("ms)");
+				cmdSerial->print(imuX,1);
+				cmdSerial->print(',');
+				cmdSerial->print(imuY,1);
+				cmdSerial->print(',');
+				cmdSerial->print(imuStatus);
+				cmdSerial->print(')');
 			}
 
 			// create response

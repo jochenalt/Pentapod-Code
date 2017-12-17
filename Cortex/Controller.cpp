@@ -128,7 +128,7 @@ void Controller::sendCommandToServos() {
 	}
 	uint32_t distanceendtime = millis();
 
-	I2CSlave::getInstance().loop();			// loop is for receiving commands
+	// I2CSlave::getInstance().loop();			// loop is for receiving commands
 
 	// iterate over all legs limb-wise, such
 	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
@@ -149,8 +149,6 @@ void Controller::sendCommandToServos() {
 		}
 	}
 	uint32_t servoendtime = millis();
-
-	I2CSlave::getInstance().loop();			// loop is for receiving commands
 
 	// run low level loop that asks one servo per loop for its status
 	// ( results in a 2.2 Hz loop per servo )
@@ -200,9 +198,8 @@ void Controller::loop(uint32_t now) {
 		// send commands to all servos via 5 serial lines
 		sendCommandToServos();
 
-		// right after sending the command, fetch data from IMU to leverage the time in between two I2C command best
-		orientationSensor.fetchData();
-
+		// low priority jobs
+		memory.loop(now);			// check if something has to be written to EEPROM
 		voltage.loop(now);			// check the voltage with 1Hz
 	}
 }
