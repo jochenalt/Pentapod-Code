@@ -32,9 +32,9 @@ void GaitController::setup(Engine& pMainController) {
 	includeFrontLeg = true; // include front leg into the gait movement
 	adaptToGaitRefPointType = ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE; 		// stop gait when not moving but perform gait when ref points differ a lot from toe position
 
-	gaitRefPointRadius = 300;
+	gaitRefCircleRadius = 300;
 
-	setTargetGaitRefPointsRadius(gaitRefPointRadius, 0,0); // happens in addition to ctor to make setup idempotent when changing basic parameters
+	setTargetGaitRefCircleRadius(gaitRefCircleRadius, 0,0); // happens in addition to ctor to make setup idempotent when changing basic parameters
 	toePoints = currentGaitRefPoints;
 	for (int i = 0;i<NumberOfLegs;i++) {
 		lastPhasePositions[i] = toePoints[i];
@@ -73,8 +73,8 @@ void GaitController::setTargetGaitRefPoint(int legNo, const Point& newGaitRefPoi
 }
 
 
-void GaitController::setTargetGaitRefPointsRadius (realnum radius, realnum spiderModeRatio, realnum fourLegsModeRatio) {
-	gaitRefPointRadius = radius;
+void GaitController::setTargetGaitRefCircleRadius (realnum radius, realnum spiderModeRatio, realnum fourLegsModeRatio) {
+	gaitRefCircleRadius = radius;
 	realnum startAngle;
 	if (NumberOfLegs % 2 == 0)
 		startAngle = 360.0/NumberOfLegs*(float(NumberOfLegs/2)-0.5);
@@ -108,7 +108,7 @@ void GaitController::setTargetGaitRefPointsRadius (realnum radius, realnum spide
 			angleAdaptionSpiderMode = (360.0/7 - 360.0/NumberOfLegs);
 
 		realnum angle = startAngle + fourLegsModeRatio*angleAdaption4LegsMode + spiderModeRatio*angleAdaptionSpiderMode;
-		realnum currentRadius = gaitRefPointRadius;
+		realnum currentRadius = gaitRefCircleRadius;
 
 		realnum zCoordOverGround = perpendicularGroundHeight[i];
 		zCoordOverGround += mainController->getBodyKinematics().getFatFootCorrectionHeight(i);
@@ -321,8 +321,6 @@ Point GaitController::interpolateLegMotion(
 		} // switch
 	} // if doMove
 	else {
-		Point supportPoint = currentToePoint;
-		supportPoint.z = gaitHeight + gaitRefPoint.z;
 		bezier[legNo].set(currentToePoint, currentToePoint, currentToePoint, currentToePoint);
 	}
 	return result;

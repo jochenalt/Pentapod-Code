@@ -355,7 +355,7 @@ mmPerSecond& Engine::getTargetSpeed () {
 
 
 mmPerSecond Engine::getTargetSpeedLimited() {
-	realnum targetSpeedByRotation = targetAngularSpeed*gaitControl.getGaitRefPointsRadius()/(2.0*M_PI);
+	realnum targetSpeedByRotation = targetAngularSpeed*gaitControl.getGaitRefCircleRadius()/(2.0*M_PI);
 	realnum totalTargetSpeed = abs(targetSpeed) + abs(targetSpeedByRotation);
 	realnum allowedFootSpeedRatio = totalTargetSpeed/maxSpeed;
 	realnum limitedTargetSpeed = targetSpeed;
@@ -406,7 +406,7 @@ radPerSecond& Engine::getTargetAngularSpeed() {
 };
 
 radPerSecond Engine::getTargetAngularSpeedLimited() {
-	realnum targetSpeedByRotation = targetAngularSpeed*gaitControl.getGaitRefPointsRadius()/(2.0*M_PI);
+	realnum targetSpeedByRotation = targetAngularSpeed*gaitControl.getGaitRefCircleRadius()/(2.0*M_PI);
 	realnum totalTargetSpeed = abs(targetSpeed) + abs(targetSpeedByRotation);
 	realnum allowedFootSpeedRatio = totalTargetSpeed/maxSpeed;
 	realnum limitedTargetAngularSpeed= targetAngularSpeed;
@@ -670,33 +670,29 @@ void Engine::computeGaitMode() {
 void Engine::computeGaitRefPointRadius() {
 	switch (generalMode) {
 		case FallASleep:
-			gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.setTargetGaitRefCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
 			gaitControl.assignTargetGaitRefPoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
 		case BeingAsleep:
-			gaitControl.setTargetGaitRefPointsRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.setTargetGaitRefCircleRadius(standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
 			gaitControl.assignTargetGaitRefPoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
+		case LiftBody:
+			gaitControl.setTargetGaitRefCircleRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			inputBodyPose.orientation = Rotation(0,0,0);
+			break;
 		default: {
-				if ((generalMode != LiftBody) && (generalMode != FallASleep)) {
-					realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
-					heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
-					realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
-					realnum radius = 0.75*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
+				realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
+				heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
+				realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
+				realnum radius = 0.75*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
 
-					gaitControl.setTargetGaitRefPointsRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
-				} else {
-					if (generalMode == LiftBody)
-						gaitControl.setTargetGaitRefPointsRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-					if (generalMode == FallASleep)
-						gaitControl.setTargetGaitRefPointsRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+				gaitControl.setTargetGaitRefCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
 
-					inputBodyPose.orientation = Rotation(0,0,0);
-				}
 				if (fourWalkLegRatio > 0) {
 					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
 					// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes

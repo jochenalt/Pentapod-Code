@@ -100,8 +100,8 @@ public:
 	realnum getFootOnTheGroundRatio(realnum footSpeed, GaitModeType gm = None);
 
 	// the Ref Points are used as orientation points for a gait. It is the point at the ground in the middle of a gait.
-	void setTargetGaitRefPointsRadius(realnum rad, realnum spiderAdaptionRatio, realnum fourLegsModeRatio);
-	realnum getGaitRefPointsRadius() { return gaitRefPointRadius; };
+	void setTargetGaitRefCircleRadius(realnum rad, realnum spiderAdaptionRatio, realnum fourLegsModeRatio);
+	realnum getGaitRefCircleRadius() { return gaitRefCircleRadius; };
 	void setGaitSpeed(realnum newGaitSpeed) { gaitSpeed = newGaitSpeed; };
 	realnum getGaitSpeed() { return gaitSpeed; };
 
@@ -164,7 +164,7 @@ private:
 
 	GaitModeType targetGaitType;		// target gait type (the current gait is switched coordinatedly, so this is not even to currentGaitType)
 
-	realnum gaitRefPointRadius;			// gait ref points (middle ground point of each leg in a gait) are arranged in a circle
+	realnum gaitRefCircleRadius;			// gait ref points (middle ground point of each leg in a gait) are arranged in a circle
 
 	realnum fastestFootSpeed;
 	realnum biggestRefPointDistance;	// biggest current difference of a toe to its gait point
