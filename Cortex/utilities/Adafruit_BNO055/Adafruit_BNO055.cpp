@@ -652,7 +652,7 @@ bool Adafruit_BNO055::readLen(adafruit_bno055_reg_t reg, byte * buffer, uint8_t 
 
   byte readLen = wireLine->requestFrom(_address, (byte)len);
 
-  delay(1); // sensor requires betwee 1ms and 3ms to reply
+  delay(1); // sensor requires between 1ms and 3ms to reply
 
   for (uint8_t i = 0; i < len; i++)
   {

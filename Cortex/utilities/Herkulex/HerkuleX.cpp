@@ -540,9 +540,6 @@ float HerkulexClass::getAngle(ServoType type, int servoID, bool& error) {
 
 	// different servo types have a different resolution on
 	if (type == HERKULEX_DRS_0401) {
-		// logger->print("pos=");
-		// logger->print(pos);
-
 		return (pos-1024) * 0.163; // resolution of 2^11 bits (2048)
 	}
 	else

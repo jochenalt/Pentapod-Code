@@ -110,6 +110,7 @@ public:
 
 	// force a gait movement even when we do not move. Used during gait changes
 	void setAdaptionTypeToGaitRefPoint(AdaptionTypeToGaitRefPoint ok) { adaptToGaitRefPointType = ok; };
+	AdaptionTypeToGaitRefPoint getAdaptionTypeToGaitRefPoint() { return adaptToGaitRefPointType; };
 
 	Point& getCurrentPositionWorld() { return currPosWorld; };
 	void setCurrentPositionWorld(const Point& p) { currPosWorld = p; };

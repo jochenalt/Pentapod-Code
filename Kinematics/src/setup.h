@@ -48,9 +48,9 @@ const realnum uprightBodyHeigh = 220.0;		    // default height when walking upri
 
 // min/max radius of ground touch points
 const realnum minFootTouchPointRadius = 200.0;
-const realnum maxFootTouchPointRadius = 310.0;
-const realnum standUpFootTouchPointRadius = 258;
-const realnum sitDownTouchPointRadius = 258;
+// const realnum maxFootTouchPointRadius = 320.0;
+const realnum standUpFootTouchPointRadius = 260;
+const realnum sitDownTouchPointRadius = 300;
 
 // max acceleration
 const realnum maxAcceleration = 70.0; 		     // [mm/s^2]
@@ -90,7 +90,7 @@ const realnum moveWithGroundBelowThisGroundDistance = 15.0; // [mm]
 const realnum kneeZenitPointOffset = 0.3;			// [0.0..1.0]
 const realnum kneeZenitPointFactor = 0.8;			// [0..1]
 
-const realnum moveToeWhenDistanceGreaterThan = 20.0;
+const realnum moveToeWhenDistanceGreaterThan = 10.0;
 
 // must be bigger than moveToeWhenDistanceGreaterThan, otherwise we end up in a deadlock in standing up where
 // the toes do not not yet move due to a small difference but the distance is too big to stand up

@@ -41,6 +41,8 @@ public:
 	bool getData(float &xAngle, float &yAngle, float &zAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
 	void printData();
 	bool ok();
+	void setDueTime(uint32_t dueTime);
+	uint32_t getFetchTime_ms();
 private:
 	float getZAccel();
 	uint32_t setupTime;
@@ -58,6 +60,7 @@ private:
 
 	sensors_event_t orientationEvent;
 	sensors_event_t accelerationEvent;
+	uint32_t fetchTime_ms;
 
 	bool setupOk;
 };
