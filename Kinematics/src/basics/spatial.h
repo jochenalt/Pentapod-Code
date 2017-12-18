@@ -488,7 +488,7 @@ void 	setVectorLength(Vector &a, realnum length);					// multiply vector with a 
 void solveTrgLinearCombinationWithEqualPhase(realnum a, realnum b, realnum c, realnum &alpha1, realnum &alpha2, bool& infiniteSolutions);
 
 // create a rotation matrix from a given rotation around all axes
-void createRotationMatrix(const Rotation &r, HomMatrix& m);
+void createRotationMatrix(const Rotation &r, HomogeneousMatrix& m);
 
 void testSpatial();
 #endif /* SPATIAL_H_ */

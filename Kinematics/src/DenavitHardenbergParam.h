@@ -25,7 +25,7 @@ public:
 	DenavitHardenbergParams(TurningAxis newTurnType, const realnum alphaOffset /* alpha is x-axis */, const realnum thetaOffset /* alpha is z-axis */, const realnum pA, const realnum pD);
 
 	// compute transformation matrix as a result of a turning angle that contains the rotation and translation of the parameters set earlier
-	void computeDHMatrix(realnum pAngle,HomMatrix& dh) const;
+	void computeDHMatrix(realnum pAngle,HomogeneousMatrix& dh) const;
 
 	// return the length of the translation along the z.axis
 	const realnum getZTranslation() const { return translate_along_z; };

@@ -2,22 +2,21 @@
 #include "DenavitHardenbergParam.h"
 
 
-	DenavitHardenbergParams::DenavitHardenbergParams(const DenavitHardenbergParams& dh) {
-		translate_along_x = dh.translate_along_x;
-		translate_along_z = dh.translate_along_z;
-		rotate_around_x = dh.rotate_around_x;
-		rotate_around_z = dh.rotate_around_z;
-		turnType = dh.turnType;
-	};
+DenavitHardenbergParams::DenavitHardenbergParams(const DenavitHardenbergParams& dh) {
+	translate_along_x = dh.translate_along_x;
+	translate_along_z = dh.translate_along_z;
+	rotate_around_x = dh.rotate_around_x;
+	rotate_around_z = dh.rotate_around_z;
+	turnType = dh.turnType;
+};
 
-	void DenavitHardenbergParams::operator=(const DenavitHardenbergParams& dh) {
-		translate_along_x = dh.translate_along_x;
-		translate_along_z = dh.translate_along_z;
-		rotate_around_x = dh.rotate_around_x;
-		rotate_around_z = dh.rotate_around_z;
-		turnType = dh.turnType;
-	};
-
+void DenavitHardenbergParams::operator=(const DenavitHardenbergParams& dh) {
+	translate_along_x = dh.translate_along_x;
+	translate_along_z = dh.translate_along_z;
+	rotate_around_x = dh.rotate_around_x;
+	rotate_around_z = dh.rotate_around_z;
+	turnType = dh.turnType;
+};
 
 
 // initialize with the passed Denavit Hardenberg params and precompute sin/cos
@@ -30,7 +29,7 @@ DenavitHardenbergParams::DenavitHardenbergParams(TurningAxis newTurnType, const 
 }
 
 // use DenavitHardenberg parameter and compute the DH-Transformation matrix with a given joint angle
-void DenavitHardenbergParams::computeDHMatrix(realnum pAngle,HomMatrix& dh) const {
+void DenavitHardenbergParams::computeDHMatrix(realnum pAngle,HomogeneousMatrix& dh) const {
 
 	realnum alpha = rotate_around_x;
 	realnum theta = rotate_around_z;
@@ -47,7 +46,7 @@ void DenavitHardenbergParams::computeDHMatrix(realnum pAngle,HomMatrix& dh) cons
 
 	realnum  a = translate_along_x;
 	realnum d = translate_along_z;
-	dh = HomMatrix(4,4,
+	dh = HomogeneousMatrix(4,4,
 			{ ct, 	-st*ca,  st*sa,  a*ct,
 			  st, 	 ct*ca, -ct*sa,	 a*st,
 			  0,	 sa,		ca,		d,

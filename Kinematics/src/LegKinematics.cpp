@@ -35,18 +35,18 @@ Point LegKinematics::getDefaultToePoint() {
 // use DenavitHardenberg parameter and compute the Dh-Transformation matrix with a given joint angle (theta)
 void LegKinematics::setupLegPosition(const DenavitHardenbergParams& dh, realnum pTheta) {
 
-	HomMatrix origin2Hip;
+	HomogeneousMatrix origin2Hip;
 
 	dh.computeDHMatrix(pTheta,origin2Hip);
 
-	HomMatrix nick;
+	HomogeneousMatrix nick;
 	Rotation r(0, radians(CAD::HipNickAngle),0);
 	createRotationMatrix(r, nick);
 
 	origin2HipTransformation = origin2Hip*nick;
 }
 
-void LegKinematics::setBodyTransformation(const HomMatrix& origin2Body) {
+void LegKinematics::setBodyTransformation(const HomogeneousMatrix& origin2Body) {
 	origin2PosedHipTransformation = origin2Body * origin2HipTransformation ;
 
 	// now create transformation to move coordinate system instead of points
@@ -54,8 +54,8 @@ void LegKinematics::setBodyTransformation(const HomMatrix& origin2Body) {
 }
 
 
-void LegKinematics::computeInverseTransformationMatrix(HomMatrix m, HomMatrix& inverse) {
-	inverse = HomMatrix(4,4,
+void LegKinematics::computeInverseTransformationMatrix(HomogeneousMatrix m, HomogeneousMatrix& inverse) {
+	inverse = HomogeneousMatrix(4,4,
 			{ 	m[0][0], m[1][0], m[2][0],- m[0][0]*m[0][3] - m[1][0]*m[1][3] - m[2][0]*m[2][3],
 				m[0][1], m[1][1], m[2][1],- m[0][1]*m[0][3] - m[1][1]*m[1][3] - m[2][1]*m[2][3],
 				m[0][2], m[1][2], m[2][2],- m[0][2]*m[0][3] - m[1][2]*m[1][3] - m[2][2]*m[2][3],
@@ -65,7 +65,7 @@ void LegKinematics::computeInverseTransformationMatrix(HomMatrix m, HomMatrix& i
 
 Point LegKinematics::convertWorldToHipCoord(const Point& world) {
 
-	HomVector worldHom = {
+	HomogeneousVector worldHom = {
 			world.x,
 			world.y,
 			world.z,
@@ -77,7 +77,7 @@ Point LegKinematics::convertWorldToHipCoord(const Point& world) {
 
 Point LegKinematics::convertHipToBodyCoord(const Point& hipCoord) {
 
-	HomVector hipHom = {
+	HomogeneousVector hipHom = {
 			hipCoord.x,
 			hipCoord.y,
 			hipCoord.z,
@@ -94,19 +94,19 @@ Point LegKinematics::getHipPoseWorld() {
 
 
 void LegKinematics::computeForwardKinematics(LegPose& pose) {
-	HomMatrix current;
+	HomogeneousMatrix current;
 	computeForwardKinematics(pose, current);
 }
 
 // compute forward kinematics, i.e. out of given joint angles compute the
 // position and orientation of the toe
-void LegKinematics::computeForwardKinematics(LegPose& pose, HomMatrix& current) {
+void LegKinematics::computeForwardKinematics(LegPose& pose, HomogeneousMatrix& current) {
 	// convert angles to intern offsets where required (angle 1)
 	realnum angle[NumberOfLimbs] = {
 			pose.angles[0],pose.angles[1],pose.angles[2],pose.angles[3] };
 
 	// compute final position by multiplying all DH transformation matrixes
-	HomMatrix currDHMatrix;
+	HomogeneousMatrix currDHMatrix;
 	DHParams[LimbConfiguration::HIP].computeDHMatrix(angle[LimbConfiguration::HIP], current);
 
 	DHParams[LimbConfiguration::THIGH].computeDHMatrix(angle[LimbConfiguration::THIGH], currDHMatrix);
@@ -131,10 +131,10 @@ angle_deg LegKinematics::computeFootAngle(const LegPose& pose, Point &measuredPo
 
 	// start with transformation from belly button to hip
 
-	HomMatrix current = origin2PosedHipTransformation;
+	HomogeneousMatrix current = origin2PosedHipTransformation;
 
 	// compute final position by multiplying all DH transformation matrixes
-	HomMatrix currDHMatrix;
+	HomogeneousMatrix currDHMatrix;
 	DHParams[LimbConfiguration::HIP].computeDHMatrix(angle[LimbConfiguration::HIP], currDHMatrix);
 
 	current *= currDHMatrix;
@@ -167,7 +167,7 @@ angle_deg LegKinematics::computeFootAngle(const LegPose& pose, Point &measuredPo
 
 // compute euler angles out of rotation matrix that is included in transformation matrix current
 // (check wikipedia)
-void LegKinematics::computeEulerAngles(const HomMatrix &current, realnum &alpha, realnum &beta, realnum &gamma) {
+void LegKinematics::computeEulerAngles(const HomogeneousMatrix &current, realnum &alpha, realnum &beta, realnum &gamma) {
 	beta = atan2(-current[2][0], sqrt(current[0][0]*current[0][0] + current[1][0]*current[1][0]));
 	gamma = 0;
 	alpha = 0;

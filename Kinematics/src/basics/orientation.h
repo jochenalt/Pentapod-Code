@@ -73,7 +73,7 @@ class Rotation {
 		}
 
 
-		Rotation(const HomVector& p) {
+		Rotation(const HomogeneousVector& p) {
 			x = p[X];
 			y = p[Y];
 			z = p[Z];

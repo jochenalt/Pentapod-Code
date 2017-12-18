@@ -74,12 +74,12 @@ public:
 	bool selftest();
 private:
 	// compute euler angles out of transformation matrix
-	void computeEulerAngles(const HomMatrix &current, realnum &alpha, realnum &beta, realnum &gamma);
+	void computeEulerAngles(const HomogeneousMatrix &current, realnum &alpha, realnum &beta, realnum &gamma);
 	// compute full leg pose and show off the resulting transformation matrix
-	void computeForwardKinematics(LegPose& pose, HomMatrix &current);
+	void computeForwardKinematics(LegPose& pose, HomogeneousMatrix &current);
 
 	void setupLegPosition(const DenavitHardenbergParams& dh, realnum pTheta);
-	void setBodyTransformation(const HomMatrix& origin2Body);
+	void setBodyTransformation(const HomogeneousMatrix& origin2Body);
 	Point convertWorldToHipCoord(const Point& footPoseWorld);
 	Point convertHipToBodyCoord(const Point& hipCoord);
 	Point convertBodyToWorldCoord(const Point& body);
@@ -87,7 +87,7 @@ private:
 	Point getHipPoseWorld();
 
 	// compute the inverse of a transformation matrix.
-	void computeInverseTransformationMatrix(HomMatrix m, HomMatrix& inv);
+	void computeInverseTransformationMatrix(HomogeneousMatrix m, HomogeneousMatrix& inv);
 
 	// the foot is not a point but has dampener with diameter of 20mm. When the foot
 	// touches the ground at a certain angle, we need to virtually adapt the ground height
@@ -95,10 +95,10 @@ private:
 	realnum getFatFootCorrectionHeight(const LegPose &ftp) ;
 
 	DenavitHardenbergParams origin2Hip;					// DH from origin to Hip
-	HomMatrix origin2HipTransformation;					// transformation from body to Hip
+	HomogeneousMatrix origin2HipTransformation;					// transformation from body to Hip
 
-	HomMatrix origin2PosedHipTransformation;			// vector transformation from origin to hip which (including body pose)
-	HomMatrix origin2PosedHipTransformationInv;			// coord transformation from origin to hip which (including body pose)
+	HomogeneousMatrix origin2PosedHipTransformation;			// vector transformation from origin to hip which (including body pose)
+	HomogeneousMatrix origin2PosedHipTransformationInv;			// coord transformation from origin to hip which (including body pose)
 
 	DenavitHardenbergParams DHParams[NumberOfLimbs]; 	// DH params of leg
 

@@ -20,7 +20,7 @@ void BodyKinematics::setup(Engine& pMainController) {
 	currentBellyPose.position = Point(3, {0.0,0.0,140.0});
 
 	// define default tranformation matrix to belly button (will be turned by body position and orientation later on)
-	origin2Belly = HomMatrix(4,4,
+	origin2Belly = HomogeneousMatrix(4,4,
 				{ 1, 	0,  	0,  	0,
 				  0, 	1, 		0,	 	0,
 				  0,	0,		1,		0,
@@ -91,14 +91,14 @@ void BodyKinematics::setBodyPose(const Pose& bellyPose) {
 	currentBellyPose = bellyPose;
 
 	// translate from origin to the belly button
-	HomMatrix current = HomMatrix(4,4,
+	HomogeneousMatrix current = HomogeneousMatrix(4,4,
 					{ 1, 	0,  	0,  	bellyPose.position.x,
 					  0, 	1, 		0,	 	bellyPose.position.y,
 					  0,	0,		1,		bellyPose.position.z,
 					  0,	0,		0,		1});
 
 	// transform body centre to rotated body centre
-	HomMatrix rotateBody;
+	HomogeneousMatrix rotateBody;
 	createRotationMatrix(bellyPose.orientation, rotateBody);
 	current *= rotateBody;
 

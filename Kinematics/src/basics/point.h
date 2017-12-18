@@ -12,7 +12,7 @@ class Point  : public Serializable {
 		Point();
 		Point(const Point& p);
 		virtual ~Point();
-		Point(const HomVector& p);
+		Point(const HomogeneousVector& p);
 		Point(int args, const valarray<float>& vec);
 		Point(millimeter xP,millimeter yP, millimeter zP);
 		Point(millimeter xP,millimeter yP) : Point(xP, yP, 0) {};
@@ -28,7 +28,7 @@ class Point  : public Serializable {
 		Point getRotatedAroundZ(angle_rad alpha) const;
 
 		void operator= (const Point& p);
-		void operator= (const HomVector& p);
+		void operator= (const HomogeneousVector& p);
 		void operator+= (const Point& p);
 		void operator-= (const Point& p);
 		void operator*= (const realnum f);
@@ -56,7 +56,7 @@ class Point  : public Serializable {
 		Point getPointOfLine(realnum ratio, const Point& target);
 
 		// returns as homogenous vector, i.e. a 4-dimensional vector with 1.0 as last dimension
-		HomVector getHomVector() const;
+		HomogeneousVector getHomVector() const;
 
 		// return as vector , i.e. a 3-dimensional vector
 		Vector getVector() const ;

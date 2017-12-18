@@ -117,7 +117,7 @@ Point::~Point() {
 
 };
 
-Point::Point(const HomVector& p) {
+Point::Point(const HomogeneousVector& p) {
 	x = p[X];
 	y = p[Y];
 	z = p[Z];
@@ -146,7 +146,7 @@ void Point::operator= (const Point& p) {
 		z = p.z;
 }
 
-void Point::operator= (const HomVector& p) {
+void Point::operator= (const HomogeneousVector& p) {
 		x = p[X];
 		y = p[Y];
 		z = p[Z];
@@ -244,8 +244,8 @@ void Point::moveTo(const Point& b, seconds dT, realnum maxSpeed) {
 		(*this) = b;
 }
 
-HomVector Point::getHomVector() const {
-	HomVector result = { x,y,z,1.0 };
+HomogeneousVector Point::getHomVector() const {
+	HomogeneousVector result = { x,y,z,1.0 };
 	return result;
 }
 

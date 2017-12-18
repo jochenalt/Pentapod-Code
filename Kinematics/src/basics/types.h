@@ -37,8 +37,9 @@ const realnum floatPrecisionSqrt=sqrt(floatPrecision);
 #pragma GCC diagnostic pop
 
 using techsoft::mslice;
+
 typedef techsoft::matrix<realnum>  Matrix;
-typedef techsoft::matrix<realnum>  HomMatrix;
-typedef std::valarray<realnum> HomVector;
+typedef techsoft::matrix<realnum>  HomogeneousMatrix;
+typedef std::valarray<realnum> HomogeneousVector;
 typedef std::valarray<realnum> Vector;
 #endif

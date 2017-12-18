@@ -90,7 +90,7 @@ private:
 	PentaPoseType hipPoseWorld;
 
 	// transformation matrix from origin to belly button pose
-	HomMatrix origin2Belly;
+	HomogeneousMatrix origin2Belly;
 
 	// pose of the belly within the body
 	Pose currentBellyPose;

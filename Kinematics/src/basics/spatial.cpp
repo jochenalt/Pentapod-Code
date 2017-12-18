@@ -231,7 +231,7 @@ ostream& operator<<(ostream& os, const LimbAngles& p)
     return os;
 }
 
-void createRotationMatrix(const Rotation &r, HomMatrix& m) {
+void createRotationMatrix(const Rotation &r, HomogeneousMatrix& m) {
 	realnum sinX = sin(r.x);
 	realnum cosX = cos(r.x);
 	realnum sinY = sin(r.y);
@@ -239,7 +239,7 @@ void createRotationMatrix(const Rotation &r, HomMatrix& m) {
 	realnum sinZ = sin(r.z);
 	realnum cosZ = cos(r.z);
 
-	m = HomMatrix(4,4,
+	m = HomogeneousMatrix(4,4,
 			{ 	cosZ*cosY, 	-sinZ*cosX+cosZ*sinY*sinX,  	sinZ*sinX+cosZ*sinY*cosX, 	0,
 				sinZ*cosY, 	 cosZ*cosX + sinZ*sinY*sinX, 	-cosZ*sinX+sinZ*sinY*cosX, 	0,
 				-sinY,	 	cosY*sinX,						cosY*cosX,					0,

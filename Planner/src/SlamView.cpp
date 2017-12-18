@@ -306,8 +306,6 @@ void SlamView::drawSmallBot(const Pose& pose) {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, glFootTouchPointColor);
 	glColor3fv(glFootTouchPointColor);
 
-	drawFilledCircle(0,0,10, maxFootTouchPointRadius);
-
 	BotDrawer::getInstance().displayBot(
 			EngineProxy::getInstance().getNoseOrientation(),
 			EngineProxy::getInstance().getBodyPose(),
