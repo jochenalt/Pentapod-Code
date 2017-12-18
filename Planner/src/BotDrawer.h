@@ -23,7 +23,7 @@ public:
 	}
 
 	// display the bot with the given joint angles in the current openGL window
-	void displayBot(angle_rad orientation,const Pose& bodyPose, const PentaPoseType& hipPose, const LegAnglesType& legAngles);
+	void displayBot(angle_rad orientation,const Pose& bodyPose, const PentaPoseType& hipPose, const PentaLegAngleType& legAngles);
 
 	// display the bot with the given joint angles in the current openGL window
 	void displayLeg( const LimbAngles& angles, const GLfloat* color, const GLfloat* accentColor);

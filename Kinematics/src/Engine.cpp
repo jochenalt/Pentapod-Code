@@ -162,7 +162,7 @@ void Engine::turnOn() {
 			imposeFootPointsWorld(footPoints);
 
 			PentaPointType tmpHipPoints;
-			LegAnglesType allLegAngles = legAngles;
+			PentaLegAngleType allLegAngles = legAngles;
 			ok = bodyKinematics.computeKinematics(
 										bodyPose,
 										gaitControl.getToePoints(),
@@ -228,7 +228,7 @@ void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	}
 }
 
-LegAnglesType Engine::getLegAngles() {
+PentaLegAngleType Engine::getLegAngles() {
 	return legAngles;
 };
 
@@ -253,7 +253,7 @@ void Engine::loop() {
 	legController.loop();
 
 	PentaPointType tmpHipPoints;
-	LegAnglesType allLegAngles = legAngles;
+	PentaLegAngleType allLegAngles = legAngles;
 
 	// grab last measurement of foot sensors
 	if (legController.isCortexCommunicationOk()) {

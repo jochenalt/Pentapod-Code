@@ -44,10 +44,10 @@ public:
 	// call me upfront before to anything
 	void setup(Engine& pMainController);
 
-	void computeForwardKinematics(const LegAnglesType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose);
+	void computeForwardKinematics(const PentaLegAngleType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose);
 
 	// compute the kinematics of all legs and return poses of hips, angles, and ground points
-	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld);
+	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, PentaLegAngleType& legAngles, PentaPointType& groundWorld);
 
 	// body pose is within the frame of the baselink, i.e. it is the relative position of the belly above the origin right below the bot
 	void setBodyPose(const Pose& bellyPose);

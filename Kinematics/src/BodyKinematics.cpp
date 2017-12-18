@@ -33,7 +33,7 @@ void BodyKinematics::setup(Engine& pMainController) {
 	// looking direction in in z-axis (3rd leg is at the front)
 	noseOrientation = 0;
 
-	DenavitHardenbergParams dh(DenavitHardenbergParams::THETA,0,0,cos(radians(CAD::HipNickAngle))*(CAD::HipLength + CAD::HipCentreDistance),0.0);
+	DenavitHardenbergParams dh(DenavitHardenbergParams::TURN_AROUND_Z,0,0,cos(radians(CAD::HipNickAngle))*(CAD::HipLength + CAD::HipCentreDistance),0.0);
 
 	// arrange the legs in a circle
 	// if the number of legs is odd, have the middle leg at the front.
@@ -58,7 +58,7 @@ void BodyKinematics::setup(Engine& pMainController) {
 
 
 // called during startup. Compute forward kinematics out of the angles
-void BodyKinematics::computeForwardKinematics(const LegAnglesType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose) {
+void BodyKinematics::computeForwardKinematics(const PentaLegAngleType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose) {
 	// get orientation from IMU
 	currentBellyPose.orientation = IMUorientation;
 
@@ -113,7 +113,7 @@ void BodyKinematics::setBodyPose(const Pose& bellyPose) {
 bool BodyKinematics::computeKinematics(
 		const Pose& bellyPose, const PentaPointType& toeWorld, // in params
 		const PentaPointType& walkingTouchPoint,
-		PentaPointType& hipsWorld, LegAnglesType& legAngles, PentaPointType& groundWorld) {
+		PentaPointType& hipsWorld, PentaLegAngleType& legAngles, PentaPointType& groundWorld) {
 
 	setBodyPose(bellyPose);
 

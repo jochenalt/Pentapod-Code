@@ -34,6 +34,12 @@ using namespace std;
 const string reponseOKStr =">ok\r\n>";	 // reponse code from uC: >ok or >nok(errornumber)
 const string reponseNOKStr =">nok(";
 
+string replaceWhiteSpace(string s) {
+	replace (s.begin(), s.end(), '\r' , 'R');
+	replace (s.begin(), s.end(), '\n' , 'N');
+	return s;
+}
+
 // the following functions are dummys, real functions are used in the uC. Purpose is to have
 // one communication interface header between uC and host containing all commands. uC uses a
 // library that works with function pointers to parse the commands, here we use regular method calls,
@@ -126,7 +132,7 @@ bool CortexClient::cmdENABLE() {
 }
 
 
-bool CortexClient::cmdMOVE(const LegAnglesType& legAngles, int duration_ms) {
+bool CortexClient::cmdMOVE(const PentaLegAngleType& legAngles, int duration_ms) {
 
 	return cmdBinaryMOVE(legAngles, duration_ms);
 }
@@ -325,7 +331,7 @@ bool CortexClient::cmdBinaryGetAll() {
 }
 
 bool CortexClient::cmdBinaryMOVE(
-            const LegAnglesType& legAngles, int duration_ms) {
+            const PentaLegAngleType& legAngles, int duration_ms) {
 
     bool ok = false;
     Cortex::RequestPackageData request;
@@ -599,20 +605,20 @@ bool CortexClient::info(bool &pEnabled) {
 }
 
 
-bool CortexClient::fetchAngles(LegAnglesType& legAngles) {
+bool CortexClient::fetchAngles(PentaLegAngleType& legAngles) {
 	bool ok = cmdGETall();
 	legAngles = getLegAngles();
 	return ok;
 }
 
 
-void CortexClient::setMovement(const LegAnglesType& legAngles, realnum duration_ms) {
+void CortexClient::setMovement(const PentaLegAngleType& legAngles, realnum duration_ms) {
 	movementDuration = max((realnum)HERKULEX_MIN_SAMPLE*2.0, duration_ms); // minimum time is 22ms, since the wall clock time of the cortex loop is approx. 16ms
 	toBeAngles = legAngles;
 }
 
 
-bool CortexClient::moveSync(const LegAnglesType& legAngles, realnum duration_ms) {
+bool CortexClient::moveSync(const PentaLegAngleType& legAngles, realnum duration_ms) {
 
 	bool ok = cmdMOVE(legAngles, duration_ms);
 	delay_ms(duration_ms-HERKULEX_MIN_SAMPLE);
@@ -724,6 +730,7 @@ bool CortexClient::callMicroController(string& cmd, string& response, int timeou
 	ROS_DEBUG_STREAM("send -> \"" << cmd << " timeout=" << timeout_ms << "-> \"" << response << "\"" << " t=" << duration_ms << " ok=" << string(ok?"true":"false") << " (" << getLastError() << ")");
 	return ok;
 }
+
 
 
 bool CortexClient::receive(string& str, int timeout_ms) {

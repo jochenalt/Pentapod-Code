@@ -353,7 +353,7 @@ GaitModeType EngineProxy::getGaitMode() {
 }
 
 // get all relevant data representing the current pose of the body and all legs
-LegAnglesType EngineProxy::getLegAngles() {
+PentaLegAngleType EngineProxy::getLegAngles() {
 	return data.legAngles;
 }
 

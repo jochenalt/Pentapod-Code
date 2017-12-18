@@ -94,7 +94,7 @@ public:
 	const PentaPoseType&  getHipPoseWorld();
 
 	// get all relevant data representing the current pose of the body and all legs
-	LegAnglesType getLegAngles();
+	PentaLegAngleType getLegAngles();
 	PentaPointType getHipPoints();
 
 	PentaPointType getGaitRefPoints();
@@ -184,7 +184,7 @@ private:
 	PentaPointType hipPoints;			// points of all hips in absolute world coordinates
 	PentaPointType groundPoints;		// projection of the toe to the ground in absolute world coordinates
 	realnum lastGaitStepLength;
-	LegAnglesType legAngles;			// current angles of all legs
+	PentaLegAngleType legAngles;			// current angles of all legs
 
 	ExclusiveMutex loopMutex;			// loop is running in an own thread. Mutex to synchronize that with commands
 	Pose lastModeratedBodyPose;

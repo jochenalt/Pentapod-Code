@@ -42,13 +42,13 @@ public:
 	bool disableBot();
 
 	// fetch all angles
-	bool fetchAngles(LegAnglesType& legAngles);
+	bool fetchAngles(PentaLegAngleType& legAngles);
 
 	// set the movement that is carried out asynchronously within loop
-	void setMovement(const LegAnglesType& legAngles, realnum duration_ms);
+	void setMovement(const PentaLegAngleType& legAngles, realnum duration_ms);
 
 	// move synchronously, i.e. this method returns when duration_ms is over
-	bool moveSync(const LegAnglesType& legAngles, realnum duration_ms);
+	bool moveSync(const PentaLegAngleType& legAngles, realnum duration_ms);
 
 	// retrieve values of distance sensors
 	void getDistanceSensor(realnum distance[NumberOfLegs]);
@@ -63,7 +63,7 @@ public:
 	realnum getCortexVoltage();
 
 	// return recently received angles
-	const LegAnglesType& getLegAngles() { return lastLegAngles; };
+	const PentaLegAngleType& getLegAngles() { return lastLegAngles; };
 
 	// switch on/off the bot. Requires setupBot upfront
 	void actLikePower(bool onOff);
@@ -98,11 +98,11 @@ private:
 	bool cmdSETUP();
 	bool cmdDISABLE();
 	bool cmdENABLE();
-	bool cmdMOVE(const LegAnglesType& legAngles, int duration_ms);
+	bool cmdMOVE(const PentaLegAngleType& legAngles, int duration_ms);
 	bool cmdGETall();
 	bool cmdSET(int legNo, realnum minAngle, realnum maxAngle, realnum nullAngle);
 	bool cmdBinaryGetAll();
-	bool cmdBinaryMOVE(const LegAnglesType& legAngles, int duration_ms);
+	bool cmdBinaryMOVE(const PentaLegAngleType& legAngles, int duration_ms);
 	bool cmdBinaryCommand(Cortex::Command cmd);
 
 	bool cmdLOGsetup(bool onOff);
@@ -129,11 +129,11 @@ private:
 	bool enabled = false;
 
 	// movement passed by setMovement
-	LegAnglesType toBeAngles;
+	PentaLegAngleType toBeAngles;
 	realnum movementDuration;
 
 	// most recent angles that has been returned from cortex
-	LegAnglesType lastLegAngles;
+	PentaLegAngleType lastLegAngles;
 
 	// most recent toe distance from cortex
 	int measuredDistance[NumberOfLegs];

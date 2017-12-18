@@ -18,10 +18,10 @@ void LegKinematics::setup(Engine& pMainController) {
 
 	// define and compute Denavit Hardenberg Parameter
 	// check Kinematics.xls for explantation
-	DHParams[LimbConfiguration::HIP] =		DenavitHardenbergParams(DenavitHardenbergParams::THETA, radians(90.0), 0, CAD::HipJointLength, 				0);
-	DHParams[LimbConfiguration::THIGH] = 	DenavitHardenbergParams(DenavitHardenbergParams::THETA, radians(90.0), 0, CAD::ThighLength+CAD::ThighKneeGapLength + CAD::KneeJointLength,	0);
-	DHParams[LimbConfiguration::KNEE] =		DenavitHardenbergParams(DenavitHardenbergParams::ALPHA, radians(90.0), 0, 0, 0);
-	DHParams[LimbConfiguration::LOWERLEG] =	DenavitHardenbergParams(DenavitHardenbergParams::THETA, 0, 0, CAD::FootLength + CAD::DampenerLength ,0);
+	DHParams[LimbConfiguration::HIP] =		DenavitHardenbergParams(DenavitHardenbergParams::TURN_AROUND_Z, radians(90.0), 0, CAD::HipJointLength, 				0);
+	DHParams[LimbConfiguration::THIGH] = 	DenavitHardenbergParams(DenavitHardenbergParams::TURN_AROUND_Z, radians(90.0), 0, CAD::ThighLength+CAD::ThighKneeGapLength + CAD::KneeJointLength,	0);
+	DHParams[LimbConfiguration::KNEE] =		DenavitHardenbergParams(DenavitHardenbergParams::TURN_AROUND_X, radians(90.0), 0, 0, 0);
+	DHParams[LimbConfiguration::LOWERLEG] =	DenavitHardenbergParams(DenavitHardenbergParams::TURN_AROUND_Z, 0, 0, CAD::FootLength + CAD::DampenerLength ,0);
 	hipOffset = 0;
 }
 
@@ -147,7 +147,7 @@ angle_deg LegKinematics::computeFootAngle(const LegPose& pose, Point &measuredPo
 	DHParams[LimbConfiguration::LOWERLEG].computeDHMatrix(angle[LimbConfiguration::LOWERLEG], currDHMatrix);
 
 	// prolong the foot by the measured distance.
-	DenavitHardenbergParams prologedFoot =	DenavitHardenbergParams(DenavitHardenbergParams::THETA, 0, 0, CAD::FootLength + CAD::DampenerLength + measuredGroundDistance,0);
+	DenavitHardenbergParams prologedFoot =	DenavitHardenbergParams(DenavitHardenbergParams::TURN_AROUND_Z, 0, 0, CAD::FootLength + CAD::DampenerLength + measuredGroundDistance,0);
 	prologedFoot.computeDHMatrix(angle[LimbConfiguration::LOWERLEG], currDHMatrix);
 
 	current *= currDHMatrix;
@@ -211,10 +211,10 @@ bool LegKinematics::computeInverseKinematics(LegPose& pose) {
 
 // inverse kinematics with a given angle0
 bool LegKinematics::computeInverseKinematics(LegPose& pose, realnum angle0) {
-	realnum d0 = DHParams[LimbConfiguration::HIP].getA();
-	realnum d1 = DHParams[LimbConfiguration::THIGH].getA();
-	realnum d2 = DHParams[LimbConfiguration::KNEE].getA();
-	realnum d3 = DHParams[LimbConfiguration::LOWERLEG].getA();
+	realnum d0 = DHParams[LimbConfiguration::HIP].getXTranslation();
+	realnum d1 = DHParams[LimbConfiguration::THIGH].getXTranslation();
+	realnum d2 = DHParams[LimbConfiguration::KNEE].getXTranslation();
+	realnum d3 = DHParams[LimbConfiguration::LOWERLEG].getXTranslation();
 
 	// toe point
 	Point& Toe = pose.position;
@@ -229,7 +229,7 @@ bool LegKinematics::computeInverseKinematics(LegPose& pose, realnum angle0) {
 	// -> angle1
 	Point Hip( d0*cos(angle0),
 			 d0*sin(angle0),
-			 DHParams[LimbConfiguration::HIP].getD());
+			 DHParams[LimbConfiguration::HIP].getZTranslation());
 
 	// length of H.ypothenuse of orthogonal triangle of knee/lower leg
 	// (used later on to construct height to c)

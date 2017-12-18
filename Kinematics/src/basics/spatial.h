@@ -145,7 +145,7 @@ public:
 };
 
 
-// An aggregation of a point, an orientation and the corresponding angles
+// An aggregation of a point and an orientation
 class Pose : public Serializable  {
 	public:
 		friend ostream& operator<<(ostream&, const Pose&);
@@ -271,6 +271,7 @@ class Pose : public Serializable  {
 };
 
 
+// a pose with a timestamp
 class StampedPose : public Serializable  {
 	public:
 		friend ostream& operator<<(ostream&, const StampedPose&);
@@ -320,13 +321,17 @@ class StampedPose : public Serializable  {
 };
 
 
+// A PID controller for orientation in x,y
 class SpatialPID {
 public:
 	SpatialPID() {};
 	~SpatialPID() {};
 
+	// reset all historical values such that it will start with 0
 	void reset();
 	Rotation getPID(Rotation error, realnum p, realnum i, realnum d, const Rotation &outMax);
+
+	// for debugging purposes, returns the integrated I value
 	Rotation getErrorIntegral() { return errorIntegral; };
 private:
 	Rotation lastError;
@@ -334,7 +339,7 @@ private:
 	TimeSamplerStatic pidSampler;
 };
 
-// An aggregation of a point, an orientation and the corresponding angles
+// An aggregation of a point and the corresponding angles
 class LegPose : public Serializable  {
 	public:
 		friend ostream& operator<<(ostream&, const LegPose&);
@@ -466,7 +471,7 @@ private:
 
 typedef PentaType<Pose> PentaPoseType;
 typedef PentaType<Point> PentaPointType;
-typedef PentaType<LimbAngles> LegAnglesType;
+typedef PentaType<LimbAngles> PentaLegAngleType;
 
 // some basic vector operations
 bool 	almostEqual(const Point& a, const Point& b, realnum precision);
@@ -474,11 +479,15 @@ realnum triangleHypothenusisLength(realnum a, realnum b); 		// pythagoras
 realnum triangleHeightToC(realnum a, realnum b, realnum c);		// herons law
 Vector 	orthogonalVector(const Vector& a, realnum l);			// return orthogonal vector with length and z = 0
 Vector 	crossProduct(const Vector& a, const Vector& b);
-void 	setVectorLength(Vector &a, realnum l);
+void 	setVectorLength(Vector &a, realnum length);					// multiply vector with a factor that results in the given length
 
-// solve equation a*sin(alpha) + b*cos(alpha) = c
-// returns two solutions in general, itherwise alpha2 is qnan
+// solves equation
+//      a*sin(alpha) + b*cos(alpha) = c
+// by alpha
+// returns two solutions, if only one solution is available, alpha2 is qnan
 void solveTrgLinearCombinationWithEqualPhase(realnum a, realnum b, realnum c, realnum &alpha1, realnum &alpha2, bool& infiniteSolutions);
+
+// create a rotation matrix from a given rotation around all axes
 void createRotationMatrix(const Rotation &r, HomMatrix& m);
 
 void testSpatial();

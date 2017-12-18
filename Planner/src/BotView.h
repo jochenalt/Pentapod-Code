@@ -25,7 +25,7 @@ public:
 
 	void setSingleLegPose(const LegPose& singleLegPose);
 
-	void setPose(angle_rad orientation, const Pose& bodyPose, const PentaPointType& footTouchPoint, const PentaPoseType &hipPose, const LegAnglesType& legAngles);
+	void setPose(angle_rad orientation, const Pose& bodyPose, const PentaPointType& footTouchPoint, const PentaPoseType &hipPose, const PentaLegAngleType& legAngles);
 
 	void hide();
 	void show();
@@ -51,7 +51,7 @@ private:
 	GLint viewport[4];                  // Where The Viewport Values Will Be Stored
 
 	PentaPointType gaitRefPoints;
-	LegAnglesType legAngles;
+	PentaLegAngleType legAngles;
 	PentaPoseType hipFromBellyPerspective;
 	Pose bodyPose;
 	angle_rad noseOrientation;

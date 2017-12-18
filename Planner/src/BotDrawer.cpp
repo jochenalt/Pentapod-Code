@@ -18,7 +18,7 @@
 #include "uiconfig.h"
 #include "setup.h"
 
-void BotDrawer::displayBot( angle_rad noseOrientation, const Pose& bodyPose, const PentaPoseType& hipPose, const LegAnglesType& legAngles) {
+void BotDrawer::displayBot( angle_rad noseOrientation, const Pose& bodyPose, const PentaPoseType& hipPose, const PentaLegAngleType& legAngles) {
 	glPushAttrib(GL_CURRENT_BIT);
 	glPushMatrix();
 

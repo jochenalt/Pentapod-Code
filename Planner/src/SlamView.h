@@ -62,7 +62,7 @@ private:
 	bool mouseNavigationGoalDirection = false; 	// true, when the direction of the navigation goal is chosen
 
 	PentaPoseType defaultHipPoseWorld;
-	LegAnglesType defaultLegAngles;
+	PentaLegAngleType defaultLegAngles;
 	Pose defaultBodyPose;
 
 	// generic marker that leaves a flag in the map. Use for navigation goal.

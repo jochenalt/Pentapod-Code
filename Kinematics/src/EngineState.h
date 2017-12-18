@@ -82,7 +82,7 @@ public:
 				(groundPoints == state.groundPoints));
 	}
 	Pose currentBodyPose;
-	LegAnglesType legAngles;
+	PentaLegAngleType legAngles;
 	LegPose frontLegPose;
 	bool isTurnedOn;
 	mmPerSecond currentSpeed;

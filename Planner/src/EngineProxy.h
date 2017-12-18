@@ -79,7 +79,7 @@ public:
 	const PentaPoseType& getHipPoseWorld();
 
 	// get all current angles of all legs
-	LegAnglesType getLegAngles();
+	PentaLegAngleType getLegAngles();
 
 	// get all gait ref points (the point in der middle of a gait when the foot is on the ground)
 	PentaPointType getGaitRefPoints();

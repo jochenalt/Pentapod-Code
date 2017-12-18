@@ -1,3 +1,10 @@
+/*
+ * orientation.h
+ *
+ * Quarternions, EulerAngles (roll/nick/yaw), and Rotation class (x,y,z)
+ *
+ */
+
 #ifndef ORIENTATION_H_
 #define ORIENTATION_H_
 

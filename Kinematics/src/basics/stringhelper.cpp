@@ -38,11 +38,6 @@ void trim(std::string &s) {
 }
 
 
-std::string replaceWhiteSpace(std::string s) {
-	replace (s.begin(), s.end(), '\r' , 'R');
-	replace (s.begin(), s.end(), '\n' , 'N');
-	return s;
-}
 
 string upcase(string str) {
 	string result(str);

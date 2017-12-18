@@ -182,7 +182,7 @@ void BotView::drawCoordSystem(bool withRaster) {
 }
 
 
-void BotView::setPose(angle_rad newOrientation, const Pose& newBodyPose, const PentaPointType& newGaitRefPoint, const PentaPoseType& newHipPose, const LegAnglesType& newAngles) {
+void BotView::setPose(angle_rad newOrientation, const Pose& newBodyPose, const PentaPointType& newGaitRefPoint, const PentaPoseType& newHipPose, const PentaLegAngleType& newAngles) {
 	bodyPose = newBodyPose;
 	noseOrientation = newOrientation;
 	for (int i = 0;i<NumberOfLegs;i++) {
