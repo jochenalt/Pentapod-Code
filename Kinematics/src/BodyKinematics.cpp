@@ -10,9 +10,6 @@
 #include "core.h"
 #include "Engine.h"
 
-BodyKinematics::BodyKinematics() {
-}
-
 // setup needs to be called before anything else is called. Initializes the inner matrices.
 void BodyKinematics::setup(Engine& pMainController) {
 	mainController = &pMainController;
@@ -28,7 +25,7 @@ void BodyKinematics::setup(Engine& pMainController) {
 
 	// null out the leg orientation compensation of the ground distance
 	for (int i = 0;i<NumberOfLegs;i++)
-		footAngle[i] = 0.0;
+		angleDeviationFromZ[i] = 0.0;
 
 	// looking direction in in z-axis (3rd leg is at the front)
 	noseOrientation = 0;
@@ -134,7 +131,7 @@ bool BodyKinematics::computeKinematics(
 		// compute inverse kinematics per leg
 		bool ok;
 
-		// compute angle 0
+		// when we are in startup phase, we expect weired leg positions we need to compensate
 		if (duringStartup) {
 			// during startup phase control that care that angle acceleration is not exceeded
 			// since we might be outside the area of angle0
@@ -146,9 +143,7 @@ bool BodyKinematics::computeKinematics(
 
 			// during startup reduce angle speed
 			realnum maxAngleDiff = maxStartupAngleSpeed * (CORTEX_SAMPLE_RATE/1000.0) ;
-			realnum  angleDiff = toBeAngle0 - givenAngle0;
-			if (abs(angleDiff) > maxAngleDiff)
-				angleDiff = sgn(angleDiff)* maxAngleDiff;
+			realnum  angleDiff = constrain(toBeAngle0 - givenAngle0,-maxAngleDiff, maxAngleDiff);
 			realnum angle0 = givenAngle0 + angleDiff;
 			ok = kin.computeInverseKinematics(toeHipCoord, angle0);
 			if (!ok) {
@@ -196,7 +191,7 @@ bool BodyKinematics::computeKinematics(
 
 			// compute ground height correction induced by sensor value
 			Point groundPointBody;
-			footAngle[legNo]= kin.computeFootAngle(ftp, groundPointBody);
+			angleDeviationFromZ[legNo]= kin.computeFootAngle(ftp, groundPointBody);
 			groundWorld[legNo] = groundPointBody.getRotatedAroundZ(noseOrientation);
 		}
 		totalOk = totalOk && ok;
@@ -212,6 +207,6 @@ const PentaPoseType& BodyKinematics::getHipPose() {
 
 realnum BodyKinematics::getFatFootCorrectionHeight(int legNo) const {
 	// this is not really correct but an approximation that is ok
-	return sin(abs(footAngle[legNo])) * CAD::FootDampenerDiameter/2.0;
+	return sin(abs(angleDeviationFromZ[legNo])) * CAD::FootDampenerDiameter/2.0;
 }
 

@@ -85,7 +85,7 @@ realnum  BezierCurve::curveLength() {
 	Point curr = getCurrent(0);
 
 	// BTW: computing the length of a bezier curve in maths style is really complicated, so do it numerically
-	realnum  t = 0.01; // at least 0.01mm, in order to not divide by 0 later on
+	realnum  t = 0.05; // at least 0.01mm, in order to not divide by 0 later on
 	while (t<1.0) {
 		Point next = getCurrent(t);
 		distance += curr.distance(next);

@@ -33,8 +33,8 @@ const bool crawlCreepy = true;
 namespace CAD {
 	constexpr static realnum HipNickAngle  = 19.29; 			// angle each hip goes down against the xy pane
 	constexpr static realnum HipCentreDistance  = 52.601+0.1;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
-	constexpr static realnum HipLength= 35.527;                 // distance between hip mounting point and hip joint axis (Hip040x)
-
+	constexpr static realnum HipLength= 35.528;                 // distance between hip mounting point and hip joint axis
+	constexpr static realnum HipMountingPointOverBody = 53.145; // distance between the body's as and the hip mointing point
 	constexpr static realnum HipJointLength = 45.249;
 
 	constexpr static realnum ThighLength = 53.500;

@@ -117,7 +117,7 @@ public:
 	bool isListeningToMovements() { return (generalMode == GeneralEngineModeType::WalkingMode) || (generalMode == GeneralEngineModeType::TerrainMode); };
 
 	// to be called when distance sensors have a new distance measured
-	angle_deg getFootAngle(int legNo) { return bodyKinematics.getFootAngle(legNo); };
+	angle_deg getFootAngle(int legNo) { return bodyKinematics.getFootsDeviationAngleFromZ(legNo); };
 	Point getToePointsWorld(int legNo)  { return gaitControl.getToePointsWorld(legNo); };
 	Point getGaitRefPointWorld(int legNo)  { return gaitControl.getGaitRefPointsWorld(legNo); };
 
@@ -148,7 +148,7 @@ private:
 	LegKinematics& getLegKinematics() { return kinematics; };
 
 	void computeBodyPose();				// moderates the set body pose
-	void computeGaitRefPointRadius();	// compute the radius of the points where the feet touch the ground
+	void computeGaitCircleRadius();	// compute the radius of the points where the feet touch the ground
 	void computeGaitSpeed();			// compute the gait speed depending on the body speed
 	void computeGaitHeight();			// computes and moderates the height of the body
 	void computeGaitMode(); 			// takes care of slowly switching between 4-Legs-Mode and 5-Legs mode

@@ -299,7 +299,7 @@ void SlamView::drawOccupiedSlamGrid(bool onlyTop,  const Point &g1,const Point &
 void SlamView::drawSmallBot(const Pose& pose) {
 
 	glPushMatrix();
-	glLoadIdentity();             // Reset the model-view matrix
+	glLoadIdentity();
 
 	glTranslatef(pose.position.y, pose.position.z, pose.position.x);
 

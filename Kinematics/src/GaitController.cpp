@@ -226,13 +226,6 @@ Point GaitController::interpolateLegMotion(
  				   || (adaptToGaitRefPointType == ADAPT_TO_GAIT_POINT)
                    || ((moveLength < floatPrecision) && ((sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan)) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
 
-	/*
-	LOG(DEBUG) << "[" << legNo << "] move=" << doMove << " ml=" << moveLength << "|" << (moveLength > floatPrecision) << " fog" << !feetOnGround[legNo]
-	           << "grd" << (sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y))
-	           << " gaitProgress" << gaitProgress << " LPB" << localPhaseBeat << " phase=" << (int)phase;
-*/
-	// cout << "doMove[" << legNo << "]" << doMove << "ml=" << moveLength << "tpd" << footTouchPoint.distanceSqr(groundProjection) << endl;
-	// if we do not move, lower all feet slowly to the ground
 	if (doMove) {
 		switch (phase) {
 			case LegGaitUp: {
@@ -323,6 +316,7 @@ Point GaitController::interpolateLegMotion(
 	else {
 		bezier[legNo].set(currentToePoint, currentToePoint, currentToePoint, currentToePoint);
 	}
+
 	return result;
 }
 

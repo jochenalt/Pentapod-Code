@@ -288,7 +288,7 @@ void Engine::loop() {
 	}
 
 	if (isTurnedOn()) {
-		computeGaitRefPointRadius();
+		computeGaitCircleRadius();
 		computeBodyPose();
 		computeGaitSpeed();
 		computeGaitHeight();
@@ -462,7 +462,6 @@ const FootOnGroundFlagType& Engine::getFootOnGround() {
 void Engine::computeBodyPose() {
 	// maximum speed the body moves its position or orientation
 	const realnum maxLiftBodyPositionSpeed = 80.0; 	// [mm/s]
-	const realnum maxBodyPositionSpeed = 40.0; 	// [mm/s]
 
 	const realnum maxBodyOrientationSpeed = 0.4; 	// [RAD/s]
 
@@ -485,7 +484,8 @@ void Engine::computeBodyPose() {
 		if (((generalMode != LiftBody) && (generalMode != FallASleep))
 			|| ((generalMode == LiftBody)  && readyForLifting)
 			|| ((generalMode == FallASleep) && readyForLifting)) {
-			realnum bodySpeed = maxBodyPositionSpeed;
+			realnum bodySpeed = maxBodyHeightSpeed;
+;
 
 			if ((generalMode != WalkingMode) && (generalMode != TerrainMode))
 				gaitControl.setAdaptionTypeToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
@@ -663,7 +663,7 @@ void Engine::computeGaitMode() {
 	}
 }
 
-void Engine::computeGaitRefPointRadius() {
+void Engine::computeGaitCircleRadius() {
 	switch (generalMode) {
 		case FallASleep:
 			gaitControl.setTargetGaitRefCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
@@ -682,11 +682,35 @@ void Engine::computeGaitRefPointRadius() {
 			inputBodyPose.orientation = Rotation(0,0,0);
 			break;
 		default: {
+
+			    /* the gait circle is computed by assuming that the foot is perpendicular to the ground, i.e. only
+				 thigh is moving up. This holds true if the thigh is at least horizontal, when going down even more,
+			     not only the thigh goes down but the foot moves to the outside
+
+			     standard position    low body position   high body position
+ 				  \    /                   \   / /\            \   /
+				   \__/---|                 \_/-/  \            \_/\
+			              |                                         \
+			                                                         |
+			                                                         |
+			     */
 				realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
 				heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
-				realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
-				realnum radius = 0.75*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
 
+				static const realnum horicontalThighHeight = CAD::HipMountingPointOverBody - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength) + CAD::FootLength;
+				static const realnum thighLength = (CAD::ThighKneeGapLength + CAD::ThighLength + CAD::KneeJointLength);
+				realnum radius = 0;
+				if (heightOverGround > horicontalThighHeight) {
+					radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(thighLength) - sqr((heightOverGround-horicontalThighHeight)));;
+				}
+				else {
+					static const realnum distanceKneeToe = sqrt(sqr(thighLength) + sqr(CAD::FootLength));
+					radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(distanceKneeToe) - sqr(heightOverGround - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength)));;
+				}
+				// realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
+				// realnum radius = 0.85*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
+
+				radius -= 30.0;
 				gaitControl.setTargetGaitRefCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
 
 				if (fourWalkLegRatio > 0) {
@@ -728,16 +752,17 @@ void Engine::computeGaitSpeed() {
 		speedAcc = constrain(speedAcc, -maxAcceleration, maxAcceleration);
 		realnum angularSpeedAcc = (getTargetAngularSpeedLimited() - getCurrentAngularSpeed())/dT;
 		angularSpeedAcc = constrain(angularSpeedAcc, -maxAngularSpeedAcceleration, maxAngularSpeedAcceleration);
+		realnum bodyHeighSpeed = constrain((moderatedBodyPose.position.z - inputBodyPose.position.z)/dT, -maxBodyHeightSpeed, maxBodyHeightSpeed);
 
 		// gait length is 130mm in normal conditions, but is reduced if any disturbance happens
 		// later on, this leads to small steps as long as the disturbance takes
 		realnum gaitStepLength =  130.0
-								  - 30.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)
-								  - 75.0*sqr(minBodyHeight/moderatedBodyPose.position.z) // if close to the ground, reduce gait length
-
-								  - 30.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration
-								  - 30.0*abs(speedAcc)/maxAcceleration;
-		gaitStepLength =  constrain(gaitStepLength, 40.0, 130.0); // take care that there is a minimum gait step length
+								  - 35.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)		// the higher, the smaller the gait
+								  - 40.0*abs(bodyHeighSpeed/maxBodyHeightSpeed)				  								// the faster the body height changes, the smaller the gait
+								  - 80.0*sqr(minBodyHeight/moderatedBodyPose.position.z) 									// if close to the ground, reduce gait length
+								  - 30.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration									// the more angular acceleration, the smaller the gait
+								  - 30.0*abs(speedAcc)/maxAcceleration;														// the more acceleration, the smaller the gait
+		gaitStepLength =  constrain(gaitStepLength, 40.0, 135.0); // take care that there is a minimum gait step length
 
 		realnum gaitStepLengthDiff = gaitStepLength - lastGaitStepLength;
 		gaitStepLengthDiff = constrain(gaitStepLengthDiff, -4.0, 4.0);
@@ -871,14 +896,14 @@ void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 							gaitControl.setAbsoluteGroundHeight(legNo,0);
 						}
 						// compute perpendicular distance to ground by angle of lower leg
-						realnum currGroundHeight = toeZ - distance[legNo] * cos(bodyKinematics.getFootAngle(legNo));
+						realnum currGroundHeight = toeZ - distance[legNo] * cos(bodyKinematics.getFootsDeviationAngleFromZ(legNo));
 						groundHeight[legNo] = currGroundHeight;
 						break;
 					}
 					case LegGaitUp: {
 						if (newPhase)
 							gaitControl.setAbsoluteGroundHeight(legNo,0);
-						realnum currGroundHeight = -toeZ + distance[legNo] * cos(bodyKinematics.getFootAngle(legNo));
+						realnum currGroundHeight = -toeZ + distance[legNo] * cos(bodyKinematics.getFootsDeviationAngleFromZ(legNo));
 						groundHeight[legNo] = currGroundHeight;
 						break;
 					}
@@ -1037,6 +1062,6 @@ void Engine::computeAcceleration() {
 		if (noseOrientation < -M_PI)
 			noseOrientation += 2*M_PI;
 
-		getBodyKinematics().setCurrentNoseOrientation(noseOrientation);
+		getBodyKinematics().getCurrentNoseOrientation() = noseOrientation;
 	}
 }

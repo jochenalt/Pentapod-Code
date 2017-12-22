@@ -38,22 +38,20 @@ class Engine;
 
 class BodyKinematics {
 public:
-	BodyKinematics();
-	virtual ~BodyKinematics() {};
+	BodyKinematics() {};
+	~BodyKinematics() {};
 
 	// call me upfront before to anything
 	void setup(Engine& pMainController);
 
-	void computeForwardKinematics(const PentaLegAngleType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& footPoints, Pose& bodyPose);
+	// compute bodyPose and toe points out of leg angles and IMU orientation
+	void computeForwardKinematics(const PentaLegAngleType& allLegsAngles, const Rotation &IMUorientation, PentaPointType& toePoints, Pose& bodyPose);
 
-	// compute the kinematics of all legs and return poses of hips, angles, and ground points
-	bool computeKinematics(const Pose& bellyPose, const PentaPointType& footTouchPoint, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, PentaLegAngleType& legAngles, PentaPointType& groundWorld);
+	// compute poses of hips, angles, and ground points out of toe points
+	bool computeKinematics(const Pose& bellyPose, const PentaPointType& toePoints, const PentaPointType& walkingTouchPoint, PentaPointType& hipsWorld, PentaLegAngleType& legAngles, PentaPointType& groundWorld);
 
-	// body pose is within the frame of the baselink, i.e. it is the relative position of the belly above the origin right below the bot
+	// body pose is is the relative position of the belly above the origin right below the bot
 	void setBodyPose(const Pose& bellyPose);
-
-	// compute the body pose by given foot points (used during start up)
-	void computeBodyPoseOutOfFootPoints(const PentaPointType& footPoints);
 
 	// return current pose of the body
 	const Pose& getCurrentBellyPose() const { return currentBellyPose; };
@@ -64,9 +62,8 @@ public:
 	// return kinematics of one leg
 	LegKinematics& getLeg(int legNo) { return legKinematic[legNo]; };
 
-	// return the ground distance correction of one leg. Returns a factor which is used to compute the height of a feet when
-	// multiplied with the measured distance
-	angle_deg getFootAngle(int legNo) { return footAngle[legNo]; };
+	// return the angle of a foot wrt to the z-axis.
+	angle_deg getFootsDeviationAngleFromZ(int legNo) { return angleDeviationFromZ[legNo]; };
 
 	// a toe is not a point but has dampener with a diameter of 20mm. When the foot
 	// touches the ground at a certain angle, we need to virtually adapt the ground height
@@ -76,10 +73,9 @@ public:
 
 	// the nose-orientation defines the direction the bot's noe (i.e. its front leg) is looking to
 	// (not necessarily the same like the walking direction)
-	angle_rad getCurrentNoseOrientation() { return  noseOrientation; };
-	void setCurrentNoseOrientation(angle_rad newNoseDirection) { noseOrientation = newNoseDirection; };
+	angle_rad& getCurrentNoseOrientation() { return  noseOrientation; };
 
-	// during startup phase we move slowly and try to cope with invalid positions and singularities (kinematics-wise)
+	// during startup phase we move slowly and try to cope with invalid positions and singularities
 	void startupPhase(bool onOff) { duringStartup = onOff; };
 
 private:
@@ -99,12 +95,12 @@ private:
 	angle_rad noseOrientation;
 
 	// angle used to compensate the non-perpendicular orientation of a leg.
-	angle_deg footAngle[NumberOfLegs];
+	angle_deg angleDeviationFromZ[NumberOfLegs];
 
 	// my main controller
 	Engine *mainController;
 
-	// during startup we ave a different hip offsetAngle
+	// during startup we compensate weired leg angles
 	bool duringStartup = false;
 };
 
