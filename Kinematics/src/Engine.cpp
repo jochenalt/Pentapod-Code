@@ -666,19 +666,19 @@ void Engine::computeGaitMode() {
 void Engine::computeGaitCircleRadius() {
 	switch (generalMode) {
 		case FallASleep:
-			gaitControl.setTargetGaitRefCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-			gaitControl.assignTargetGaitRefPoints();
+			gaitControl.setTargetGaitCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitCirclePoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
 		case BeingAsleep:
-			gaitControl.setTargetGaitRefCircleRadius(standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-			gaitControl.assignTargetGaitRefPoints();
+			gaitControl.setTargetGaitCircleRadius(standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitCirclePoints();
 			inputBodyPose.orientation = Rotation(0,0,0);
 			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
 			break;
 		case LiftBody:
-			gaitControl.setTargetGaitRefCircleRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.setTargetGaitCircleRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
 			inputBodyPose.orientation = Rotation(0,0,0);
 			break;
 		default: {
@@ -711,7 +711,7 @@ void Engine::computeGaitCircleRadius() {
 				// realnum radius = 0.85*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
 
 				radius -= 30.0;
-				gaitControl.setTargetGaitRefCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
+				gaitControl.setTargetGaitCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
 
 				if (fourWalkLegRatio > 0) {
 					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square

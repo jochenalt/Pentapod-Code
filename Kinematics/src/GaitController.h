@@ -74,7 +74,7 @@ public:
 	realnum distanceToGaitRefPoints() {
 		realnum sum = 0;
 		for (int i = 0;i<NumberOfLegs;i++) {
-			Point distance (currentGaitRefPoints[i]);
+			Point distance (currentGaitCirclePoints[i]);
 			distance -= toePoints[i];
 			distance.z = 0;
 			sum += distance.length();
@@ -82,7 +82,7 @@ public:
 		return sum/NumberOfLegs;
 	}
 
-	void assignTargetGaitRefPoints();
+	void assignTargetGaitCirclePoints();
 
 	PentaPointType getCurrentWalkingTouchPoints() { return currentWalkingTouchPoints; };
 
@@ -93,14 +93,14 @@ public:
 	PentaPointType getToePointsWorld() ;
 
 	// A gait ref point is the point middle point on the ground . The toe moves around this point
-	const PentaPointType& getGaitRefPoints() { return currentGaitRefPoints; };
+	const PentaPointType& getGaitRefPoints() { return currentGaitCirclePoints; };
 
 	const PentaPointType& getToePoints() { return toePoints; };
 
 	realnum getFootOnTheGroundRatio(realnum footSpeed, GaitModeType gm = None);
 
 	// the Ref Points are used as orientation points for a gait. It is the point at the ground in the middle of a gait.
-	void setTargetGaitRefCircleRadius(realnum rad, realnum spiderAdaptionRatio, realnum fourLegsModeRatio);
+	void setTargetGaitCircleRadius(realnum rad, realnum spiderAdaptionRatio, realnum fourLegsModeRatio);
 	realnum getGaitRefCircleRadius() { return gaitRefCircleRadius; };
 	void setGaitSpeed(realnum newGaitSpeed) { gaitSpeed = newGaitSpeed; };
 	realnum getGaitSpeed() { return gaitSpeed; };
@@ -129,7 +129,7 @@ public:
 	void imposeFootPointsWorld(const PentaPointType& footPoints);
 
 	// set one foot touch point (and update the same in world coordinates)
-	void setTargetGaitRefPoint(int legNo, const Point& footTouchPoint);
+	void setTargetGaitCirclePoint(int legNo, const Point& footTouchPoint);
 private:
 
 	realnum getLegAddOn(realnum globalGaitRatio, realnum footSpeed,int leg, GaitModeType gaitMode = None);
@@ -140,8 +140,8 @@ private:
 							   millimeter stepLength, realnum groundPercentage, realnum ratio,
 							   seconds duration_s);
 
-	PentaPointType currentGaitRefPoints;
-	PentaPointType targetGaitRefPoints;
+	PentaPointType currentGaitCirclePoints;
+	PentaPointType targetGaitCirclePoints;
 	PentaPointType toePoints;
 	PentaPointType currentWalkingTouchPoints; // the position where a leg touches the ground
 

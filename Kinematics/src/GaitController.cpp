@@ -34,16 +34,16 @@ void GaitController::setup(Engine& pMainController) {
 
 	gaitRefCircleRadius = 300;
 
-	setTargetGaitRefCircleRadius(gaitRefCircleRadius, 0,0); // happens in addition to ctor to make setup idempotent when changing basic parameters
-	toePoints = currentGaitRefPoints;
+	setTargetGaitCircleRadius(gaitRefCircleRadius, 0,0); // happens in addition to ctor to make setup idempotent when changing basic parameters
+	toePoints = currentGaitCirclePoints;
 	for (int i = 0;i<NumberOfLegs;i++) {
 		lastPhasePositions[i] = toePoints[i];
 	}
 
-	currentWalkingTouchPoints = targetGaitRefPoints;
+	currentWalkingTouchPoints = targetGaitCirclePoints;
 
 	// during setup, ignore the moderated movement towards the target foot ref points
-	currentGaitRefPoints = targetGaitRefPoints;
+	currentGaitCirclePoints = targetGaitCirclePoints;
 	setTargetGaitMode(GaitModeType(TwoLegsInTheAir));
 
 	globalGaitBeat = 0;
@@ -68,12 +68,12 @@ Point GaitController::getFrontLegWorld() {
 	return frontLegPosition.getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
 };
 
-void GaitController::setTargetGaitRefPoint(int legNo, const Point& newGaitRefPoint) {
-	targetGaitRefPoints[legNo] = newGaitRefPoint;
+void GaitController::setTargetGaitCirclePoint(int legNo, const Point& newGaitCirclePoint) {
+	targetGaitCirclePoints[legNo] = newGaitCirclePoint;
 }
 
 
-void GaitController::setTargetGaitRefCircleRadius (realnum radius, realnum spiderModeRatio, realnum fourLegsModeRatio) {
+void GaitController::setTargetGaitCircleRadius (realnum radius, realnum spiderModeRatio, realnum fourLegsModeRatio) {
 	gaitRefCircleRadius = radius;
 	realnum startAngle;
 	if (NumberOfLegs % 2 == 0)
@@ -123,15 +123,15 @@ void GaitController::setTargetGaitRefCircleRadius (realnum radius, realnum spide
 										0.1 + currentRadius*sin(radians(angle)),
 										zCoordOverGround);
 
-		targetGaitRefPoints[i] = newGaitRefPoint;
+		targetGaitCirclePoints[i] = newGaitRefPoint;
 
 		startAngle -= 360.0/NumberOfLegs;
 	}
 }
 
-void GaitController::assignTargetGaitRefPoints() {
+void GaitController::assignTargetGaitCirclePoints() {
 	for (int i =0; i< NumberOfLegs; i++) {
-		currentGaitRefPoints[i] = targetGaitRefPoints[i];
+		currentGaitCirclePoints[i] = targetGaitCirclePoints[i];
 	}
 }
 
@@ -157,7 +157,7 @@ Point GaitController::interpolateLegMotion(
 		const Point& currentToePoint,  	/* current toe point of considered leg */
 		const Point& diffToePoint,	   	/* next toe point in time dT of considered leg */
 		millimeter dDistance, 			/* length of diffToePoint */
-		const Point& gaitRefPoint,		/* gait reference point, i.e. point on xy-plane that moves forward and backward */
+		const Point& gaitCirclePoint,	/* gait reference point, i.e. point on xy-plane that moves forward and backward */
 		millimeter fullStepLength_mm, 	/* length on the ground of the full gait */
 		realnum setGroundPercentage, 	/* i.e. ground-touch-ratio of that leg 0..1 */
 		realnum gaitProgress,			/* continous number indicating the progress of the gait, one full gait has a length of 1 */
@@ -224,13 +224,13 @@ Point GaitController::interpolateLegMotion(
 	bool doMove =  (moveLength > floatPrecision)
 				   || !feetOnGround[legNo]
  				   || (adaptToGaitRefPointType == ADAPT_TO_GAIT_POINT)
-                   || ((moveLength < floatPrecision) && ((sqr(gaitRefPoint.x-groundProjection.x) + sqr(gaitRefPoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan)) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
+                   || ((moveLength < floatPrecision) && ((sqr(gaitCirclePoint.x-groundProjection.x) + sqr(gaitCirclePoint.y-groundProjection.y)) > sqr(moveToeWhenDistanceGreaterThan)) && (adaptToGaitRefPointType != DO_NOT_ADAPT_GAIT_POINT));
 
 	if (doMove) {
 		switch (phase) {
 			case LegGaitUp: {
 				// next touch point is gait ref point + half a step forward
-				Point nextTouchPoint (gaitRefPoint);
+				Point nextTouchPoint (gaitCirclePoint);
 				if (abs(dDistance) > floatPrecision) {
 					// we could take fullsteplength, but this does not yet consider the
 					// last mm when the toes goes with the ground already. For that, slightly increase the
@@ -243,9 +243,9 @@ Point GaitController::interpolateLegMotion(
 				// if we enter this phase the first time in that gait, define the bezier curve
 				if (newPhase) {
 					Point leftSupportPoint = prevTouchPoint;
-					leftSupportPoint.z = gaitHeight + gaitRefPoint.z;
+					leftSupportPoint.z = gaitHeight + gaitCirclePoint.z;
 					Point rightSupportPoint = nextTouchPoint;
-					rightSupportPoint.z = gaitHeight + gaitRefPoint.z;
+					rightSupportPoint.z = gaitHeight + gaitCirclePoint.z;
 
 					bezier[legNo].set(prevTouchPoint, leftSupportPoint, nextTouchPoint, rightSupportPoint);
 				}
@@ -255,28 +255,28 @@ Point GaitController::interpolateLegMotion(
 				result = bezier[legNo].getCurrent((1.0-moderate(1.0-localPhaseBeat, 1.0))*postponeZenith);
 
 				// if toe is close to the ground move leg with the ground during the first mm
-				if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance/3) {
+				if (result.z < gaitCirclePoint.z + moveWithGroundBelowThisGroundDistance/3) {
 					Point nextToe = getNextToePoint(currentToePoint, dT);
 					result.x = nextToe.x;
 					result.y = nextToe.y;
 					// don't overwrite z-coordinate
 				}
 
-				if (result.z > gaitRefPoint.z + floatPrecision) {
+				if (result.z > gaitCirclePoint.z + floatPrecision) {
 					feetOnGround[legNo] = false;
 				}
 				break;
 			}
 			case LegGaitDown: {
 				// maybe the toe touches the ground already, then move with the ground
-				if (currentToePoint.z < floatPrecision + gaitRefPoint.z ) {
+				if (currentToePoint.z < floatPrecision + gaitCirclePoint.z ) {
 					result = currentToePoint;
 					result += diffToePoint;
-					result.z = gaitRefPoint.z;
+					result.z = gaitCirclePoint.z;
 					feetOnGround[legNo] = true;
 				} else {
 					// target position is the gait ref point + half a step ahead
-					Point target = gaitRefPoint;
+					Point target = gaitCirclePoint;
 					if (abs(dDistance) > floatPrecision)
 						target -= diffToePoint*(fullStepLength_mm*0.5/dDistance);
 
@@ -289,11 +289,11 @@ Point GaitController::interpolateLegMotion(
 					result = (touchPointDifference*localPhaseBeat) + bezierPoint;
 
 					// check if the toe touches the ground (used elsewhere)
-					if (result.z < floatPrecision + gaitRefPoint.z)
+					if (result.z < floatPrecision + gaitCirclePoint.z)
 						feetOnGround[legNo] = false;
 
 					// if toe is close to the ground move leg with the ground already when doing the last mm's
-					if (result.z < gaitRefPoint.z + moveWithGroundBelowThisGroundDistance) {
+					if (result.z < gaitCirclePoint.z + moveWithGroundBelowThisGroundDistance) {
 						Point nextToe = getNextToePoint(currentToePoint, dT);
 						result.x = nextToe.x;
 						result.y = nextToe.y;
@@ -404,18 +404,18 @@ void GaitController::loop() {
 		realnum maxRefPointDistance = 0;
 		for (int i = 0;i<NumberOfLegs;i++) {
 			// compute move vector of this foot that happens in one loop
-			Point& gaitRefPoint = currentGaitRefPoints[i];
+			Point& gaitCirclePoint = currentGaitCirclePoints[i];
 			Point& loopFootMove = loopFootMoveVector[i];
-			Point nextPoint = getNextToePoint(gaitRefPoint, dT);
-			realnum moveX = nextPoint.x - gaitRefPoint.x;
-			realnum moveY = nextPoint.y - gaitRefPoint.y;
+			Point nextPoint = getNextToePoint(gaitCirclePoint, dT);
+			realnum moveX = nextPoint.x - gaitCirclePoint.x;
+			realnum moveY = nextPoint.y - gaitCirclePoint.y;
 			loopFootMove.x = moveX;
 			loopFootMove.y = moveY;
 
 			loopFootDistance[i] = loopFootMove.length();
 
 			realnum totalFootDistance = loopFootDistance[i];
-			realnum refPointDistance = gaitRefPoint.distance(toePoints[i]);
+			realnum refPointDistance = gaitCirclePoint.distance(toePoints[i]);
 			if (totalFootDistance > maxFootDistance)
 				maxFootDistance = totalFootDistance;
 			if (refPointDistance > maxRefPointDistance)
@@ -446,7 +446,7 @@ void GaitController::loop() {
 				realnum legSequenceNo = getLegAddOn(globalGaitBeat, fastestFootSpeed, legNo);
 				realnum legGaitBeat = globalGaitBeat+legSequenceNo/float(numberOfActiveLegs);
 				millimeter fullGaitStepLength  = ((gaitDuration * footOntheGroundPercentage)/dT) * loopFootDistance[legNo];
-				newFootPosition = interpolateLegMotion(legNo,  toePoints[legNo], loopFootMoveVector[legNo], loopFootDistance[legNo], currentGaitRefPoints[legNo],
+				newFootPosition = interpolateLegMotion(legNo,  toePoints[legNo], loopFootMoveVector[legNo], loopFootDistance[legNo], currentGaitCirclePoints[legNo],
 													  fullGaitStepLength,footOntheGroundPercentage, legGaitBeat, dT);
 
 			}
@@ -457,18 +457,18 @@ void GaitController::loop() {
 				if (feetOnGround[legNo]){
 					lastPhase[legNo] = LegGaitDuty;
 				}
-				targetGaitRefPoints[legNo] = newFootPosition;
+				targetGaitCirclePoints[legNo] = newFootPosition;
 			}
 			toePoints[legNo] = newFootPosition;
 
 			// move target foot point
-			currentGaitRefPoints[legNo].moveTo(targetGaitRefPoints[legNo], dT, maxGaitRefPointSpeed);
+			currentGaitCirclePoints[legNo].moveTo(targetGaitCirclePoints[legNo], dT, maxGaitCirclePointSpeed);
 
 			// compute point where foot will touch the ground
 			// target = currentGaitrefPoint - diffToePoint*(fullStepLength_mm*0.5/dDistance);
 			// target = currentGaitrefPoint - loopFootMoveVector[legNo]*(((gaitDuration * footOntheGroundPercentage)/dT) *0.5);
 
-			currentWalkingTouchPoints[legNo] = currentGaitRefPoints[legNo] - loopFootMoveVector[legNo] * gaitDuration * footOntheGroundPercentage/dT *0.5;
+			currentWalkingTouchPoints[legNo] = currentGaitCirclePoints[legNo] - loopFootMoveVector[legNo] * gaitDuration * footOntheGroundPercentage/dT *0.5;
 		}
 
 		// adapt speed vector accordingly
@@ -487,11 +487,11 @@ void GaitController::imposeFootPointsWorld(const PentaPointType& footPointsWorld
 }
 
 PentaPointType GaitController::getGaitRefPointsWorld() {
-	return currentGaitRefPoints.getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
+	return currentGaitCirclePoints.getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
 };
 
 Point GaitController::getGaitRefPointsWorld(int legNo) {
-	return currentGaitRefPoints[legNo].getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
+	return currentGaitCirclePoints[legNo].getRotatedAroundZ(mainController->getBodyKinematics().getCurrentNoseOrientation());
 };
 
 PentaPointType GaitController::getToePointsWorld() {

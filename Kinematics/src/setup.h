@@ -69,7 +69,7 @@ const realnum minGaitFrequency = 0.3; 				// [Hz]
 const realnum maxGaitFrequency = 3.5; 				// [Hz]
 
 // maximum speed of virtual foot ref point
-const realnum maxGaitRefPointSpeed = 50.0; 			// [mm/s}
+const realnum maxGaitCirclePointSpeed = 50.0; 			// [mm/s}
 
 // maximum speed of a foot that is in the air during a gait
 const realnum maxFootSpeed = 400; 					// [mm/s]
