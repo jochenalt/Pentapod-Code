@@ -48,7 +48,7 @@ int SlamView::create(int mainWindow, string pTitle) {
 	latchGoalOrientation = false;
 	defaultHipPoseWorld = EngineProxy::getInstance().getHipPoseWorld();
 	defaultLegAngles = EngineProxy::getInstance().getLegAngles();
-	defaultBodyPose = EngineProxy::getInstance().getBodyPose();
+	defaultBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 
 	title = pTitle;
 	windowHandle = glutCreateSubWindow(mainWindow, 1,1,1,1);
@@ -308,7 +308,7 @@ void SlamView::drawSmallBot(const Pose& pose) {
 
 	BotDrawer::getInstance().displayBot(
 			EngineProxy::getInstance().getNoseOrientation(),
-			EngineProxy::getInstance().getBodyPose(),
+			EngineProxy::getInstance().getImuAwareBodyPose(),
 			EngineProxy::getInstance().getHipPoseWorld(),
 			EngineProxy::getInstance().getLegAngles());
 	glPopMatrix();

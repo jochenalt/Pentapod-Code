@@ -5,9 +5,8 @@
 std::ostream& EngineState::serialize(std::ostream &out) const {
 	out << "{ \"ibp\":";
 	currentIMUAwareBodyPose.serialize(out);
-	out << "{ \"mbp\":";
+	out << ", \"mbp\":";
 	moderatedBodyPose.serialize(out);
-
 	out << ",\"la\":";
 	legAngles.serialize(out);
 	out << ",\"flp\":";

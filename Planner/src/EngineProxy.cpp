@@ -357,8 +357,8 @@ PentaLegAngleType EngineProxy::getLegAngles() {
 	return data.legAngles;
 }
 
-Pose EngineProxy::getBodyPose() {
-	return data.currentBodyPose;
+Pose EngineProxy::getImuAwareBodyPose() {
+	return data.currentIMUAwareBodyPose;
 }
 
 const Pose& EngineProxy::getBaseLinkInMapFrame() {
