@@ -501,11 +501,17 @@ void Engine::computeBodyPose() {
 		imu.z = 0;
 		Pose imuCompensation;
 		Rotation error;
-		if (legController.isIMUValueValid() && ((generalMode == WalkingMode) || (generalMode == TerrainMode))) {
-			// PID controller on orientation of x/y axis only, z is not used
-			Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
-			error = toBePose.orientation - imu ;
-			imuCompensation.orientation = imuPID.getPID(error, 0.75, 6.0, 0.0, maxError);
+		bool modeIsIMUAware = (generalMode == WalkingMode) || (generalMode == TerrainMode);
+		if (modeIsIMUAware) {
+			if (legController.isIMUValueValid()) {
+				// PID controller on orientation of x/y axis only, z is not used
+				Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
+				error = toBePose.orientation - imu ;
+				imuCompensation.orientation = imuPID.getPID(error, 0.75, 6.0, 0.0, maxError);
+			}
+			else {
+				ROS_WARN_STREAM("IMU value is invalid");
+			}
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
 			imuPID.reset();
