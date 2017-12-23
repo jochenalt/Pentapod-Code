@@ -36,7 +36,8 @@ public:
 	virtual ~EngineState () {};
 
 	void operator=(const EngineState& state) {
-		currentBodyPose = state.currentBodyPose;
+		moderatedBodyPose = state.moderatedBodyPose;
+		currentIMUAwareBodyPose = state.currentIMUAwareBodyPose;
 		legAngles = state.legAngles;
 		frontLegPose = state.frontLegPose;
 		isTurnedOn = state.isTurnedOn;
@@ -66,7 +67,7 @@ public:
 		return !((*this) ==  state);
 	}
 	bool operator==(const EngineState& state) {
-		return ((currentBodyPose == state.currentBodyPose) &&
+		return ((currentIMUAwareBodyPose == state.currentIMUAwareBodyPose) &&
 				(legAngles == state.legAngles) &&
 				(frontLegPose == state.frontLegPose) &&
 				(isTurnedOn == state.isTurnedOn) &&
@@ -81,7 +82,9 @@ public:
 				(currentGaitRefPoints == state.currentGaitRefPoints) &&
 				(groundPoints == state.groundPoints));
 	}
-	Pose currentBodyPose;
+	Pose currentIMUAwareBodyPose;
+	Pose moderatedBodyPose;
+
 	PentaLegAngleType legAngles;
 	LegPose frontLegPose;
 	bool isTurnedOn;

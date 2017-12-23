@@ -3,8 +3,11 @@
 #include "Engine.h"
 
 std::ostream& EngineState::serialize(std::ostream &out) const {
-	out << "{ \"bp\":";
-	currentBodyPose.serialize(out);
+	out << "{ \"ibp\":";
+	currentIMUAwareBodyPose.serialize(out);
+	out << "{ \"mbp\":";
+	moderatedBodyPose.serialize(out);
+
 	out << ",\"la\":";
 	legAngles.serialize(out);
 	out << ",\"flp\":";
@@ -49,9 +52,14 @@ std::istream& EngineState::deserialize(std::istream &in) {
     	bool ok = true;
     	parseCharacter(in, '{', ok);
 
-    	parseString(in, ok); // "bodypose"
+    	parseString(in, ok); // "imu aware bodypose"
     	parseCharacter(in, ':', ok);
-    	currentBodyPose.deserialize(in, ok);
+    	currentIMUAwareBodyPose.deserialize(in, ok);
+    	parseCharacter(in, ',', ok);
+
+    	parseString(in, ok); // "moderated bodypose"
+    	parseCharacter(in, ':', ok);
+    	moderatedBodyPose.deserialize(in, ok);
     	parseCharacter(in, ',', ok);
 
     	parseString(in, ok); // "legangles"

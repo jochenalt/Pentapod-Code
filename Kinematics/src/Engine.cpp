@@ -980,7 +980,8 @@ void Engine::imposeFootPointsWorld(const PentaPointType& footPointsWorld) {
 };
 
 void Engine::getState(EngineState &data) {
-	data.currentBodyPose = currentBodyPose;
+	data.currentIMUAwareBodyPose = currentBodyPose;
+	data.moderatedBodyPose = moderatedBodyPose;
 	data.legAngles = legAngles;
 	data.isTurnedOn = isTurnedOn();
 	data.currentNoseOrientation = getCurrentNoseOrientation();
