@@ -535,7 +535,6 @@ void Dispatcher::listenerBotState(const std_msgs::String::ConstPtr&  fullStateSt
 	engineState.baseLinkInMapFrame = odomFrame.applyTransformation(odomPose);
  	engineState.currentMapPose = mapPose;
  	engineState.currentScaryness = IntoDarkness::getInstance().getCurrentScariness();
- 	//  	cout << " " << holeFinder.getCurrentScariness() << endl;
 
  	// turn on the lidar if we wake up
  	// turn it off when we fall asleep
@@ -565,6 +564,7 @@ void Dispatcher::advertiseBodyPoseToEngine(const Pose& bodyPose) {
 	twist.angular.x = bodyPose.orientation.x;
 	twist.angular.y = bodyPose.orientation.y;
 	twist.angular.z = bodyPose.orientation.z;
+	ROS_DEBUG_STREAM("advertiseBodyposeToEngine " << bodyPose);
 	cmdBodyPose.publish(twist);
 }
 

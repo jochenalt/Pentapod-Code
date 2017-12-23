@@ -74,6 +74,7 @@ void OdomPublisher::listenToBodyPose (const geometry_msgs::Twist::ConstPtr& body
 	bodyPose.orientation.y = bodypose_msg->angular.y;
 	bodyPose.orientation.z = bodypose_msg->angular.z;
 
+	ROS_DEBUG_STREAM("listenToBodyPose " << bodyPose);
 	engine->setTargetBodyPose(bodyPose);
 }
 
@@ -171,7 +172,7 @@ void OdomPublisher::broadcastTransformation() {
 			tf::Transform(tf::Quaternion(bodyPoseQ.x, bodyPoseQ.y, bodyPoseQ.z, bodyPoseQ.w),
 					      tf::Vector3(engine->getCurrentBodyPose().position.x/1000.0,
 					    		      engine->getCurrentBodyPose().position.y/1000.0,
-									  engine->getCurrentBodyPose().position.z/1000.0 + CAD::LaserSensorHeight/1000.0)),
+									  CAD::LaserSensorHeight/1000.0)),
 			ros::Time::now(),"base_link", "laser"));
 
 	/*
