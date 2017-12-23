@@ -125,35 +125,11 @@ class Rotation {
 			z += rot.z;
 		};
 
-		realnum& operator[] (int idx)  {
-			switch (idx) {
-				case X:	return x;break;
-				case Y:	return y;break;
-				case Z:	return z;break;
-					default:
-				break;
-			}
-			return x;
-		};
-
-		realnum operator[] (int idx)  const {
-			switch (idx) {
-				case X:	return x;break;
-				case Y:	return y;break;
-				case Z:	return z;break;
-				default:
-				break;
-			}
-			return x;
-		};
-
-
 		void operator-=(const Rotation& rot) {
 			x -= rot.x;
 			y -= rot.y;
 			z -= rot.z;
 		};
-
 
 		void operator*=(float f) {
 			x *= f;

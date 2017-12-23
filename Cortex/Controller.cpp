@@ -128,8 +128,6 @@ void Controller::sendCommandToServos() {
 	}
 	uint32_t distanceendtime = millis();
 
-	// I2CSlave::getInstance().loop();			// loop is for receiving commands
-
 	// iterate over all legs limb-wise, such
 	// that all serial lines are sending simultaneously. (start with all hips, then all thighs,...)
 	// Each loop just sends a fire-and-forget command with the to-be position,
@@ -235,8 +233,8 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	const uint32_t cortexI2CFrequency = 400000;
 	const uint32_t cortexCommunicationResponseDuration_ms = cortexI2CFrequency/1000/9/Cortex::ResponsePackageData::Size + 1;
 
-	// final computation to have equal gaps between communication and duty. Give 2ms buffer for clock stretching
-	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms+1;
+	// final computation to have equal gaps between communication and duty. Give 1ms buffer for clock stretching
+	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.
@@ -244,8 +242,19 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	// the middle window between two requests.
 	int difference = toBeDueTime-asIsDueTime;
 
-	if (asIsDueTime > toBeDueTime + 3) {
+	if (abs(difference) > 0) {
 		servoLoopTimer.delayNextFire(difference);
+		/*
+		logger->print("synch(");
+		logger->print(servoLoopTimer.getRate());
+		logger->print(",");
+		logger->print(millis());
+		logger->print(")=");
+
+		logger->print(difference);
+		logger->println("ms");
+		*/
+	}
 		/*
 		logger->print("adapt t ");
 		logger->print(difference);
@@ -263,27 +272,6 @@ void Controller::adaptSynchronisation(uint32_t now) {
 		logger->print(toBeDueTime + servoLoopTimer.getRate()/6 );
 		logger->println();
 		*/
-	}
-	if (asIsDueTime  < toBeDueTime - 3) {
-		servoLoopTimer.delayNextFire(difference);
-		/*
-		logger->print("adapt t ");
-		logger->print(difference);
-		logger->print("now=");
-		logger->print(now);
-		logger->print(" asis=");
-		logger->print(asIsDueTime);
-		logger->print( "new asis=");
-		logger->print(servoLoopTimer.getDueTime());
-		logger->print(" tobe=");
-		logger->print(toBeDueTime);
-		logger->print(" limit=");
-		logger->print(toBeDueTime - servoLoopTimer.getRate()/6 );
-		logger->print("|");
-		logger->print(toBeDueTime + servoLoopTimer.getRate()/6 );
-		logger->println();
-		*/
-	}
 	/*
 	cmdSerial->print("ctrl due t=");
 	cmdSerial->print( now);
@@ -298,5 +286,19 @@ void Controller::adaptSynchronisation(uint32_t now) {
 
 	cmdSerial->print(servoLoopTimer.getDueTime()-now);
 	cmdSerial->println("ms");
+	*/
+
+
+	// integrate the error if error is reasonable
+	/*
+	differenceInt = (differenceInt + difference*10)/2;
+	if ((abs(differenceInt) > 5) && (abs(differenceInt) < 40)) {
+		servoLoopTimer.setRate(CORTEX_SAMPLE_RATE + sgn(differenceInt));
+		logger->print("ratio(");
+		logger->print(servoLoopTimer.getRate());
+		logger->print(",");
+		logger->print(differenceInt);
+		logger->println(")");
+	}
 	*/
 }

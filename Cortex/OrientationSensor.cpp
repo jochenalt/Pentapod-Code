@@ -168,7 +168,7 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 		newZAccel = getZAccel();
 
 		// plausibility check, maybe bot is on its back or IMU delivers rubbish
-		if ((abs(newXAngle) > 30) || (abs(newYAngle)>30)) {
+		if ((abs(newXAngle) > 20) || (abs(newYAngle)>20)) {
 			logger->print("IMU switched off due to xy=(");
 			logger->print(newXAngle);
 			logger->print(',');
