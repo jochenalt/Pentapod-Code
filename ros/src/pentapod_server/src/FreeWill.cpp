@@ -32,7 +32,7 @@ Pose FreeWill::getAutonomousBodyPose() {
 	const realnum standUpRightScariness = 0.3;
 	const realnum sitDownScariness = 0.2;
 
-	Pose result = engineState->currentBodyPose;
+	Pose result = engineState->moderatedBodyPose;
 	if (engineState->currentScaryness > standUpRightScariness) {
 		result.position.z = uprightBodyHeigh;
 	}
