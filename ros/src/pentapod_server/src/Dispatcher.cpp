@@ -572,7 +572,7 @@ void Dispatcher::advertiseBodyPose() {
 	if (Navigator::getInstance().getNavigationStatusType() == NavigationStatusType::NavActive) {
 		Pose toBePose = FreeWill::getInstance().getAutonomousBodyPose();
 		if (abs(toBePose.position.z - advertisedAutonomousBodyPose.position.z) > floatPrecision) {
-			ROS_INFO_STREAM("advertise new autonomous body pose" << toBePose << " scariness=" << Dispatcher::getInstance().getEngineState().currentScaryness );
+			ROS_INFO_STREAM("advertise new autonomous body pose curr=" << engineState.currentBodyPose << " tobe=" << toBePose << " scariness=" << Dispatcher::getInstance().getEngineState().currentScaryness );
 			advertiseBodyPoseToEngine(toBePose);
 			advertisedAutonomousBodyPose = toBePose;
 		}
