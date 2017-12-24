@@ -8,6 +8,6 @@ into_darkness:
   width: 8.0
   ray_min_distance: 0.35            # min length of rays that are used for computation of scariness, use min laser range 
   ray_max_distance: 8.0             # max length of rays that are used for computation of scariness, use max laser range 
-  scaryness_threshold: 0.46         # minimum scariness to consider a hole as dark and scary (scariness=[0..1], a hole with scariness=1 is surrounded completely 
+  scaryness_threshold: 0.50         # minimum scariness to consider a hole as dark and scary (scariness=[0..1], a hole with scariness=1 is surrounded completely 
   close_wall_max_distance: 0.8
   

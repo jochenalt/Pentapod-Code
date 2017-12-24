@@ -45,7 +45,7 @@ weight_acc_lim_x: 3.0
 weight_acc_lim_theta: 3.0
 
 # Optimization weight for satisfying the non-holonomic kinematics. Set to 0 since strafing has equal cost like driving forward
-weight_kinematics_nh: 10.0                  # do not create trajectories for car-like robots but for small pentapods with strifing. I feel that a factor below 1.0 more osscilations 
+weight_kinematics_nh: 30.0                  # do not create trajectories for car-like robots but for small pentapods with strifing. I would like to have it 0, but trajectories osscilate when set too low
 weight_kinematics_forward_drive: 0.0        # do not try to drive forward.
 weight_kinematics_turning_radius: 0.0       # do not try to optimize the turning radius
 weight_inflation: 0.8                       # weight how much the inflation_dist is considered (pretty much to avoid lurking too close too walls)

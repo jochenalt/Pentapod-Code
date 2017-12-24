@@ -66,7 +66,7 @@ const realnum maxAngularSpeedPerSpeed = 0.8;	 // [rad/s /  (mm/s)] = [rad/mm]
 
 // limits of gait frequency (for beautiness of the gait mainly)
 const realnum minGaitFrequency = 0.3; 				// [Hz]
-const realnum maxGaitFrequency = 3.5; 				// [Hz]
+const realnum maxGaitFrequency = 3.0; 				// [Hz]
 
 // maximum speed of virtual foot ref point
 const realnum maxGaitCirclePointSpeed = 50.0; 			// [mm/s}
