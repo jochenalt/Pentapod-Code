@@ -38,7 +38,7 @@ public:
 	void logSensorCalibration();
 	bool isSetup();
 	bool isFullyCalibrated();
-	bool getData(float &xAngle, float &yAngle, float &zAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
+	bool getData(float &xAngle, float &yAngle, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
 	void printData();
 	bool ok();
 	void setDueTime(uint32_t dueTime);
@@ -52,8 +52,6 @@ private:
 	uint8_t systemCalibStatus;
 	uint8_t gyroCalibStatus;
 	uint8_t accelCalibStatus;
-	float avrZAcceleration = 0;
-	float currZAcceleration = 0;
 	TimePassedBy accelSampler;
 	TimePassedBy sensorTimer;
 	TimePassedBy upgradeCalibrationTimer;;
@@ -61,6 +59,7 @@ private:
 	sensors_event_t orientationEvent;
 	sensors_event_t accelerationEvent;
 	uint32_t fetchTime_ms;
+	double imuX,imuY;
 
 	bool setupOk;
 };

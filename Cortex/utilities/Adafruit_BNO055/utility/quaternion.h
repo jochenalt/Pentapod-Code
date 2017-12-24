@@ -200,6 +200,43 @@ public:
         return ret;
     }
 
+    void toEuler( double& x, double& y, double& z)
+    {
+    	// roll (x-axis rotation)
+    	double sinr = +2.0 * (_w * _x + _y * _z);
+    	double cosr = +1.0 - 2.0 * (_x * _x + _y * _y);
+    	x = atan2(sinr, cosr);
+
+    	// pitch (y-axis rotation)
+    	double sinp = +2.0 * (_w * _y - _z * _x);
+    	if (fabs(sinp) >= 1)
+    		y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    	else
+    		y = asin(sinp);
+
+    	// yaw (z-axis rotation)
+    	double siny = +2.0 * (_w * _z + _x * _y);
+    	double cosy = +1.0 - 2.0 * (_y * _y + _z * _z);
+    	z = atan2(siny, cosy);
+    }
+
+    void fromEuler( double roll, double pitch, double yaw)
+    {
+    	Quaternion q;
+            // Abbreviations for the various angular functions
+    	double cy = cos(yaw * 0.5);
+    	double sy = sin(yaw * 0.5);
+    	double cr = cos(roll * 0.5);
+    	double sr = sin(roll * 0.5);
+    	double cp = cos(pitch * 0.5);
+    	double sp = sin(pitch * 0.5);
+
+    	_w= cy * cr * cp + sy * sr * sp;
+    	_x = cy * sr * cp - sy * cr * sp;
+    	_y = cy * cr * sp + sy * sr * cp;
+    	_z = sy * cr * cp - cy * sr * sp;
+    }
+
     Vector<3> toAngularVelocity(double dt) const
     {
         Vector<3> ret;

@@ -206,10 +206,10 @@ void I2CSlave::executeRequest() {
 			}
 
 			// fetch IMU now in order to return most recent data for tilt compensation
-			float imuX,imuY,zAccel;
+			float imuX,imuY;
 			uint8_t newSystem, newGyro, newAcc;
 			orientationSensor.fetchData();
-			orientationSensor.getData(imuX, imuY, zAccel, newSystem, newGyro, newAcc);
+			orientationSensor.getData(imuX, imuY, newSystem, newGyro, newAcc);
 			int imuStatus = newSystem*100 + newGyro*10 + newAcc;
 
 			if (memory.logServo()) {

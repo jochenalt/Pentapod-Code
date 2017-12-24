@@ -12,6 +12,7 @@
 #include "core.h"
 #include "BotMemory.h"
 #include "utilities.h"
+#include "utilities/Adafruit_BNO055/utility/quaternion.h"
 
 OrientationSensor orientationSensor;
 const uint8_t glbSensorID = 55;
@@ -65,8 +66,8 @@ void OrientationSensorData::setDefault () {
 	calib.accel_radius = 1000;
 	calib.mag_radius = 645;
 
-	nullX = 1.3;
-	nullY = -12.0;
+	nullX = -3.0;
+	nullY = 0;
 }
 
 void OrientationSensorData::clear () {
@@ -83,8 +84,8 @@ void OrientationSensorData::clear () {
 	calib.accel_radius = 0;
 	calib.mag_radius = 0;
 
-	nullX = 1.3;
-	nullY = -12.0;
+	nullX = -3.0;
+	nullY = 0;
 }
 
 OrientationSensor::OrientationSensor() {
@@ -138,6 +139,9 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	accelerationEvent.orientation.y = 0;
 	accelerationEvent.orientation.z = 0;
 
+	imuX = 0;imuY = 0;
+
+
 	upgradeCalibrationTimer.setDueTime(millis()-5000);
 	fetchTime_ms = 5;
 }
@@ -151,21 +155,22 @@ float  normDegree(float x) {
 	return x;
 }
 
-bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc) {
+bool OrientationSensor::getData(float &newXAngle, float &newYAngle, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc) {
 	newSystem = systemCalibStatus;
 	newGyro = gyroCalibStatus;
 	newAcc = accelCalibStatus;
 
 	if (setupOk) {
 		// turn the data according to the position of the IMU
-		newXAngle = normDegree(orientationEvent.orientation.y - memory.persMem.imuCalib.nullX) 		 ;
-		newYAngle = normDegree(180.0-orientationEvent.orientation.z - memory.persMem.imuCalib.nullY) ;
+		// newXAngle = normDegree(orientationEvent.orientation.y - memory.persMem.imuCalib.nullX) 		 ;
+		// newYAngle = normDegree(180.0-orientationEvent.orientation.z - memory.persMem.imuCalib.nullY) ;
+		newXAngle = normDegree(orientationEvent.orientation.x);
+		newYAngle = normDegree(orientationEvent.orientation.y);
+
 		if (newYAngle < -150)
 			newYAngle += 180;
 		if (newYAngle > 150)
 			newYAngle -= 180;
-
-		newZAccel = getZAccel();
 
 		// plausibility check, maybe bot is on its back or IMU delivers rubbish
 		if ((abs(newXAngle) > 20) || (abs(newYAngle)>20)) {
@@ -178,20 +183,29 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, float &newZA
 			newXAngle = 0;
 			newYAngle = 0;
 			setupOk = false;
+		} else {
+			logger->print("I(");
+			logger->print(newXAngle);
+			logger->print(",");
+			logger->print(newYAngle);
+			logger->println(")");
+
 		}
 	} else {
 		// if IMU is not working, return 0
 		newXAngle = 0;
 		newYAngle = 0;
-		newZAccel = 0;
 	}
 	return (newSystem > 0) || (newGyro > 0) || (newAcc > 0);
 
 }
 
 void OrientationSensor::nullify() {
-	memory.persMem.imuCalib.nullX = normDegree(orientationEvent.orientation.y);
-	memory.persMem.imuCalib.nullY = normDegree(180.0-orientationEvent.orientation.z) ;
+	memory.persMem.imuCalib.nullX = 0;
+	memory.persMem.imuCalib.nullY = 0;
+
+	memory.persMem.imuCalib.nullX = normDegree(orientationEvent.orientation.x);
+	memory.persMem.imuCalib.nullY = normDegree(orientationEvent.orientation.y) ;
 }
 
 void OrientationSensor::updateCalibration()
@@ -289,10 +303,6 @@ bool OrientationSensor::isSetup() {
 	return setupOk && calibrationRead;
 }
 
-float OrientationSensor::getZAccel() {
-	return currZAcceleration;
-}
-
 void OrientationSensor::setDueTime(uint32_t dueTime) {
 	sensorTimer.setDueTime(dueTime);
 }
@@ -314,7 +324,35 @@ void OrientationSensor::fetchData() {
 		accelerationEvent.acceleration.z = 0;
 
 		bno->getOrientationEvent(&orientationEvent);
+		double imuXRaw, imuYRaw, imuZRaw;
+		imu::Quaternion null;
+		null.fromEuler( M_PI,0,-M_PI/2);
+		// null.fromEuler( 0*radians(memory.persMem.imuCalib.nullY) + M_PI/2.0 , 0*radians(memory.persMem.imuCalib.nullX) - M_PI/2.0,-M_PI/2.0);
 
+		imu::Quaternion normalized = bno->getQuat() * null;
+		normalized.toEuler(imuXRaw,  imuYRaw,  imuZRaw);
+
+		imuX = degrees(-imuXRaw);
+		imuY = degrees(-imuYRaw);
+		orientationEvent.orientation.y = degrees(imuY);
+		orientationEvent.orientation.z = degrees(imuY);
+		/*
+		double x = (imuX );
+		double y = (-imuY);
+		logger->print("Q(");
+		logger->print(imuX);
+		logger->print(",");
+		logger->print(imuY);
+		logger->print(",");
+		logger->print(imuZ);
+		logger->print("|");
+		logger->print(degrees(x));
+		logger->print(",");
+		logger->print(degrees(y));
+
+		logger->println(")");
+		printData();
+		*/
 		uint32_t end = millis();
 
 		fetchTime_ms = (fetchTime_ms + (end - start))/2;
@@ -378,9 +416,9 @@ void OrientationSensor::loop(uint32_t now) {
 
 void OrientationSensor::printData() {
 
-	float imuX,imuY,z;
+	float imuX,imuY;
 	uint8_t newSystem, newGyro, newAcc;
-	orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc);
+	orientationSensor.getData(imuX, imuY, newSystem, newGyro, newAcc);
 	int imuStatus = newSystem*100 + newGyro*10 + newAcc;
 
 	/* Display the floating point data */
@@ -388,8 +426,6 @@ void OrientationSensor::printData() {
 	logger->print(imuX, 1);
 	logger->print(",");
 	logger->print(imuY, 1);
-	logger->print(",");
-	logger->print(z, 1);
 	logger->print(") calib(Sys,Gyro,Acc)=(");
 	logger->print(imuStatus);
 }
