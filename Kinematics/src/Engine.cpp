@@ -507,7 +507,7 @@ void Engine::computeBodyPose() {
 				// PID controller on orientation of x/y axis only, z is not used
 				Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
 				error = toBePose.orientation - imu ;
-				imuCompensation.orientation = imuPID.getPID(error, 0.75, 6.0, 0.0, maxError);
+				imuCompensation.orientation = imuPID.getPID(error, 0.65, 7.0, 0.0, maxError);
 			}
 			else {
 				ROS_WARN_STREAM("IMU value is invalid");
