@@ -52,15 +52,13 @@ private:
 	uint8_t systemCalibStatus;
 	uint8_t gyroCalibStatus;
 	uint8_t accelCalibStatus;
-	TimePassedBy accelSampler;
 	TimePassedBy sensorTimer;
 	TimePassedBy upgradeCalibrationTimer;
 	imu::Quaternion nullOffset;
 
-
 	uint32_t averageSensorReadingTime_ms;
-	double recentXValue;
-	double recentYValue;
+	float recentXValue;
+	float recentYValue;
 
 	bool setupOk;
 };

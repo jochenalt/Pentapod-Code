@@ -35,33 +35,33 @@ template <uint8_t N> class Vector
 public:
     Vector()
     {
-        memset(p_vec, 0, sizeof(double)*N);
+        memset(p_vec, 0, sizeof(float)*N);
     }
 
-    Vector(double a)
+    Vector(float a)
     {
-        memset(p_vec, 0, sizeof(double)*N);
+        memset(p_vec, 0, sizeof(float)*N);
         p_vec[0] = a;
     }
 
-    Vector(double a, double b)
+    Vector(float a, float b)
     {
-        memset(p_vec, 0, sizeof(double)*N);
+        memset(p_vec, 0, sizeof(float)*N);
         p_vec[0] = a;
         p_vec[1] = b;
     }
 
-    Vector(double a, double b, double c)
+    Vector(float a, float b, float c)
     {
-        memset(p_vec, 0, sizeof(double)*N);
+        memset(p_vec, 0, sizeof(float)*N);
         p_vec[0] = a;
         p_vec[1] = b;
         p_vec[2] = c;
     }
 
-    Vector(double a, double b, double c, double d)
+    Vector(float a, float b, float c, float d)
     {
-        memset(p_vec, 0, sizeof(double)*N);
+        memset(p_vec, 0, sizeof(float)*N);
         p_vec[0] = a;
         p_vec[1] = b;
         p_vec[2] = c;
@@ -80,9 +80,9 @@ public:
 
     uint8_t n() { return N; }
 
-    double magnitude() const
+    float magnitude() const
     {
-        double res = 0;
+        float res = 0;
         for (int i = 0; i < N; i++)
             res += p_vec[i] * p_vec[i];
 
@@ -91,7 +91,7 @@ public:
 
     void normalize()
     {
-        double mag = magnitude();
+        float mag = magnitude();
         if (isnan(mag) || mag == 0.0)
             return;
 
@@ -99,9 +99,9 @@ public:
             p_vec[i] /= mag;
     }
 
-    double dot(const Vector& v) const
+    float dot(const Vector& v) const
     {
-        double ret = 0;
+        float ret = 0;
         for (int i = 0; i < N; i++)
             ret += p_vec[i] * v.p_vec[i];
 
@@ -115,7 +115,7 @@ public:
     // cross() with another value for N will result in a link error.
     Vector cross(const Vector& v) const;
 
-    Vector scale(double scalar) const
+    Vector scale(float scalar) const
     {
         Vector ret;
         for(int i = 0; i < N; i++)
@@ -138,22 +138,22 @@ public:
         return *this;
     }
 
-    double& operator [](int n)
+    float& operator [](int n)
     {
         return p_vec[n];
     }
 
-    double operator [](int n) const
+    float operator [](int n) const
     {
         return p_vec[n];
     }
 
-    double& operator ()(int n)
+    float& operator ()(int n)
     {
         return p_vec[n];
     }
 
-    double operator ()(int n) const
+    float operator ()(int n) const
     {
         return p_vec[n];
     }
@@ -174,12 +174,12 @@ public:
         return ret;
     }
 
-    Vector operator * (double scalar) const
+    Vector operator * (float scalar) const
     {
         return scale(scalar);
     }
 
-    Vector operator / (double scalar) const
+    Vector operator / (float scalar) const
     {
         Vector ret;
         for(int i = 0; i < N; i++)
@@ -199,16 +199,16 @@ public:
             p_vec[i] *= 0.01745329251;  //pi/180
     }
 
-    double& x() { return p_vec[0]; }
-    double& y() { return p_vec[1]; }
-    double& z() { return p_vec[2]; }
-    double x() const { return p_vec[0]; }
-    double y() const { return p_vec[1]; }
-    double z() const { return p_vec[2]; }
+    float& x() { return p_vec[0]; }
+    float& y() { return p_vec[1]; }
+    float& z() { return p_vec[2]; }
+    float x() const { return p_vec[0]; }
+    float y() const { return p_vec[1]; }
+    float z() const { return p_vec[2]; }
 
 
 private:
-    double p_vec[N];
+    float p_vec[N];
 };
 
 

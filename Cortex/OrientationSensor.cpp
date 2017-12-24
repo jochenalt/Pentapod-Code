@@ -149,7 +149,7 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 }
 
 // return a value between -180.0° and +180°
-double  normDegree(double x) {
+float  normDegree(float x) {
 	if (x > 180.0)
 		return normDegree(x-360.0);
 	if (x < -180.0)
@@ -325,7 +325,7 @@ void OrientationSensor::fetchData() {
 		//  Get a new sensor event
 		sensors_event_t orientationEvent;
 		bno->getOrientationEvent(&orientationEvent);
-		double imuXRaw, imuYRaw;
+		float imuXRaw, imuYRaw;
 
 		// the following takes 2ms, maybe we should move that to the ODroid
 		imu::Quaternion normalized = bno->getQuat() * nullOffset;
