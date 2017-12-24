@@ -29,7 +29,7 @@ void FreeWill::setup() {
 
 
 Pose FreeWill::getAutonomousBodyPose() {
-	const realnum standUpRightScariness = 0.3;
+	const realnum standUpRightScariness = 0.35;
 	const realnum sitDownScariness = 0.2;
 
 	Pose result = engineState->moderatedBodyPose;

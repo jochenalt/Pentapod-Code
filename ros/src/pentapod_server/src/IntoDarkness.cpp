@@ -64,9 +64,9 @@ void IntoDarkness::feedLaserMap(const LaserScan& newLaserScan) {
 
 // find candidate by xor-ing each grid cell against the pattern below and take all cells with a result of at least 5 as candidates
 //    111
-//   1   1
-//   1 0 1
-//   1   1
+//   10001
+//   10001
+//   10001
 //    111
 
 bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
@@ -74,6 +74,8 @@ bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
 	realnum holeValue = 0;
 	int wallCounter = 0;
 	const int radius = 2;
+	const int freeRadius = 1;
+
 	if ((pivotValue < CandidateThreshold ) && (pivotValue >= 0) && (slamMap->getOccupancyByWorld(x,y) ==  Map::FREE)) {
 		for (int xc = -radius;xc <= radius; xc++) {
 			for (int yc = -radius;yc <= radius; yc++) {
@@ -84,6 +86,13 @@ bool IntoDarkness::isCandidate(millimeter_int x, millimeter_int y) {
 							wallCounter += 2;
 						if (value == LethalThreshold)
 							wallCounter += 1;
+					}
+				}
+				if (((abs(xc) == freeRadius) || (abs(yc) == freeRadius)) &&
+					 ((abs(xc) <= freeRadius) && (abs(yc) <= freeRadius))) {
+					int value = Navigator::getInstance().getGlobalCostmap().getValueByWorld(x+xc*slamMap->getGridSize(),y+yc*slamMap->getGridSize());
+					if (value >= LethalThreshold) {
+						return false;
 					}
 				}
 			}
