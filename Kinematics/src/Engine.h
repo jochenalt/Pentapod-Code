@@ -31,7 +31,7 @@ public:
 	bool setupSimulation();
 
 	// returns true if communication with cortex is o
-	bool cortexCommunicationOk() { return legController.isCortexCommunicationOk(); };
+	bool cortexCommunicationOk() { return cortex.isCortexCommunicationOk(); };
 
 	// call this as often as possible
 	bool ratedloop();
@@ -162,7 +162,7 @@ private:
 	BodyKinematics bodyKinematics;		// compute kinematics of all legs and the body
 	GaitController gaitControl;			// generates the gait
 	LegKinematics kinematics;			// computes kinematics of a single leg
-	CortexClient legController;			// proxy to cortex
+	CortexClient cortex;			    // proxy to cortex
 
 	realnum fourWalkLegRatio;			// ratio between 0 and 1 switching slowly between 5 and 4 legs mode
 	realnum spiderWalkLegRatio;			// ratio between 0 and 1 switching slowly between 5 and 4 legs mode

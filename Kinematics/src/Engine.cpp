@@ -17,16 +17,16 @@ bool Engine::setupProduction(string i2cport, int i2cadr, string cortextSerialPor
 	ROS_DEBUG_STREAM("Engin::setupProduction");
 
 	bool ok = setupCommon();
-	legController.setupCortexCommunication(i2cport, i2cadr, cortextSerialPort, cortexSerialBaudRate);
-	ok = legController.isCortexCommunicationOk();
+	cortex.setupCortexCommunication(i2cport, i2cadr, cortextSerialPort, cortexSerialBaudRate);
+	ok = cortex.isCortexCommunicationOk();
 
 	// if cortex is up and running
 	if (ok) {
 		ROS_DEBUG_STREAM("fetch angles");
 
 		// fetch the angles via cortex to initialize the feet with it
-		ok = legController.fetchAngles(legAngles);
-		Rotation imuOrientation = legController.getIMUOrientation();
+		ok = cortex.fetchAngles(legAngles);
+		Rotation imuOrientation = cortex.getIMUOrientation();
 		imuOrientation.z = 0;
 
 		// compute leg pose out of angles, estimate body pose
@@ -60,7 +60,7 @@ bool Engine::setupCommon() {
 	kinematics.setup(*this);
 	bodyKinematics.setup(*this);
 	gaitControl.setup(*this);
-	legController.setup();
+	cortex.setup();
 
     frontLegPose.position = Point(280,1,80);
 
@@ -141,14 +141,14 @@ void Engine::turnOn() {
 
 	setupCommon();
 
-	if (legController.isCortexCommunicationOk()) {
+	if (cortex.isCortexCommunicationOk()) {
 
 		CriticalBlock block(loopMutex);
 
 		// setup bot and fetch the angles
-		bool ok = legController.setupBot();
-		ok = ok && legController.fetchAngles(legAngles);
-		Rotation imuOrientation = legController.getIMUOrientation();
+		bool ok = cortex.setupBot();
+		ok = ok && cortex.fetchAngles(legAngles);
+		Rotation imuOrientation = cortex.getIMUOrientation();
 		imuOrientation.z = 0;
 
 		if (ok) {
@@ -171,8 +171,8 @@ void Engine::turnOn() {
 										allLegAngles,
 										groundPoints);
 			if (ok) {
-				ok = ok && legController.enableBot();
-				ok = ok && legController.moveSync (allLegAngles, 1000);
+				ok = ok && cortex.enableBot();
+				ok = ok && cortex.moveSync (allLegAngles, 1000);
 
 				// in the last second, gait went on, so impose the old state to not hiccup within the loop
 				imposeFootPointsWorld(footPoints);
@@ -188,7 +188,8 @@ void Engine::turnOn() {
 
 void Engine::turnOff() {
 	ROS_DEBUG_STREAM("turnOff");
-	legController.disableBot();
+	if (cortex.isCortexCommunicationOk())
+		cortex.disableBot();
 	turnedOn = false;
 }
 
@@ -215,7 +216,7 @@ LegPose Engine::getFrontLegPoseWorld() {
 
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	// do not accept any more commands when in danger
-	if (legController.betterShutMeDown())
+	if (cortex.betterShutMeDown())
 		return;
 	// ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
 
@@ -250,15 +251,15 @@ void Engine::loop() {
 	// send last commmand to legController, return
 	// state and distance to grounds
 	// do this first to have a precise timing
-	legController.loop();
+	cortex.loop();
 
 	PentaPointType tmpHipPoints;
 	PentaLegAngleType allLegAngles = legAngles;
 
 	// grab last measurement of foot sensors
-	if (legController.isCortexCommunicationOk()) {
+	if (cortex.isCortexCommunicationOk()) {
 		realnum distance[NumberOfLegs];
-		legController.getDistanceSensor(distance);
+		cortex.getDistanceSensor(distance);
 
 		// LOG(DEBUG) << "Distance" << distance[0]*cos(bodyKinematics.getFootAngle(0)) << " " << distance[1]*cos(bodyKinematics.getFootAngle(1)) << " "<< distance[2]*cos(bodyKinematics.getFootAngle(2)) << " " << distance[3]*cos(bodyKinematics.getFootAngle(3)) << " " << distance[4]*cos(bodyKinematics.getFootAngle(4));
 		// LOG(DEBUG) << "GROUND-z" << gaitControl.getAbsoluteGroundHeight(0) << " " << gaitControl.getAbsoluteGroundHeight(1) << " "<< gaitControl.getAbsoluteGroundHeight(2) << " "<< gaitControl.getAbsoluteGroundHeight(3) << " "<< gaitControl.getAbsoluteGroundHeight(4);
@@ -268,8 +269,8 @@ void Engine::loop() {
 
 		// if not turned on, fetch the angles and update the pose
 		if (!turnedOn) {
-			bool ok = legController.fetchAngles(allLegAngles);
-			Rotation imuOrientation = legController.getIMUOrientation();
+			bool ok = cortex.fetchAngles(allLegAngles);
+			Rotation imuOrientation = cortex.getIMUOrientation();
 			imuOrientation.z = 0;
 			if (ok) {
 				// compute leg pose out of angles, estimate body pose
@@ -311,13 +312,13 @@ void Engine::loop() {
 			hipPoints[i] = tmpHipPoints[i];
 			legAngles[i] = allLegAngles[i];
 		}
-		if (legController.isCortexCommunicationOk()) {
-			legController.setMovement (allLegAngles, CORTEX_SAMPLE_RATE);
+		if (cortex.isCortexCommunicationOk()) {
+			cortex.setMovement (allLegAngles, CORTEX_SAMPLE_RATE);
 		}
 	}
 
 	// did a fatal error occur? Then fall asleep and shutdown
-	if (legController.betterShutMeDown()) {
+	if (cortex.betterShutMeDown()) {
 		switch (shutdownMode) {
 			case NoShutDownActive: {
 				ROS_ERROR_STREAM("Better shut me down due to fatal error. Go down and stop moving.");
@@ -386,7 +387,7 @@ bool Engine::wakeUpIfNecessary() {
 
 void Engine::setTargetSpeed (mmPerSecond newSpeed /* mm/s */) {
 	// do not accept any more commands when in danger
-	if (legController.betterShutMeDown())
+	if (cortex.betterShutMeDown())
 		return;
 
 	targetSpeed = newSpeed;
@@ -394,7 +395,7 @@ void Engine::setTargetSpeed (mmPerSecond newSpeed /* mm/s */) {
 
 void Engine::setTargetAngularSpeed(radPerSecond rotateZ) {
 	// do not accept any more commands when in danger
-	if (legController.betterShutMeDown())
+	if (cortex.betterShutMeDown())
 		return;
 
 	rotateZ = constrain(rotateZ, -maxAngularSpeed, maxAngularSpeed);
@@ -419,7 +420,7 @@ radPerSecond Engine::getTargetAngularSpeedLimited() {
 
 void Engine::setTargetWalkingDirection(angle_rad newWalkingDirection) {
 	// do not accept any more commands when in danger
-	if (legController.betterShutMeDown())
+	if (cortex.betterShutMeDown())
 		return;
 
 	wakeUpIfNecessary();
@@ -497,20 +498,21 @@ void Engine::computeBodyPose() {
 		Pose toBePose = moderatedBodyPose;
 
 		// compensate according to IMU measurement (only when walking)
-		Rotation imu = legController.getIMUOrientation();
+		Rotation imu = cortex.getIMUOrientation();
 		imu.z = 0;
 		Pose imuCompensation;
 		Rotation error;
 		bool modeIsIMUAware = (generalMode == WalkingMode) || (generalMode == TerrainMode);
 		if (modeIsIMUAware) {
-			if (legController.isIMUValueValid()) {
+			if (cortex.isIMUValueValid()) {
 				// PID controller on orientation of x/y axis only, z is not used
 				Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
 				error = toBePose.orientation - imu ;
 				imuCompensation.orientation = imuPID.getPID(error, 0.65, 7.0, 0.0, maxError);
 			}
 			else {
-				ROS_WARN_STREAM("IMU value is invalid");
+				if (cortex.isCortexCommunicationOk())
+					ROS_WARN_STREAM("IMU value is invalid");
 			}
 		} else {
 			// in any other mode than walking keep the IMU in a reset state
