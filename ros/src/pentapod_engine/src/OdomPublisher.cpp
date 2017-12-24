@@ -157,6 +157,7 @@ void OdomPublisher::broadcastState() {
 	string engineStateSerialized = out.str();
     std_msgs::String msg;
     msg.data = engineStateSerialized;
+    ROS_DEBUG_STREAM("broadcastState bodyPose=" << state.moderatedBodyPose);
 
 	state_pub.publish(msg);
 }

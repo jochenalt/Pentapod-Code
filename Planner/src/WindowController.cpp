@@ -181,7 +181,7 @@ void resetBodyPosition() {
 }
 
 void copyBodyPositionToView() {
-	Pose currentBodyPose = EngineProxy::getInstance().getBodyPose();
+	Pose currentBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 	for (CoordDimType coordIdx = X; coordIdx <= Z; coordIdx = CoordDimType(CoordDimType((int)coordIdx) + 1)) {
 		if (bodyPosePositionSpinnerLiveVar[coordIdx] != (int)currentBodyPose.position[coordIdx])
 			bodyPosePositionSpinner[coordIdx]->set_int_val(currentBodyPose.position[coordIdx]);
@@ -615,7 +615,7 @@ void WindowController::UIeventLoop() {
 	createInteractiveWindow(wMain);
 
 	// fetch current pose from Engine
-	inputBodyPose = EngineProxy::getInstance().getBodyPose();
+	inputBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 	EngineProxy::getInstance().getCurrentMovement(inputNoseOrientation, inputSpeed, inputRotate, inputWalkingDirection);
 
 	// copy initial pose into view

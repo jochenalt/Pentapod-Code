@@ -328,7 +328,7 @@ void BotView::display() {
 
 	// fetch current Body data
 	setPose(EngineProxy::getInstance().getNoseOrientation(),
-			EngineProxy::getInstance().getBodyPose(),
+			EngineProxy::getInstance().getImuAwareBodyPose(),
 			EngineProxy::getInstance().getGaitRefPoints(),
 			EngineProxy::getInstance().getHipPoseWorld(),
 			EngineProxy::getInstance().getLegAngles());

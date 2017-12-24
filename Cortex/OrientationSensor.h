@@ -32,19 +32,19 @@ public:
 	void updateCalibration();
 	void loop(uint32_t now);
 	void fetchData();
-	void nullify();
+	void setCurrentOrientationAsOffset();
 	void saveCalibration();
 	void readCalibrationFromEprom();
 	void logSensorCalibration();
 	bool isSetup();
 	bool isFullyCalibrated();
-	bool getData(float &xAngle, float &yAngle, float &zAccel, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
+	bool getData(float &xAngle, float &yAngle, uint8_t &newSystem, uint8_t &newGyro, uint8_t &newAcc);
 	void printData();
 	bool ok();
 	void setDueTime(uint32_t dueTime);
-	uint32_t getFetchTime_ms();
+	uint32_t getAvrSensorReadingTime_ms();
 private:
-	float getZAccel();
+	void computeNullOffsetCorrection();
 	uint32_t setupTime;
 	bool calibrationRead;
 
@@ -52,15 +52,13 @@ private:
 	uint8_t systemCalibStatus;
 	uint8_t gyroCalibStatus;
 	uint8_t accelCalibStatus;
-	float avrZAcceleration = 0;
-	float currZAcceleration = 0;
-	TimePassedBy accelSampler;
 	TimePassedBy sensorTimer;
-	TimePassedBy upgradeCalibrationTimer;;
+	TimePassedBy upgradeCalibrationTimer;
+	imu::Quaternion nullOffset;
 
-	sensors_event_t orientationEvent;
-	sensors_event_t accelerationEvent;
-	uint32_t fetchTime_ms;
+	uint32_t averageSensorReadingTime_ms;
+	float recentXValue;
+	float recentYValue;
 
 	bool setupOk;
 };

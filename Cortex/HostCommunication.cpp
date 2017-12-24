@@ -295,7 +295,7 @@ void cmdMEM() {
 		}
 
 		if (strncasecmp(cmdParam, "nullimu", 7) == 0) {
-			orientationSensor.nullify();
+			orientationSensor.setCurrentOrientationAsOffset();
 			memory.println();
 			memory.save();
 		}
@@ -439,9 +439,9 @@ void cmdBIN() {
 		}
 
 		// collect IMU data
-		float imuX,imuY,z;
+		float imuX,imuY;
 		uint8_t newSystem, newGyro, newAcc;
-		orientationSensor.getData(imuX, imuY, z, newSystem, newGyro, newAcc);
+		orientationSensor.getData(imuX, imuY, newSystem, newGyro, newAcc);
 		int imuStatus = newSystem*1000 + newGyro*100 + newAcc*10 + 3;
 
 		// create response
@@ -500,14 +500,12 @@ void cmdGET() {
 
 				// return IMU's orientation
 				cmdSerial->print(" (");
-				float x,y,z;
+				float x,y;
 				uint8_t newSystem, newGyro, newAcc;
-				orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc);
+				orientationSensor.getData(x, y,  newSystem, newGyro, newAcc);
 				cmdSerial->print(x, 1);
 				cmdSerial->print(' ');
 				cmdSerial->print(y, 1);
-				cmdSerial->print(' ');
-				cmdSerial->print(z, 1);
 				cmdSerial->print(' ');
 				cmdSerial->print(newSystem);
 				cmdSerial->print(newGyro);
@@ -616,15 +614,13 @@ void cmdMOVE() {
 			}
 
 			// return IMU's orientation
-			float x,y,z;
+			float x,y;
 			uint8_t newSystem, newGyro, newAcc;
-			orientationSensor.getData(x, y, z, newSystem, newGyro, newAcc);
+			orientationSensor.getData(x, y, newSystem, newGyro, newAcc);
 			cmdSerial->print(' ');
 			cmdSerial->print(x, 1);
 			cmdSerial->print(' ');
 			cmdSerial->print(y, 1);
-			cmdSerial->print(' ');
-			cmdSerial->print(z, 1);
 			cmdSerial->print(' ');
 			cmdSerial->print(newSystem);
 			cmdSerial->print(newGyro);

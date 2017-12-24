@@ -39,54 +39,54 @@ class Quaternion
 public:
     Quaternion(): _w(1.0), _x(0.0), _y(0.0), _z(0.0) {}
 
-    Quaternion(double w, double x, double y, double z):
+    Quaternion(float w, float x, float y, float z):
         _w(w), _x(x), _y(y), _z(z) {}
 
-    Quaternion(double w, Vector<3> vec):
+    Quaternion(float w, Vector<3> vec):
         _w(w), _x(vec.x()), _y(vec.y()), _z(vec.z()) {}
 
-    double& w()
+    float& w()
     {
         return _w;
     }
-    double& x()
+    float& x()
     {
         return _x;
     }
-    double& y()
+    float& y()
     {
         return _y;
     }
-    double& z()
+    float& z()
     {
         return _z;
     }
 
-    double w() const
+    float w() const
     {
         return _w;
     }
-    double x() const
+    float x() const
     {
         return _x;
     }
-    double y() const
+    float y() const
     {
         return _y;
     }
-    double z() const
+    float z() const
     {
         return _z;
     }
 
-    double magnitude() const
+    float magnitude() const
     {
         return sqrt(_w*_w + _x*_x + _y*_y + _z*_z);
     }
 
     void normalize()
     {
-        double mag = magnitude();
+        float mag = magnitude();
         *this = this->scale(1/mag);
     }
 
@@ -95,11 +95,11 @@ public:
         return Quaternion(_w, -_x, -_y, -_z);
     }
 
-    void fromAxisAngle(const Vector<3>& axis, double theta)
+    void fromAxisAngle(const Vector<3>& axis, float theta)
     {
         _w = cos(theta/2);
         //only need to calculate sine of half theta once
-        double sht = sin(theta/2);
+        float sht = sinf(theta/2);
         _x = axis.x() * sht;
         _y = axis.y() * sht;
         _z = axis.z() * sht;
@@ -107,9 +107,9 @@ public:
 
     void fromMatrix(const Matrix<3>& m)
     {
-        double tr = m.trace();
+        float tr = m.trace();
 
-        double S;
+        float S;
         if (tr > 0)
         {
             S = sqrt(tr+1.0) * 2;
@@ -144,9 +144,9 @@ public:
         }
     }
 
-    void toAxisAngle(Vector<3>& axis, double& angle) const
+    void toAxisAngle(Vector<3>& axis, float& angle) const
     {
-        double sqw = sqrt(1-_w*_w);
+        float sqw = sqrt(1-_w*_w);
         if (sqw == 0) //it's a singularity and divide by zero, avoid
             return;
 
@@ -188,19 +188,72 @@ public:
     Vector<3> toEuler() const
     {
         Vector<3> ret;
-        double sqw = _w*_w;
-        double sqx = _x*_x;
-        double sqy = _y*_y;
-        double sqz = _z*_z;
+        float sqw = _w*_w;
+        float sqx = _x*_x;
+        float sqy = _y*_y;
+        float sqz = _z*_z;
 
-        ret.x() = atan2(2.0*(_x*_y+_z*_w),(sqx-sqy-sqz+sqw));
-        ret.y() = asin(-2.0*(_x*_z-_y*_w)/(sqx+sqy+sqz+sqw));
-        ret.z() = atan2(2.0*(_y*_z+_x*_w),(-sqx-sqy+sqz+sqw));
+        ret.x() = atan2f(2.0*(_x*_y+_z*_w),(sqx-sqy-sqz+sqw));
+        ret.y() = asinf(-2.0*(_x*_z-_y*_w)/(sqx+sqy+sqz+sqw));
+        ret.z() = atan2f(2.0*(_y*_z+_x*_w),(-sqx-sqy+sqz+sqw));
 
         return ret;
     }
 
-    Vector<3> toAngularVelocity(double dt) const
+    void toEuler( float& x, float& y, float& z)
+    {
+    	// roll (x-axis rotation)
+    	float sinr = +2.0 * (_w * _x + _y * _z);
+    	float cosr = +1.0 - 2.0 * (_x * _x + _y * _y);
+    	x = atan2f(sinr, cosr);
+
+    	// pitch (y-axis rotation)
+    	float sinp = +2.0 * (_w * _y - _z * _x);
+    	if (fabs(sinp) >= 1)
+    		y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    	else
+    		y = asinf(sinp);
+
+    	// yaw (z-axis rotation)
+    	float siny = +2.0 * (_w * _z + _x * _y);
+    	float cosy = +1.0 - 2.0 * (_y * _y + _z * _z);
+    	z = atan2f(siny, cosy);
+    }
+
+    void toEuler( float& x, float& y)
+    {
+    	// roll (x-axis rotation)
+    	float sinr = +2.0 * (_w * _x + _y * _z);
+    	float cosr = +1.0 - 2.0 * (_x * _x + _y * _y);
+    	x = atan2f(sinr, cosr);
+
+    	// pitch (y-axis rotation)
+    	float sinp = +2.0 * (_w * _y - _z * _x);
+    	if (fabs(sinp) >= 1)
+    		y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    	else
+    		y = asinf(sinp);
+
+    }
+
+    void fromEuler( float roll, float pitch, float yaw)
+    {
+    	Quaternion q;
+            // Abbreviations for the various angular functions
+    	float cy = cosf(yaw * 0.5);
+    	float sy = sinf(yaw * 0.5);
+    	float cr = cosf(roll * 0.5);
+    	float sr = sinf(roll * 0.5);
+    	float cp = cosf(pitch * 0.5);
+    	float sp = sinf(pitch * 0.5);
+
+    	_w= cy * cr * cp + sy * sr * sp;
+    	_x = cy * sr * cp - sy * cr * sp;
+    	_y = cy * cr * sp + sy * sr * cp;
+    	_z = sy * cr * cp - cy * sr * sp;
+    }
+
+    Vector<3> toAngularVelocity(float dt) const
     {
         Vector<3> ret;
         Quaternion one(1.0, 0.0, 0.0, 0.0);
@@ -248,23 +301,23 @@ public:
         return Quaternion(_w - q._w, _x - q._x, _y - q._y, _z - q._z);
     }
 
-    Quaternion operator/(double scalar) const
+    Quaternion operator/(float scalar) const
     {
         return Quaternion(_w / scalar, _x / scalar, _y / scalar, _z / scalar);
     }
 
-    Quaternion operator*(double scalar) const
+    Quaternion operator*(float scalar) const
     {
         return scale(scalar);
     }
 
-    Quaternion scale(double scalar) const
+    Quaternion scale(float scalar) const
     {
         return Quaternion(_w * scalar, _x * scalar, _y * scalar, _z * scalar);
     }
 
 private:
-    double _w, _x, _y, _z;
+    float _w, _x, _y, _z;
 };
 
 } // namespace

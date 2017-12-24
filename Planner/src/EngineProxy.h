@@ -88,7 +88,7 @@ public:
 	const PentaPointType& getGroundPoints();
 
 	// get current position and orientation of the body
-	Pose getBodyPose();
+	Pose getImuAwareBodyPose();
 
 	// get orientation of the front leg (=nose). Not necessarily the same like WalkingDirection. 0° is towards x-axis
 	angle_rad getNoseOrientation();
