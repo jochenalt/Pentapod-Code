@@ -295,7 +295,7 @@ void cmdMEM() {
 		}
 
 		if (strncasecmp(cmdParam, "nullimu", 7) == 0) {
-			orientationSensor.nullify();
+			orientationSensor.setCurrentOrientationAsOffset();
 			memory.println();
 			memory.save();
 		}

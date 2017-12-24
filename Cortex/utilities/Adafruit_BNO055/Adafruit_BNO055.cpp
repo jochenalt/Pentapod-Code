@@ -315,29 +315,29 @@ imu::Vector<3> Adafruit_BNO055::getVector(adafruit_vector_type_t vector_type)
   {
     case VECTOR_MAGNETOMETER:
       /* 1uT = 16 LSB */
-      xyz[0] = ((double)x)/16.0;
-      xyz[1] = ((double)y)/16.0;
-      xyz[2] = ((double)z)/16.0;
+      xyz[0] = ((float)x)/16.0;
+      xyz[1] = ((float)y)/16.0;
+      xyz[2] = ((float)z)/16.0;
       break;
     case VECTOR_GYROSCOPE:
       /* 1dps = 16 LSB */
-      xyz[0] = ((double)x)/16.0;
-      xyz[1] = ((double)y)/16.0;
-      xyz[2] = ((double)z)/16.0;
+      xyz[0] = ((float)x)/16.0;
+      xyz[1] = ((float)y)/16.0;
+      xyz[2] = ((float)z)/16.0;
       break;
     case VECTOR_EULER:
       /* 1 degree = 16 LSB */
-      xyz[0] = ((double)x)/16.0;
-      xyz[1] = ((double)y)/16.0;
-      xyz[2] = ((double)z)/16.0;
+      xyz[0] = ((float)x)/16.0;
+      xyz[1] = ((float)y)/16.0;
+      xyz[2] = ((float)z)/16.0;
       break;
     case VECTOR_ACCELEROMETER:
     case VECTOR_LINEARACCEL:
     case VECTOR_GRAVITY:
       /* 1m/s^2 = 100 LSB */
-      xyz[0] = ((double)x)/100.0;
-      xyz[1] = ((double)y)/100.0;
-      xyz[2] = ((double)z)/100.0;
+      xyz[0] = ((float)x)/100.0;
+      xyz[1] = ((float)y)/100.0;
+      xyz[2] = ((float)z)/100.0;
       break;
   }
 
@@ -367,7 +367,7 @@ imu::Quaternion Adafruit_BNO055::getQuat(void)
   /* Assign to Quaternion */
   /* See http://ae-bst.resource.bosch.com/media/products/dokumente/bno055/BST_BNO055_DS000_12~1.pdf
      3.6.5.5 Orientation (Quaternion)  */
-  const double scale = (1.0 / (1<<14));
+  const float scale = (1.0 / (1<<14));
   imu::Quaternion quat(scale * w, scale * x, scale * y, scale * z);
   return quat;
 }
