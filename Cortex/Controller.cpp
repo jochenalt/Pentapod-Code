@@ -176,8 +176,7 @@ void Controller::sendCommandToServos() {
 	if (logTimer.isDue()) {
 		cmdSerial->print("TIME(loop=");
 		cmdSerial->print(loopTime_ms);
-		cmdSerial->print("ms ");
-		cmdSerial->print( " servo=");
+		cmdSerial->print("ms servo");
 		cmdSerial->print(servoTime_ms);
 		cmdSerial->print( "ms stat=");
 		cmdSerial->print(statusTime_ms);
@@ -185,7 +184,9 @@ void Controller::sendCommandToServos() {
 		cmdSerial->print(distanceTime_ms);
 		cmdSerial->print("ms comm=");
 		cmdSerial->print(controller.getCommunicationDuration_ms());
-		cmdSerial->println(" ms)");
+		cmdSerial->print("ms imu=");
+		cmdSerial->print(orientationSensor.getAvrSensorReadingTime_ms());
+		cmdSerial->println("ms)");
 	}
 }
 
@@ -213,7 +214,6 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	// and try to send the commands to the servos
 	// right in the middle of two requests.
 	// filter the measurements to have a constant frequency.
-
 
 	// get the time when the controller will fire the next loop
 	uint32_t asIsDueTime = servoLoopTimer.getDueTime();

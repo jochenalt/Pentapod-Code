@@ -220,6 +220,22 @@ public:
     	z = atan2(siny, cosy);
     }
 
+    void toEuler( double& x, double& y)
+    {
+    	// roll (x-axis rotation)
+    	double sinr = +2.0 * (_w * _x + _y * _z);
+    	double cosr = +1.0 - 2.0 * (_x * _x + _y * _y);
+    	x = atan2(sinr, cosr);
+
+    	// pitch (y-axis rotation)
+    	double sinp = +2.0 * (_w * _y - _z * _x);
+    	if (fabs(sinp) >= 1)
+    		y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+    	else
+    		y = asin(sinp);
+
+    }
+
     void fromEuler( double roll, double pitch, double yaw)
     {
     	Quaternion q;

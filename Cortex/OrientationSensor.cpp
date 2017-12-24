@@ -57,17 +57,18 @@ void OrientationSensorData::setDefault () {
 	calib.accel_offset_x = 0;
 	calib.accel_offset_y = 0;
 	calib.accel_offset_z = 0;
-	calib.gyro_offset_x = 65535;
-	calib.gyro_offset_y = 65535;
-	calib.gyro_offset_z = 0;
-	calib.mag_offset_x = 0;
-	calib.mag_offset_y = 0;
-	calib.mag_offset_z = 2;
-	calib.accel_radius = 1000;
-	calib.mag_radius = 645;
+	calib.gyro_offset_x  = 65535;
+	calib.gyro_offset_y  = 65535;
+	calib.gyro_offset_z  = 0;
+	calib.mag_offset_x   = 0;
+	calib.mag_offset_y   = 0;
+	calib.mag_offset_z   = 2;
+	calib.accel_radius   = 1000;
+	calib.mag_radius     = 645;
 
-	nullX = -3.0;
-	nullY = 0;
+	// null values of IMU
+	nullX = 0.0;
+	nullY = 1.3;
 }
 
 void OrientationSensorData::clear () {
@@ -84,8 +85,8 @@ void OrientationSensorData::clear () {
 	calib.accel_radius = 0;
 	calib.mag_radius = 0;
 
-	nullX = -3.0;
-	nullY = 0;
+	nullX = 0.0;
+	nullY = 1.3;
 }
 
 OrientationSensor::OrientationSensor() {
@@ -97,7 +98,7 @@ OrientationSensor::OrientationSensor() {
 }
 
 void OrientationSensor::reset() {
-	// reset IMU but putting LO/HI/LO on reset PIN
+	// reset BNO055 but putting LO/HI/LO on reset PIN
 	pinMode(IMU_RESET_PIN, OUTPUT);
 	digitalWrite(IMU_RESET_PIN, LOW);
 	delay(1);
@@ -132,22 +133,23 @@ void OrientationSensor::setup(i2c_t3* newWireline) {
 	setupTime = millis();
 	calibrationRead = false;
 
-	orientationEvent.orientation.x = 0;
-	orientationEvent.orientation.y = 0;
-	orientationEvent.orientation.z = 0;
-	accelerationEvent.orientation.x = 0;
-	accelerationEvent.orientation.y = 0;
-	accelerationEvent.orientation.z = 0;
+	// most recent values
+	recentXValue = 0;
+	recentYValue = 0;
 
-	imuX = 0;imuY = 0;
+	// null value set with with nullOfset quaternions
+	computeNullOffsetCorrection();
 
-
+	// when entering the loop immediately read the calibration
+	upgradeCalibrationTimer.setRate(5000);
 	upgradeCalibrationTimer.setDueTime(millis()-5000);
-	fetchTime_ms = 5;
+
+	// I measured that
+	averageSensorReadingTime_ms = 3;
 }
 
-
-float  normDegree(float x) {
+// return a value between -180.0° and +180°
+double  normDegree(double x) {
 	if (x > 180.0)
 		return normDegree(x-360.0);
 	if (x < -180.0)
@@ -162,18 +164,17 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, uint8_t &new
 
 	if (setupOk) {
 		// turn the data according to the position of the IMU
-		// newXAngle = normDegree(orientationEvent.orientation.y - memory.persMem.imuCalib.nullX) 		 ;
-		// newYAngle = normDegree(180.0-orientationEvent.orientation.z - memory.persMem.imuCalib.nullY) ;
-		newXAngle = normDegree(orientationEvent.orientation.x);
-		newYAngle = normDegree(orientationEvent.orientation.y);
+		newXAngle = normDegree(recentXValue);
+		newYAngle = normDegree(recentYValue);
 
+		// sometimes the BNO055 is confused and turns the coordinate system
 		if (newYAngle < -150)
 			newYAngle += 180;
 		if (newYAngle > 150)
 			newYAngle -= 180;
 
 		// plausibility check, maybe bot is on its back or IMU delivers rubbish
-		if ((abs(newXAngle) > 20) || (abs(newYAngle)>20)) {
+		if ((abs(newXAngle) > 30) || (abs(newYAngle)>30)) {
 			logger->print("IMU switched off due to xy=(");
 			logger->print(newXAngle);
 			logger->print(',');
@@ -184,12 +185,13 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, uint8_t &new
 			newYAngle = 0;
 			setupOk = false;
 		} else {
+			/*
 			logger->print("I(");
 			logger->print(newXAngle);
 			logger->print(",");
 			logger->print(newYAngle);
 			logger->println(")");
-
+*/
 		}
 	} else {
 		// if IMU is not working, return 0
@@ -200,12 +202,11 @@ bool OrientationSensor::getData(float &newXAngle, float &newYAngle, uint8_t &new
 
 }
 
-void OrientationSensor::nullify() {
-	memory.persMem.imuCalib.nullX = 0;
-	memory.persMem.imuCalib.nullY = 0;
+void OrientationSensor::setCurrentOrientationAsOffset() {
+	memory.persMem.imuCalib.nullX -= recentXValue;
+	memory.persMem.imuCalib.nullY -= recentYValue;
 
-	memory.persMem.imuCalib.nullX = normDegree(orientationEvent.orientation.x);
-	memory.persMem.imuCalib.nullY = normDegree(orientationEvent.orientation.y) ;
+	computeNullOffsetCorrection();
 }
 
 void OrientationSensor::updateCalibration()
@@ -307,104 +308,47 @@ void OrientationSensor::setDueTime(uint32_t dueTime) {
 	sensorTimer.setDueTime(dueTime);
 }
 
-uint32_t OrientationSensor::getFetchTime_ms() {
-	return fetchTime_ms;
+// return average time of sensor reading
+uint32_t OrientationSensor::getAvrSensorReadingTime_ms() {
+	return averageSensorReadingTime_ms;
+}
+
+void OrientationSensor::computeNullOffsetCorrection() {
+	nullOffset.fromEuler( M_PI-radians(memory.persMem.imuCalib.nullX),+radians(memory.persMem.imuCalib.nullY),-M_PI/2);
 }
 
 void OrientationSensor::fetchData() {
 	if (setupOk) {
+		// for synchronisation with odroid we need the average time to fetch data from IMU
 		uint32_t start = millis();
-		/* Get a new sensor event */
-		orientationEvent.orientation.x = 0;
-		orientationEvent.orientation.y = 0;
-		orientationEvent.orientation.z = 0;
 
-		accelerationEvent.acceleration.x = 0;
-		accelerationEvent.acceleration.y = 0;
-		accelerationEvent.acceleration.z = 0;
-
+		//  Get a new sensor event
+		sensors_event_t orientationEvent;
 		bno->getOrientationEvent(&orientationEvent);
-		double imuXRaw, imuYRaw, imuZRaw;
-		imu::Quaternion null;
-		null.fromEuler( M_PI,0,-M_PI/2);
-		// null.fromEuler( 0*radians(memory.persMem.imuCalib.nullY) + M_PI/2.0 , 0*radians(memory.persMem.imuCalib.nullX) - M_PI/2.0,-M_PI/2.0);
+		double imuXRaw, imuYRaw;
 
-		imu::Quaternion normalized = bno->getQuat() * null;
-		normalized.toEuler(imuXRaw,  imuYRaw,  imuZRaw);
-
-		imuX = degrees(-imuXRaw);
-		imuY = degrees(-imuYRaw);
-		orientationEvent.orientation.y = degrees(imuY);
-		orientationEvent.orientation.z = degrees(imuY);
+		// the following takes 2ms, maybe we should move that to the ODroid
+		imu::Quaternion normalized = bno->getQuat() * nullOffset;
+		normalized.toEuler(imuXRaw,  imuYRaw);
+		recentXValue = degrees(-imuXRaw);
+		recentYValue = degrees(-imuYRaw);
+		uint32_t end = millis();
+		averageSensorReadingTime_ms = (averageSensorReadingTime_ms + (end - start))/2;
 		/*
-		double x = (imuX );
-		double y = (-imuY);
 		logger->print("Q(");
 		logger->print(imuX);
 		logger->print(",");
 		logger->print(imuY);
-		logger->print(",");
-		logger->print(imuZ);
-		logger->print("|");
-		logger->print(degrees(x));
-		logger->print(",");
-		logger->print(degrees(y));
-
 		logger->println(")");
-		printData();
 		*/
-		uint32_t end = millis();
 
-		fetchTime_ms = (fetchTime_ms + (end - start))/2;
-		sensorTimer.setDueTime(millis() + sensorTimer.getRate());
-
-		// bno->getAccelerationEvent(&accelerationEvent);
-
-		/*
-
-		logger->print("event =[");
-		logger->print(normDegree(orientationEvent.orientation.y));
-		logger->print(",");
-		logger->print(normDegree(180.0-orientationEvent.orientation.z));
-		logger->print("]");
-		// logger->println();
-
-		// low pass z-aceleration to remove the offset (which is gravity)
-		float accel = accelerationEvent.acceleration.x;
-
-		static LowPassFilter lowpass(0.5);
-		static TimePassedBy sampler;
-		float dT = sampler.dT();
-		float absVelocity = accel*dT;
-		float lp = lowpass.get();
-		float relVelocity = absVelocity - lp;
-
-
-		currZAcceleration +=  relVelocity; // integrate a*dT to get differential velocity without gravity
-		lowpass.set(absVelocity);
-
-
-		logger->print("accel=");
-		logger->print(accel,1);
-
-		logger->print("absvel=");
-		logger->print(absVelocity,3);
-		logger->print("relvel=");
-		logger->print(relVelocity,3);
-
-		logger->print("lowpasZ");
-		logger->print(lp,3);
-		logger->print(",curr=");
-		logger->print(currZAcceleration,3);
-		logger->println();
-
-		*/
+		// set the timer such that a following loop will not call IMU before next due cycle
+		sensorTimer.setDueTime(end + sensorTimer.getRate());
 	}
 }
 
 void OrientationSensor::loop(uint32_t now) {
-	// first reading should no happen before one 300s
-
+	// check for reading calibration every 5s
 	if (setupOk && upgradeCalibrationTimer.isDue_ms(5000, now)) {
 	 	updateCalibration();
 	}
