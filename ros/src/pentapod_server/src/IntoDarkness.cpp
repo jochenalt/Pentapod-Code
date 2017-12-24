@@ -22,8 +22,8 @@ IntoDarkness::~IntoDarkness() {
 
 
 void IntoDarkness::setup(ros::NodeHandle handle) {
-	handle.param<double>("dark_hole_finder/width", width, 6.0);
-	handle.param<double>("pentapod_server/into_darkness/height", height, 6.0);
+	handle.param<double>("pentapod_server/into_darkness/width", width, 8.0);
+	handle.param<double>("pentapod_server/into_darkness/height", height, 8.0);
 	handle.param<double>("pentapod_server/into_darkness/ray_min_distance", rayMinDistance, 0.35);
 	handle.param<double>("pentapod_server/into_darkness/ray_max_distance", rayMaxDistance, 8.00);
 	handle.param<double>("pentapod_server/into_darkness/close_wall_max_distance", wallClosenessMaxDistance, 1.00);
@@ -46,7 +46,6 @@ void IntoDarkness::feedGlobalMap() {
 	costMap = (Map*)&Navigator::getInstance().getGlobalCostmap();
 	pose = (Pose*)&Dispatcher::getInstance().getOdomPose();
 	findDarkAndScaryHoles();
-
 
 	std::stringstream out;
 	vector<Point> holes;
