@@ -29,7 +29,6 @@ void IntoDarkness::setup(ros::NodeHandle handle) {
 	handle.param<double>("pentapod_server/into_darkness/close_wall_max_distance", wallClosenessMaxDistance, 1.00);
 	handle.param<double>("pentapod_server/into_darkness/scaryness_threshold", scarynessthreshold,0.50);
 
-
 	// convert to mm
 	width *= 1000.0;
 	height *= 1000.0;

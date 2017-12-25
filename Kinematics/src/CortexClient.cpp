@@ -349,7 +349,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 10 ,2*CORTEX_SAMPLE_RATE);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 11, 2*CORTEX_SAMPLE_RATE);
     } while (retry(ok));
 
 	if (ok)
@@ -682,6 +682,8 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 	uint32_t sendEnd = millis();
 
 	uint32_t receiveStart = millis();
+	if (expectedResponse > 5)
+		delay_ms(expectedResponse-5);
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - (sendEnd - sendStart));
 	uint32_t receiveEnd= millis();
 
