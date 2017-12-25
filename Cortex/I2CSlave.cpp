@@ -99,6 +99,7 @@ void I2CSlave::executeRequest() {
 		float angles[NumberOfLimbs*NumberOfLegs];
 		int duration_ms;
 		uint32_t now = millis();
+
 		ok = Cortex::ComPackage::readRequest(request, cmd, angles, duration_ms);
 		if (ok) {
 			switch (cmd) {
@@ -112,8 +113,6 @@ void I2CSlave::executeRequest() {
 				controller.disable();
 				break;
 			case Cortex::MOVE: {
-				controller.adaptSynchronisation(now);
-
 				LimbAnglesType legAngles;
 				if (memory.logServo()) {
 					cmdSerial->print("MOVE(");
@@ -232,8 +231,10 @@ void I2CSlave::executeRequest() {
 					controller.loopDuration_ms(),
 					response);
 
-			if (cmd == Cortex::MOVE)
-				controller.getCommunicationDuration_ms() = ((millis()-now) + controller.getCommunicationDuration_ms())/2;
+			if (cmd == Cortex::MOVE) {
+				controller.getCommunicationDuration_us() = ((millis()-now)*1000 + controller.getCommunicationDuration_us())/2;
+				controller.adaptSynchronisation(now);
+			}
 
 			if (memory.logServo()) {
 				cmdSerial->print("END( ");

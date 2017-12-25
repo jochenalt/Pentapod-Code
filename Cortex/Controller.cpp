@@ -59,7 +59,7 @@ bool Controller::setup() {
 	loopTime_ms = 0;
 	round = 0;
 
-	communicationDuration_ms = 0;
+	communicationDuration_us = 0;
 	servoLoopTimer.setRate(CORTEX_SAMPLE_RATE);
 
 	if (memory.persMem.logSetup) {
@@ -111,7 +111,6 @@ TimePassedBy& Controller::getTimer() {
 
 void Controller::sendCommandToServos() {
 	uint32_t start = millis();
-
 	round++;
 
 	uint32_t distancestarttime = start;
@@ -183,8 +182,8 @@ void Controller::sendCommandToServos() {
 		cmdSerial->print( "ms dist=");
 		cmdSerial->print(distanceTime_ms);
 		cmdSerial->print("ms comm=");
-		cmdSerial->print(controller.getCommunicationDuration_ms());
-		cmdSerial->print("ms imu=");
+		cmdSerial->print(controller.getCommunicationDuration_us());
+		cmdSerial->print("us imu=");
 		cmdSerial->print(orientationSensor.getAvrSensorReadingTime_ms());
 		cmdSerial->println("ms)");
 	}
@@ -215,9 +214,6 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	// right in the middle of two requests.
 	// filter the measurements to have a constant frequency.
 
-	// get the time when the controller will fire the next loop
-	uint32_t asIsDueTime = servoLoopTimer.getDueTime();
-
 	// the ideal timing is when the command comes in right between two move commands. Substract the runtime of a loop
 	// additionally, we need to add the time for the response of the I2C call,  which takes 2ms
 	// during the i2c communication, we avoid any other interrupts
@@ -233,72 +229,7 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	const uint32_t cortexI2CFrequency = 400000;
 	const uint32_t cortexCommunicationResponseDuration_ms = cortexI2CFrequency/1000/9/Cortex::ResponsePackageData::Size + 1;
 
-	// final computation to have equal gaps between communication and duty. Give 1ms buffer for clock stretching
-	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms+2;
-
-	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
-	// adapt the controller fire time accordingly.
-	// by this, the time will typically never adapted but only when it moves out of
-	// the middle window between two requests.
-	int difference = toBeDueTime-asIsDueTime;
-
-	if (abs(difference) > 0) {
-		servoLoopTimer.delayNextFire(difference);
-		/*
-		logger->print("synch(");
-		logger->print(servoLoopTimer.getRate());
-		logger->print(",");
-		logger->print(millis());
-		logger->print(")=");
-
-		logger->print(difference);
-		logger->println("ms");
-		*/
-	}
-		/*
-		logger->print("adapt t ");
-		logger->print(difference);
-		logger->print("now=");
-		logger->print(now);
-		logger->print( "asis=");
-		logger->print(asIsDueTime);
-		logger->print( "new asis=");
-		logger->print(servoLoopTimer.getDueTime());
-		logger->print(" tobe=");
-		logger->print(toBeDueTime);
-		logger->print(" limit=");
-		logger->print(toBeDueTime - servoLoopTimer.getRate()/6 );
-		logger->print("|");
-		logger->print(toBeDueTime + servoLoopTimer.getRate()/6 );
-		logger->println();
-		*/
-	/*
-	cmdSerial->print("ctrl due t=");
-	cmdSerial->print( now);
-	cmdSerial->print(" ");
-	cmdSerial->print( asIsDueTime);
-	cmdSerial->print("vs.");
-	cmdSerial->print(toBeDueTime);
-	cmdSerial->print("adapt");
-	cmdSerial->print(servoLoopTimer.getDueTime());
-
-	cmdSerial->print(" ctrl due time=");
-
-	cmdSerial->print(servoLoopTimer.getDueTime()-now);
-	cmdSerial->println("ms");
-	*/
-
-
-	// integrate the error if error is reasonable
-	/*
-	differenceInt = (differenceInt + difference*10)/2;
-	if ((abs(differenceInt) > 5) && (abs(differenceInt) < 40)) {
-		servoLoopTimer.setRate(CORTEX_SAMPLE_RATE + sgn(differenceInt));
-		logger->print("ratio(");
-		logger->print(servoLoopTimer.getRate());
-		logger->print(",");
-		logger->print(differenceInt);
-		logger->println(")");
-	}
-	*/
+	// final computation to have equal gaps between communication and duty. Give 1ms buffer for clock stretching and for the road
+	uint32_t toBeDueTime = millis() + (servoLoopTimer.getRate()  - getCommunicationDuration_us()/1000 - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms;
+	servoLoopTimer.setDueTime(toBeDueTime);
 }

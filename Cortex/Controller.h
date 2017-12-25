@@ -36,7 +36,7 @@ class Controller {
 		TimePassedBy& getTimer();
 		void adaptSynchronisation(uint32_t now);
 		void sendCommandToServos();
-		uint32_t& getCommunicationDuration_ms() { return communicationDuration_ms; };
+		uint32_t& getCommunicationDuration_us() { return communicationDuration_us; };
 
 
 	private:
@@ -46,7 +46,7 @@ class Controller {
 		bool enabled = false;
 		uint32_t loopTime_ms;
 		TimePassedBy servoLoopTimer;
-		uint32_t communicationDuration_ms;
+		uint32_t communicationDuration_us;
 };
 
 extern Controller controller;
