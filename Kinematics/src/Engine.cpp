@@ -765,9 +765,10 @@ void Engine::computeGaitSpeed() {
 		// gait length is 130mm in normal conditions, but is reduced if any disturbance happens
 		// later on, this leads to small steps as long as the disturbance takes
 		realnum gaitStepLength =  130.0
-								  - 30.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)		// the higher, the smaller the gait
-								  - 50.0*abs(bodyHeighSpeed/maxBodyHeightSpeed)				  								// the faster the body height changes, the smaller the gait
+								  - 20.0*(moderatedBodyPose.position.z - minBodyHeight)/(maxBodyHeight - minBodyHeight)		// the higher, the smaller the gait
+								  - 20.0*abs(bodyHeighSpeed/maxBodyHeightSpeed)				  								// the faster the body height changes, the smaller the gait
 								  - 80.0*sqr(minBodyHeight/moderatedBodyPose.position.z) 									// if close to the ground, reduce gait length
+		                          - 30.0*sqr((moderatedBodyPose.position.z)/maxBodyHeight) 									// if close to the ground, reduce gait length
 								  - 30.0*abs(angularSpeedAcc)/maxAngularSpeedAcceleration									// the more angular acceleration, the smaller the gait
 								  - 30.0*abs(speedAcc)/maxAcceleration;														// the more acceleration, the smaller the gait
 		gaitStepLength =  constrain(gaitStepLength, 40.0, 135.0); // take care that there is a minimum gait step length
