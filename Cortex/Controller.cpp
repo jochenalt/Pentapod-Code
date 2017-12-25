@@ -234,7 +234,7 @@ void Controller::adaptSynchronisation(uint32_t now) {
 	const uint32_t cortexCommunicationResponseDuration_ms = cortexI2CFrequency/1000/9/Cortex::ResponsePackageData::Size + 1;
 
 	// final computation to have equal gaps between communication and duty. Give 1ms buffer for clock stretching
-	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms;
+	uint32_t toBeDueTime = now + (servoLoopTimer.getRate()  - loopDuration_ms())/2 + cortexCommunicationResponseDuration_ms+2;
 
 	// if the as-is time is not ok, i.e. not in the middle 50% of two requests,
 	// adapt the controller fire time accordingly.

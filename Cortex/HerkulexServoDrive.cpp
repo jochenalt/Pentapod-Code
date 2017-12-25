@@ -46,11 +46,11 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	// Thigh and Foot must be very reactive to IMU tilt
 	case THIGH:
 		herkulexMgr->setPositionKi(configData->herkulexMotorId, 450);
-		herkulexMgr->setPositionKp(configData->herkulexMotorId, 400);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 600);
 		break;
 	case FOOT:
 		herkulexMgr->setPositionKi(configData->herkulexMotorId, 250);
-		herkulexMgr->setPositionKp(configData->herkulexMotorId, 220);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
 		break;
 	// Knee and HIP can be softer
 	case KNEE:
@@ -58,17 +58,16 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 		herkulexMgr->setPositionKi(configData->herkulexMotorId, 200);
 		herkulexMgr->setPositionKp(configData->herkulexMotorId, 100);
 		break;
-
 	}
 
-	// do not use trapezoid but rectangular speed profile in order to keep moving without vibration
-	// otherwise reacting to terrain or IMU changes takes too long
+	// do not use trapezoid but rectangular speed profile in order to move
+	// without vibrations. Otherwise the trapezoid profile would permanently stop and start within one loop
 	herkulexMgr->setAccelerationRatio(configData->herkulexMotorId, 0); // ratio of acceleration within in one loop (default: 25[%])
 
-	// start without torque, will be switched by command
+	// start without torque, will be turn on by enable command
 	herkulexMgr->torqueOFF(configData->herkulexMotorId);
 
-	// these LED's can't be seen in the leg
+	// these LED's can't be seen in the leg. Whatever.
 	herkulexMgr->setLed(configData->herkulexMotorId, LED_BLUE); // on hold, disabled
 
 	// get/check status of servo

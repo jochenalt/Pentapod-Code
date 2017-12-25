@@ -20,35 +20,42 @@ const int NumberOfLegs = 5;
 // 4 servos per leg
 const int NumberOfLimbs= 4;
 
+// total number of servos
 const int NumberOfServos = NumberOfLimbs * NumberOfLegs;
 
-// kinematic is allowed to compute 5 degrees more than we mechanically will allow
+// physically, a servo angle may go 5° above joint limit (used in cortex only)
 const float angleLimitOffset = 5;
 
+// use that instead of double or float in order to be flexible depending on FPU
 typedef double realnum;
 
-const bool crawlCreepy = true;
-
-// CAD dimensions of the pentapod, measured within the CAD model
+// CAD dimensions of the pentapod, measured within the Inventor CAD model
 namespace CAD {
+	// data measured from Body.iam
 	constexpr static realnum HipNickAngle  = 19.29; 			// angle each hip goes down against the xy pane
 	constexpr static realnum HipCentreDistance  = 52.601+0.1;	// distance between z-axis and the circle where all hips are arranged, but orthoginal to hip mounting pane
 	constexpr static realnum HipLength= 35.528;                 // distance between hip mounting point and hip joint axis
 	constexpr static realnum HipMountingPointOverBody = 53.145; // distance between the body's as and the hip mointing point
+
+	// measured from HipJoint.ipt
 	constexpr static realnum HipJointLength = 45.249;
 
+	// measured from Thigh.iam
 	constexpr static realnum ThighLength = 53.500;
 	constexpr static realnum ThighKneeGapLength = 0.5;
 	constexpr static realnum KneeJointLength = 81.018;
+
+	// measured from Foot.iam
 	constexpr static realnum FootLength = 135.928;
 	constexpr static realnum DampenerLength = 5.0;				// length of the silicone dampener
 	constexpr static realnum BodyHipHeight = 14.478;
 	constexpr static realnum FootDampenerDiameter = 24.0;		// diameter of the rubber at the leg's end
-	constexpr static realnum LaserSensorHeight = 75.8;			// height of the lasers measurement plane above the xy-plane
 
+	// measured from Body.iam
+	constexpr static realnum LaserSensorHeight = 75.8;			// height of the lasers measurement plane above the xy-plane
 };
 
-// define the absolute limits, gear ratio and limits of an leg
+// static data of a limb
 struct LimbConfiguration {
 	enum LimbIdentifier {HIP=0, THIGH=1, KNEE=2, LOWERLEG=3 };
 	LimbIdentifier 	id;
@@ -126,7 +133,7 @@ bool isError();
 #define CORTEX_CLI_SERIAL_BAUDRATE 230400
 
 // status information of servos
-// HERKULEX STATUS ERROR - See Manual p39
+// HERKULEX STATUS ERROR - See Herkulex Manual p39
 #define H_STATUS_OK					 0x00
 #define H_ERROR_INPUT_VOLTAGE 		 0x01
 #define H_ERROR_POS_LIMIT			 0x02
@@ -148,11 +155,12 @@ enum ServoStatusType { 	SERVO_STAT_OK,				// no error
 						SERVO_STAT_NO_COMM,			// communication error between cortex and servo
 					};
 
+// return long name of servo status
 std::string getServoStatusTypeName(ServoStatusType stat);
 
 // every [ms] the motors get a new position. 11.2ms is the unit
 // Herkulex servos are working with, sample rate should be a multiple of that
-// With 22.4ms, we run at 45Hz
+// With 25ms, we run at 40Hz
 #define HERKULEX_MIN_SAMPLE 11.2
 #define CORTEX_SAMPLE_RATE  25
 
