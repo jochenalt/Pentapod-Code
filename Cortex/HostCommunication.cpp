@@ -177,31 +177,6 @@ void cmdINFO() {
 	}
 }
 
-// the only command that does not require a checksum
-void cmdCHECKSUM() {
-	char* onoff = 0;
-	bool paramsOK = hostComm.sCmd.getParamString(onoff);
-
-	if (paramsOK) {
-		bool valueOK = false;
-		if (strncasecmp(onoff, "on", 2) == 0) {
-			hostComm.sCmd.useChecksum(true);
-			valueOK = true;
-		}
-		if (strncasecmp(onoff, "off", 3) == 0) {
-			hostComm.sCmd.useChecksum(false);
-			valueOK = true;
-		}
-		if (valueOK) {
-			replyOk();
-		}
-		else
-			replyError(PARAM_WRONG);
-	} else {
-			replyError(PARAM_NUMBER_WRONG);
-	}
-}
-
 void headlessSetup();
 
 void cmdSETUP() {
@@ -239,37 +214,6 @@ void cmdDISABLE(){
 	else
 		replyError(PARAM_NUMBER_WRONG);
 }
-
-void cmdCONSOLE(){
-	char* param = 0;
-	bool paramsOK = hostComm.sCmd.getParamString(param);
-	paramsOK = hostComm.sCmd.endOfParams(false) && paramsOK;
-
-	if (paramsOK) {
-		if (strncasecmp(param, "off", 2) == 0) {
-			hostComm.sCmd.useChecksum(true);
-			memory.persMem.logSetup = false;
-			memory.persMem.logServo = false;
-
-			replyOk();
-			return;
-		}
-		if (strncasecmp(param, "on", 3) == 0) {
-			hostComm.sCmd.useChecksum(false);
-			memory.persMem.logSetup = true;
-			memory.persMem.logServo = true;
-
-			replyOk();
-			return;
-
-		}
-		setError(PARAM_WRONG);
-		replyError(getLastError());
-	}
-	else
-		replyError(PARAM_NUMBER_WRONG);
-}
-
 
 void cmdMEM() {
 	char* cmdParam = 0;
@@ -739,8 +683,6 @@ void HostCommunication::setup() {
 	}
 
 	sCmd.setDefaultHandler(cmdUnrecognized);   // Handler for command that isn't matched  (says "What?")
-
-	sCmd.useChecksum(false);
 
 	setupTime = millis();
 }

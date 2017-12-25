@@ -62,10 +62,7 @@ class SerialCommand {
 	bool getNamedParamString(const char* name, char* &param,   bool &paramSet);
 	bool getNamedParamFloat(const char* name,  float &param,   bool &paramSet);
 
-	void computeChecksum(char *str, uint8_t &checksum);
 	bool endOfParams(bool potentialChecksum= true);
-	void useChecksum(bool really);
-	bool isChecksum() { return checksum; };
 
 	uint8_t getErrorCode() { return errorCode;};
 
@@ -93,8 +90,6 @@ class SerialCommand {
     char *last;                         // State variable used by strtok_r during processing
     char *savelast;                         // State variable used by strtok_r during processing
 	
-	bool withChecksum;
-	uint8_t checksum;
 	uint8_t errorCode;
 };
 

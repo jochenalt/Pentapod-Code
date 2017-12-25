@@ -45,13 +45,8 @@ SerialCommand::SerialCommand()
     last(NULL),
 	savelast(NULL)
 {
-	withChecksum = true;
 	strcpy(delim, " "); // strtok_r needs a null-terminated string
 	clearBuffer();
-}
-
-void SerialCommand::useChecksum(bool really) {
-	withChecksum = really;
 }
 
 /**
@@ -97,10 +92,8 @@ void SerialCommand::readSerial() {
       #endif
 
 	  savelast = last;
-	  checksum = 0;
       char *command = strtok_r(buffer, delim, &last);   // Search for command at start of buffer
       if (command != NULL) {
-		computeChecksum(command,checksum);
         boolean matched = false;
         for (int i = 0; i < commandCount; i++) {
           #ifdef SERIALCOMMAND_DEBUG
@@ -182,8 +175,6 @@ void SerialCommand::clearBuffer() {
 char *SerialCommand::next() {
   savelast = last;
   char* nextParam = strtok_r(NULL, delim, &last);
-  if (nextParam != NULL)
-	computeChecksum(nextParam,checksum);
 
   return nextParam;
 }
@@ -192,13 +183,6 @@ void SerialCommand::unnext() {
 	last = savelast;
 }
 
-
-void SerialCommand::computeChecksum(char *str, uint8_t& checksum) {
-	int c;
-	while ( (c = *str++)) {
-		checksum = ((checksum << 5) + checksum) + c; /* hash * 33 + c */
-	}
-}
 
 
 bool SerialCommand::getParamInt(int16_t &param) {
@@ -292,33 +276,7 @@ bool SerialCommand::getNamedParamString(const char* paramName,  char* &param,   
 }
 
 bool SerialCommand::endOfParams(bool potentialChecksum) {
-	if (withChecksum && potentialChecksum) {
-		// compute checksum of command and all params
-		errorCode = NO_ERROR;
-		int16_t paramCheckSum = 0;
-		bool chksumSet = false;
-		uint8_t saveCheckSum = checksum;
-		/* bool paramOK =  */getNamedParamInt("chk",paramCheckSum, chksumSet);
-		if (chksumSet) {
-			
-			if (paramCheckSum == saveCheckSum) {
-				return true;
-			}
-			else {
-				cmdSerial->print(F("chk!="));
-				cmdSerial->print(saveCheckSum);
-
-				cmdSerial->print(F(")"));
-				errorCode = CHECKSUM_WRONG;
-				return false;
-			}
-		}
-		cmdSerial->print(F("chksum expected"));
-		errorCode = CHECKSUM_EXPECTED;
-		return false;		
-	} else {
-		return true;
-	}
+	return true;
 }
 
 bool SerialCommand::getParamString(char* &param) {

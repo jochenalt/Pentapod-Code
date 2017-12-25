@@ -132,11 +132,9 @@ CortexCommandDefinitionType commDef[CortexCommandDefinitionType::NumberOfCommand
 	//cmd ID										Name, 		timeout,	function pointer
 	{ CortexCommandDefinitionType::ECHO_CMD,	    "ECHO", 	500, 		cmdECHO },
 	{ CortexCommandDefinitionType::HELP_CMD,	    "HELP", 	500, 		cmdHELP },
-	{ CortexCommandDefinitionType::CONSOLE_CMD,		"CONSOLE", 	500, 		cmdCONSOLE},
 	{ CortexCommandDefinitionType::ENABLE_CMD,		"ENABLE", 	1000, 		cmdENABLE},
 	{ CortexCommandDefinitionType::DISABLE_CMD,		"DISABLE", 	200, 		cmdDISABLE },
 	{ CortexCommandDefinitionType::SETUP_CMD,		"SETUP", 	4000, 		cmdSETUP},
-	{ CortexCommandDefinitionType::CHECKSUM_CMD,	"CHECKSUM", 200, 		cmdCHECKSUM},
 	{ CortexCommandDefinitionType::MEM_CMD,	        "MEM", 		200, 		cmdMEM},
 	{ CortexCommandDefinitionType::CONFIG_CMD,      "CONFIG", 	100, 		cmdCONFIG},
 	{ CortexCommandDefinitionType::GET_CMD,	        "GET", 		300, 		cmdGET},

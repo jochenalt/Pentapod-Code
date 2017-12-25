@@ -173,24 +173,22 @@ std::string getServoStatusTypeName(ServoStatusType stat);
 // The asci terminal is used to manually key in commands via putty, regular communication is
 // done with binary packages (for bandwidth reasons). These binary packages follow a regular "bin" command
 struct CortexCommandDefinitionType {
-	static const int NumberOfCommands = 15;
+	static const int NumberOfCommands = 13;
 
 	// all possible commands the cortex provides
-	enum CortexCommandType { 		ECHO_CMD = 0,
-									HELP_CMD = 1,
-									CONSOLE_CMD = 2,
-									ENABLE_CMD = 3,
-									DISABLE_CMD = 4,
-									CHECKSUM_CMD = 5,
-									MEM_CMD = 6,
-									GET_CMD = 7,
-									CONFIG_CMD = 8,
-									MOVE_CMD = 9,
-									MOVELEG_CMD = 10,
-									LOG_CMD = 11,
-									INFO_CMD = 12,
-									SETUP_CMD = 13,
-									BIN_CMD = 14
+	enum CortexCommandType { 		ECHO_CMD = 0,			// echos the parameter
+									HELP_CMD = 1, 			// prints out a help screen
+									ENABLE_CMD = 2,			// puts torque on all servos
+									DISABLE_CMD = 3,		// turns off torque from servos
+									MEM_CMD = 4,			// prints contents of eeprom
+									GET_CMD = 5,			// gets angles of all servos
+									CONFIG_CMD = 6,			// configures limits and null values of a servo
+									MOVE_CMD = 7,			// moves all servos to a certain angle
+									MOVELEG_CMD = 8,		// moves one leg to certain angles
+									LOG_CMD = 9,			// turns on/off logging
+									INFO_CMD = 10,			// prints ic2 information and stuff
+									SETUP_CMD = 11,			// calls setup procedure
+									BIN_CMD = 12			// passes a binary commmand
 	};
 
 	CortexCommandType cmd;
