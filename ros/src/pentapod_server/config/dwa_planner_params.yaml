@@ -25,5 +25,5 @@ vth_samples: 40
 
 sim_time: 5.0
 
-controller_frequency: 5
+controller_frequency: 3
 
