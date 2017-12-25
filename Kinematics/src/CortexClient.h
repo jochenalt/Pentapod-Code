@@ -93,7 +93,6 @@ private:
 	bool checkReponseCode(string &s, string& plainResponse, bool &OkOrNOk);
 	void sendString(string str);
 
-	bool cmdCHECKSUM(bool onOff);
 	bool cmdECHO(string s);
 	bool cmdSETUP();
 	bool cmdDISABLE();
@@ -109,8 +108,6 @@ private:
 	bool cmdLOGservos(bool onOff);
 	bool cmdLOGtest(bool onOff);
 	bool cmdINFO(bool &enabled);
-
-	void computeChecksum(string s,uint8_t& hash);
 
 	SerialPort serialCmd; 			// serial port to transfer commands
 

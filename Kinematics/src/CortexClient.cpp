@@ -95,28 +95,6 @@ Rotation CortexClient::getIMUOrientation() {
 };
 
 
-
-bool CortexClient::cmdCHECKSUM(bool onOff) {
-	string cmd = "";
-	CortexCommandDefinitionType* comm = CortexCommandDefinitionType::get(CortexCommandDefinitionType::CortexCommandType::CHECKSUM_CMD);
-
-	bool ok = false;
-	do {
-		cmd.append(comm->name);
-		if (onOff)
-			cmd.append(" on");
-		else
-			cmd.append(" off");
-
-		string responseStr;
-		ok = callMicroController(cmd, responseStr, comm->timeout_ms);
-		if (ok)
-			withChecksum = onOff;
-	} while (retry(ok));
-
-	return ok;
-}
-
 bool CortexClient::cmdSETUP() {
 	betterShutdown = false;
 	return cmdBinaryCommand(Cortex::Command::SETUP);
@@ -574,16 +552,6 @@ bool CortexClient::checkReponseCode(string &s, string &plainReponse, bool &OkOrN
 	return false;
 }
 
-void CortexClient::computeChecksum(string s,uint8_t& hash) {
-	int c;
-
-	int i = 0;
-	while ((c = s[i++])) {
-		if (c != ' ')
-			hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-	}
-}
-
 bool  CortexClient::setupBot() {
 	return cmdSETUP();
 }
@@ -657,15 +625,6 @@ realnum CortexClient::getCortexVoltage() {
 
 
 void CortexClient::sendString(string str) {
-	uint8_t checksum = 0;
-	computeChecksum(str, checksum);
-
-	if (withChecksum) {
-		// add checksum to string
-		str +=" chk=";
-		str += std::to_string(checksum); // ITOS(checksum);
-	}
-
 	serialCmd.sendString(str);
 }
 
