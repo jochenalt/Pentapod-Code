@@ -23,7 +23,7 @@ TrajectoryPlannerROS:
   oscillation_reset_dist: 10.00
   heading_lookahead: 1.0
 
-controller_frequency: 5 # same like publish frequency of local planner
+controller_frequency: 3 # same like publish frequency of local planner
 
 # Default recover behaviour is rotating a lot, which is quite useless for a holonomic robot
 clearing_rotation_allowed: false
