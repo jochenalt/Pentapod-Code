@@ -175,6 +175,7 @@ bool Cortex::ComPackage::createResponse(Status status, float angles[NumberOfLimb
 					ResponsePackageData& response ) {
 	int idx = 0;
 
+
 	// write magic number
 	addUnsignedByte(MagicNumber, response.data, idx);
 
@@ -186,10 +187,11 @@ bool Cortex::ComPackage::createResponse(Status status, float angles[NumberOfLimb
 		addSmallFloat(angles[i], response.data, idx);
 
     // write distances
-    for (int i = 0;i<NumberOfLegs;i++)
-        addUnsignedByte(distance[i], response.data, idx);
+	for (int i = 0;i<NumberOfLegs;i++) {
+		addUnsignedByte(distance[i], response.data, idx);
+    }
 
-    // write servo status
+	// write servo status
     for (int i = 0;i<NumberOfLegs;i++) {
         int status = servoStatus[i*NumberOfLimbs] +
                       (servoStatus[i*NumberOfLimbs+1] << 4);

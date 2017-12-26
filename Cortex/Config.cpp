@@ -79,12 +79,11 @@ void LegConfigType::setDefaults() {
 	memory.persMem.legs[4].serialId = 2; // leg 4 uses Serial6
 
 	// null values of the distance sensors
-	memory.persMem.legs[0].nullDistance = 18;
-	memory.persMem.legs[1].nullDistance = 30;
-	memory.persMem.legs[2].nullDistance = 31;
-	memory.persMem.legs[3].nullDistance = 26;
-	memory.persMem.legs[4].nullDistance = 32;
-
+	memory.persMem.legs[0].nullDistance = 17;
+	memory.persMem.legs[1].nullDistance = 25;
+	memory.persMem.legs[2].nullDistance = 21;
+	memory.persMem.legs[3].nullDistance = 10;
+	memory.persMem.legs[4].nullDistance = 19;
 }
 
 

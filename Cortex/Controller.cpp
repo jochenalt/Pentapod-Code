@@ -125,6 +125,7 @@ void Controller::sendCommandToServos() {
 	for (int leg = 0;leg<NumberOfLegs;leg++) {
 		legs[leg].fetchDistanceResponse();
 	}
+
 	uint32_t distanceendtime = millis();
 
 	// iterate over all legs limb-wise, such

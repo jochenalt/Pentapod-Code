@@ -169,7 +169,7 @@ void Leg::fetchDistanceResponse() {
 
 int Leg::getDistance() {
 	if (distanceStatus == VL6180X_ERROR_NONE)
-		return distance;
+		return constrain(distance, 0,199);
 	return 200 + distanceStatus;
 }
 
