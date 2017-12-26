@@ -297,7 +297,7 @@ bool CortexClient::cmdBinaryGetAll() {
 
 	cortexCommRetryCounter = 0;
 	do {
-		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 70,100);
+		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 50, 70,100);
 	} while (retry(ok));
 
 	if (ok)
@@ -327,7 +327,7 @@ bool CortexClient::cmdBinaryMOVE(
 
     cortexCommRetryCounter = 0;
     do {
-        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 11, 2*CORTEX_SAMPLE_RATE);
+        ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 7, 11, 2*CORTEX_SAMPLE_RATE);
     } while (retry(ok));
 
 	if (ok)
@@ -358,7 +358,7 @@ bool CortexClient::cmdBinaryCommand(Cortex::Command cmd) {
 	bool ok = Cortex::ComPackage::createCommandRequest(cmd, request);
 	cortexCommRetryCounter = 0;
 	do {
-		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 0, 7000);
+		ok = binaryCallMicroController(request.data, Cortex::RequestPackageData::Size, response.data, Cortex::ResponsePackageData::Size, 0,0, 7000);
 	} while (retry(ok));
 
 	if (ok) {
@@ -628,7 +628,7 @@ void CortexClient::sendString(string str) {
 	serialCmd.sendString(str);
 }
 
-bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize, uint8_t response[], int responseSize, int expectedResponse, int timeout_ms) {
+bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize, uint8_t response[], int responseSize, int wait_time_ms, int expectedResponse, int timeout_ms) {
 	resetError();
 
 	uint32_t sendStart = millis();
@@ -641,8 +641,8 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 	uint32_t sendEnd = millis();
 
 	uint32_t receiveStart = millis();
-	if (expectedResponse > 5)
-		delay_ms(expectedResponse-5);
+	if (wait_time_ms > 0)
+		delay_ms(wait_time_ms);
 	int bytesRead = i2cPort.receiveArray(response, responseSize, timeout_ms - (sendEnd - sendStart));
 	uint32_t receiveEnd= millis();
 

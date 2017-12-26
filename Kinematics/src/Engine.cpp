@@ -240,7 +240,7 @@ PentaPointType Engine::getHipPoints() {
 
 bool Engine::ratedloop() {
 	if (mainLoopTimeSample.isDue(CORTEX_SAMPLE_RATE)) {
-		CriticalBlock criticalBlock(loopMutex);
+		// CriticalBlock criticalBlock(loopMutex);
 		loop();
 		return true;
 	}
