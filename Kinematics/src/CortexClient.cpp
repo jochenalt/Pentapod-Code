@@ -567,12 +567,6 @@ bool CortexClient::disableBot() {
 }
 
 
-bool CortexClient::info(bool &pEnabled) {
-	ROS_INFO_STREAM("get bot");
-	return cmdINFO(pEnabled);
-}
-
-
 bool CortexClient::fetchAngles(PentaLegAngleType& legAngles) {
 	bool ok = cmdGETall();
 	legAngles = getLegAngles();
@@ -618,7 +612,7 @@ void CortexClient::getDistanceSensor(realnum distance[NumberOfLegs]) {
 	}
 }
 
-// retrieve values of distance sensors
+// retrieve voltage of batteries, should be 14.7V
 realnum CortexClient::getCortexVoltage() {
 	return measuredBatteryVoltage;
 }
@@ -664,6 +658,7 @@ bool CortexClient::binaryCallMicroController(uint8_t request[], int requestSize,
 
 	return ok;
 }
+
 
 
 bool CortexClient::callMicroController(string& cmd, string& response, int timeout_ms) {

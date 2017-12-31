@@ -83,10 +83,9 @@
 #define H_ERROR_DRIVER_FAULT  		 0x20
 #define H_ERROR_EEPREG_DISTORT		 0x40
 
-// HERKULEX Broadcast Servo ID
 const byte BROADCAST_ID = 0xFE;
 
-enum ServoType {HERKULEX_DRS_0101=0, HERKULEX_DRS_0201=1, HERKULEX_DRS_0401=3};
+enum ServoType {HERKULEX_DRS_0101=0, HERKULEX_DRS_0201=1, HERKULEX_DRS_0401=4, INVALID_MODEL = -1};
 
 class HerkulexClass {
 public:
@@ -96,7 +95,7 @@ public:
   void  initialize();
   byte  stat(int servoID);
   void  ACK(int valueACK);
-  byte  model();
+  ServoType  model();
   void  set_ID(int ID_Old, int ID_New);
   void  clearError(int servoID);
 
@@ -109,8 +108,15 @@ public:
   void  changeBaudRate(int servoID, int baudNum);
   void  setAccelerationMax(int servoID, int accelerationMax);
   void  setAccelerationRatio(int servoID, int accelerationRatio);
-  void  setPositionKi(int servoID, int Ki);
-  void  setPositionKp(int servoID, int Kp);
+  void  setPositionKi(int servoID, int Ki = 0);
+  void  setPositionKp(int servoID, int Kp = 46);
+  void  setPositionKd(int servoID, int Kp = 0);
+  void  setDeadZone(int servoID, int value  = 0 );
+  void  setSaturatorSlope(int servoID, int value = 0);
+  void  setSaturatorOffset(int servoID, int value = 0);
+  void  setPWMOffset(int servoID, int value = 0);
+  void  setPositionFeedForward1stGain(int servoID, int value = 0);
+  void  setPositionFeedForward2stGain(int servoID, int value = 0);
 
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);

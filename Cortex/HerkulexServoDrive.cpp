@@ -43,20 +43,17 @@ void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* new
 	// make servos stiffer by increasing P and I value of PI controller
 	// (dont dare to set D, all my trials ended up in jerks and vibration)
 	switch (newConfigData->id) {
-	// Thigh and Foot must be very reactive to IMU tilt
 	case THIGH:
-		herkulexMgr->setPositionKi(configData->herkulexMotorId, 450);
 		herkulexMgr->setPositionKp(configData->herkulexMotorId, 600);
 		break;
 	case FOOT:
-		herkulexMgr->setPositionKi(configData->herkulexMotorId, 250);
-		herkulexMgr->setPositionKp(configData->herkulexMotorId, 300);
 		break;
-	// Knee and HIP can be softer
 	case KNEE:
+		break;
 	case HIP:
-		herkulexMgr->setPositionKi(configData->herkulexMotorId, 200);
-		herkulexMgr->setPositionKp(configData->herkulexMotorId, 100);
+		herkulexMgr->setPositionKp(configData->herkulexMotorId, 450);
+		herkulexMgr->setPositionKd(configData->herkulexMotorId, 450);
+
 		break;
 	}
 

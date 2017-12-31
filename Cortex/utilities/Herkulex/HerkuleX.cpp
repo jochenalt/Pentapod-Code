@@ -191,15 +191,57 @@ void HerkulexClass::setAccelerationMax(int servoID, int accelerationMax)
 	writeRegistryRAM(servoID,9,accelerationMax, 1);
 }
 
+void  HerkulexClass::setPositionKp(int servoID, int Ki)
+{
+	writeRegistryRAM(servoID, 24, Ki, 2);
+}
+
+
+void  HerkulexClass::setPositionKd(int servoID, int Ki)
+{
+	writeRegistryRAM(servoID, 26, Ki, 2);
+}
+
+
 void  HerkulexClass::setPositionKi(int servoID, int Ki)
 {
 	writeRegistryRAM(servoID, 28, Ki, 2);
 }
 
-void  HerkulexClass::setPositionKp(int servoID, int Kp)
+void  HerkulexClass::setPositionFeedForward1stGain(int servoID, int value /* default 0 */)
 {
-	writeRegistryRAM(servoID, 24, Kp, 2);
+	writeRegistryRAM(servoID, 30, value, 2);
 }
+
+
+void  HerkulexClass::setPositionFeedForward2stGain(int servoID, int value /* default 0 */)
+{
+	writeRegistryRAM(servoID, 32, value, 2);
+}
+
+
+void  HerkulexClass::setDeadZone(int servoID, int value /* default 0 */)
+{
+	writeRegistryRAM(servoID, 10, value, 1);
+}
+
+void  HerkulexClass::setSaturatorOffset(int servoID, int value /* default 0 */)
+{
+	writeRegistryRAM(servoID, 11, value, 1);
+}
+
+void  HerkulexClass::setSaturatorSlope(int servoID, int value /* default 0 */)
+{
+	writeRegistryRAM(servoID, 12, value, 2);
+}
+
+void  HerkulexClass::setPWMOffset(int servoID, int value /* default 0 */)
+{
+	if (value < 0)
+		value += 128;
+	writeRegistryRAM(servoID, 14, value, 1);
+}
+
 
 // ACK  - 0=No Replay, 1=Only reply to READ CMD, 2=Always reply
 void HerkulexClass::ACK(int valueACK)
@@ -230,8 +272,8 @@ void HerkulexClass::ACK(int valueACK)
 
 }
 
-// model - 1=0101 - 2=0201
-byte HerkulexClass::model()
+// model - 1=0101, 2=0201, 4=401
+ServoType HerkulexClass::model()
 {
 	pSize = 0x09;               // 3.Packet size 7-58
 	pID   = 0xFE;	            // 4. Servo ID
@@ -266,10 +308,10 @@ byte HerkulexClass::model()
 	ck1=checksum1(data,lenghtString);	//6. Checksum1
 	ck2=checksum2(ck1);					//7. Checksum2
 
-	if (ck1 != dataEx[5]) return -1; //checksum verify
-	if (ck2 != dataEx[6]) return -2;
+	if (ck1 != dataEx[5]) return INVALID_MODEL; //checksum verify
+	if (ck2 != dataEx[6]) return INVALID_MODEL;
 		
-	return dataEx[7];			// return status
+	return (ServoType)dataEx[7];			// return status
 
 }
 
@@ -910,7 +952,7 @@ void HerkulexClass::writeRegistryRAM(int servoID, int address, int writeByte, in
   }
   if (length == 2) {
 	  data[2]=writeByte  & 0X00FF;            // 10. Write error=0
-	  data[3]=(writeByte & 0xFF00) >> 8;            // 10. Write error=0
+	  data[3]=(writeByte & 0xFF00) >> 8;      // 10. Write error=0
 
   }
   lenghtString=2+length;            // lenghtData

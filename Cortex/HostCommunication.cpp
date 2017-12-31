@@ -655,10 +655,10 @@ void cmdHELP() {
 		cmdSerial->println(F("\tMEM saveimucalib\t - save current imu calibration"));
 		cmdSerial->println(F("\tINFO            \t - show data like IMU I2C address, voltage, "));
 
-		cmdSerial->println(F("\tCONFIG <LegNo> <LimbNo> [min=<min>] [max=<max>] [null=<nullvalue>] "));
-		cmdSerial->println(F("\tGET <LegNo> : {ang=<angle> min=<min> max=<max> null=<null>}"));
+		cmdSerial->println(F("\tCONFIG <LegNo:0,1...> <LimbNo> [min=<min>] [max=<max>] [null=<nullvalue>] "));
+		cmdSerial->println(F("\tGET <LegNo:0,1...> : {ang=<angle> min=<min> max=<max> null=<null>}"));
 		cmdSerial->println(F("\tGET all : (i=<id> n=<name> ang=<angle> min=<min> max=<max> null=<null>)"));
-		cmdSerial->println(F("\tMOVELEG <LegNo> <angle1> <angle2> <angle3> <angle4> <durationMS>"));
+		cmdSerial->println(F("\tMOVELEG <LegNo:0,1...> <angle1> <angle2> <angle3> <angle4> <durationMS>"));
 		cmdSerial->println(F("\tMOVE 	(<angle1> <angle2> <angle3>)x5 <durationMS>"));
 		cmdSerial->println(F("\tLOG <setup|servo|stepper|encoder|loop> <on|off>"));
 
