@@ -51,22 +51,22 @@ void LegConfigType::setDefaults() {
 
 	memory.persMem.legs[1].limbs[HIP].nullAngle		=-1.0;
 	memory.persMem.legs[1].limbs[THIGH].nullAngle	=-2.0;
-	memory.persMem.legs[1].limbs[KNEE].nullAngle	= 12.0;
+	memory.persMem.legs[1].limbs[KNEE].nullAngle	= 5.0;
 	memory.persMem.legs[1].limbs[FOOT].nullAngle	=-13.0;
 
 	memory.persMem.legs[2].limbs[HIP].nullAngle		= 2.0;
 	memory.persMem.legs[2].limbs[THIGH].nullAngle	= 1.0;
-	memory.persMem.legs[2].limbs[KNEE].nullAngle	=-4.0;
+	memory.persMem.legs[2].limbs[KNEE].nullAngle	=-7.0;
 	memory.persMem.legs[2].limbs[FOOT].nullAngle	= 2.0;
 
 	memory.persMem.legs[3].limbs[HIP].nullAngle		= 3.0;
 	memory.persMem.legs[3].limbs[THIGH].nullAngle	= 15.0;
-	memory.persMem.legs[3].limbs[KNEE].nullAngle	= -3.0;
+	memory.persMem.legs[3].limbs[KNEE].nullAngle	= 2.0;
 	memory.persMem.legs[3].limbs[FOOT].nullAngle	= 5.0;
 
 	memory.persMem.legs[4].limbs[HIP].nullAngle		= -13.3;
 	memory.persMem.legs[4].limbs[THIGH].nullAngle	= 1.0;
-	memory.persMem.legs[4].limbs[KNEE].nullAngle	= 4.2;
+	memory.persMem.legs[4].limbs[KNEE].nullAngle	= -15.2;
 	memory.persMem.legs[4].limbs[FOOT].nullAngle	= -5.0;
 
 	// each legs gets one serial line.
