@@ -59,17 +59,14 @@ public:
 	// returns true, if values returned by getIMUOrientations are accurate and have been measured recently (i.e. within the last cycle)
 	bool isIMUValueValid(int sinceMeasurement = CORTEX_SAMPLE_RATE*2);
 
-	// retrieve voltage in cortex
+	// retrieve voltage of batteries, should be 14.7V
 	realnum getCortexVoltage();
 
-	// return recently received angles
+	// return recently received angles (came as return value of last move command)
 	const PentaLegAngleType& getLegAngles() { return lastLegAngles; };
 
-	// switch on/off the bot. Requires setupBot upfront
+	// switch on/off the bot. Requires call of setupBot upfront
 	void actLikePower(bool onOff);
-
-	// get status information about the bot
-	bool info(bool &enabled);
 
 	// send movement commands to the cortex periodically
 	void loop();
