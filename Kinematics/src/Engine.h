@@ -128,6 +128,13 @@ public:
 	// get the full state of the bot
 	void getState(EngineState &data);
 
+	// set gait Radius explicitely
+	void setGaitRadius (realnum newGaitRadius) { inputGaitRadius = newGaitRadius; };
+
+	enum ScriptType { NO_SCRIPT, WALL_APPEARS, HILL_APPEARS, BOX_APPEARS };
+	void executeScript(ScriptType script );
+	void getScript(ScriptType& script, int &milestonenumber);
+
 private:
 
 	bool wakeUpIfNecessary();
@@ -147,6 +154,9 @@ private:
 	// returns true, if setup and enabled
 	LegKinematics& getLegKinematics() { return kinematics; };
 
+	void scriptState(milliseconds delay, bool continous = false);
+
+
 	void computeBodyPose();				// moderates the set body pose
 	void computeGaitCircleRadius();	// compute the radius of the points where the feet touch the ground
 	void computeGaitSpeed();			// compute the gait speed depending on the body speed
@@ -158,6 +168,7 @@ private:
 	void computeWakeUpProcedure();		// start up bot by sorting legs first and going up
 	void computeAcceleration();				// compute acceleration, turning etc.
 	void computeWarpCompensation();		// compute compensation of warping legs
+	void computeScript();				// compute current script
 
 	BodyKinematics bodyKinematics;		// compute kinematics of all legs and the body
 	GaitController gaitControl;			// generates the gait
@@ -186,6 +197,8 @@ private:
 	realnum lastGaitStepLength;
 	PentaLegAngleType legAngles;			// current angles of all legs
 
+	realnum inputGaitRadius;		    // set explicite gait radius if not set automatically
+
 	ExclusiveMutex loopMutex;			// loop is running in an own thread. Mutex to synchronize that with commands
 	Pose lastModeratedBodyPose;
 	TimeSamplerStatic mainLoopTimeSample;
@@ -203,6 +216,16 @@ private:
 	SpatialPID imuPID;
 	bool turnedOn;
 	bool isSetup;
+
+	// script execution variables
+	ScriptType currentScript;
+	int currentScriptMilestone;
+	milliseconds targetScriptMilestoneDelay;
+	milliseconds scriptMilestoneDelay;
+	milliseconds saveScriptMilestoneDelay;
+	milliseconds lastScriptInvocation;
+	bool continousScriptComputation;
+	bool targetContinousScriptComputation;
 
 };
 

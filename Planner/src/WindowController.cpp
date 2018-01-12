@@ -65,6 +65,10 @@ const int MovementResetID = 4;
 GLUI_RadioGroup* gaitRadioGroup = NULL;
 int gaitLiveVar = 0;
 
+GLUI_RadioGroup* scriptRadioGroup = NULL;
+GLUI_StaticText* scriptText = NULL;
+int scriptLiveVar = 0;
+
 GLUI_Checkbox* mapControl = NULL;
 int mapLiveVar;
 
@@ -111,6 +115,23 @@ void copySingleLegPoseToView() {
 			poseSpinner[i]->set_int_val(value); // set only when necessary, otherwise the cursor blinks
 		}
 	}
+}
+
+void copyScriptToView() {
+	Engine::ScriptType script;
+	int scriptMileStone;
+	EngineProxy::getInstance().getCurrentScript(script, scriptMileStone);
+	string milestoneStr = "";
+
+	if (script == Engine::ScriptType::NO_SCRIPT) {
+		scriptRadioGroup->set_int_val(-1);
+	}
+	else {
+		scriptRadioGroup->set_int_val((int)script-1);
+		milestoneStr = "milestone ";
+		milestoneStr.append(intToString(scriptMileStone));
+	}
+	scriptText->set_text(milestoneStr.c_str());
 }
 
 LegPose getSingleLegPoseFromView() {
@@ -254,6 +275,7 @@ void idleCallback( void )
 		copyMovementToView();
 		copyBodyPositionToView();
 		copySingleLegPoseToView();
+		copyScriptToView();
 		WindowController::getInstance().mainBotView.postRedisplay();
 		doSomething = true;
 	}
@@ -382,6 +404,13 @@ void copyMovementToView() {
 void gaitModeControlCallback(int widgetNo) {
 	EngineProxy::getInstance().setGaitMode(GaitModeType(gaitLiveVar));
 }
+
+
+// called by control that defines the GaitModeType. Pushes the new gate mode to bot
+void scriptControlCallback(int widgetNo) {
+	EngineProxy::getInstance().executeScript((Engine::ScriptType)(scriptLiveVar+1));
+}
+
 
 // called by control that switched the general mode of the bot (on, off, terrain, walking)
 void powerControlCallback(int controlNo) {
@@ -538,9 +567,6 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 	windowHandle->add_column_to_panel(interactivePanel, false);
 
 	GLUI_Panel* powerPanel = new GLUI_Panel(interactivePanel,"Gait Panel", GLUI_PANEL_NONE);
-
-	text = new GLUI_StaticText(powerPanel,"Power Panel");
-	text->set_alignment(GLUI_ALIGN_CENTER);
 	GLUI_Panel* powerInputPanel = new GLUI_Panel(powerPanel,"Power Panel", GLUI_PANEL_RAISED);
 
 	powerCheckbox = new GLUI_Checkbox(powerInputPanel, "Power", &powerLiveVar, PowerCheckBoxID,powerControlCallback);
@@ -551,6 +577,18 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 
 	terrainModeCheckbox = new GLUI_Checkbox(powerInputPanel, "Terrain", &terrainLiveVar, TerrainModeCheckBoxID,powerControlCallback);
 	terrainModeCheckbox->set_int_val(0);
+
+
+	GLUI_Panel* scriptPanel = new GLUI_Panel(interactivePanel,"Script Panel", GLUI_PANEL_NONE);
+	GLUI_Panel* scriptInputPanel = new GLUI_Panel(scriptPanel,"Script Panel", GLUI_PANEL_RAISED);
+	scriptText = new GLUI_StaticText(scriptInputPanel,"");
+	scriptText->set_alignment(GLUI_ALIGN_CENTER);
+
+	scriptRadioGroup =  new GLUI_RadioGroup(scriptInputPanel, &scriptLiveVar, 0, scriptControlCallback);
+	scriptRadioGroup->set_int_val(-1);
+	new GLUI_RadioButton(scriptRadioGroup, "wall appears");
+	new GLUI_RadioButton(scriptRadioGroup, "hill appears");
+	new GLUI_RadioButton(scriptRadioGroup, "box appears");
 
 	return windowHandle;
 }

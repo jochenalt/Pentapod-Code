@@ -502,11 +502,12 @@ void Engine::computeBodyPose() {
 		imu.z = 0;
 		Pose imuCompensation;
 		Rotation error;
+		Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
+
 		bool modeIsIMUAware = (generalMode == WalkingMode) || (generalMode == TerrainMode);
 		if (modeIsIMUAware) {
 			if (cortex.isIMUValueValid()) {
 				// PID controller on orientation of x/y axis only, z is not used
-				Rotation maxError (radians(15.0), radians(15.0), radians(0.0));
 				error = toBePose.orientation - imu ;
 				imuCompensation.orientation = imuPID.getPID(error, 0.50, 7.0, 0.0, maxError);
 			}
@@ -515,8 +516,8 @@ void Engine::computeBodyPose() {
 					ROS_WARN_STREAM("IMU value is invalid");
 			}
 		} else {
-			// in any other mode than walking keep the IMU in a reset state
-			imuPID.reset();
+			// in any other mode than walking keep the IMU in a reset state, so slowly reset it
+			imuPID.getPID(Rotation(), 0.50, 7.0, 0.0, maxError);
 		}
 		currentBodyPose = toBePose;
 		currentBodyPose.orientation += imuCompensation.orientation;
@@ -1074,4 +1075,219 @@ void Engine::computeAcceleration() {
 
 		getBodyKinematics().getCurrentNoseOrientation() = noseOrientation;
 	}
+}
+
+
+void Engine::scriptState(milliseconds delay, bool continous) {
+	targetScriptMilestoneDelay = delay;
+	targetContinousScriptComputation = continous;
+	if (!continousScriptComputation) {
+		scriptMilestoneDelay = targetScriptMilestoneDelay;
+		saveScriptMilestoneDelay = targetScriptMilestoneDelay;
+	}
+	continousScriptComputation = targetContinousScriptComputation;
+}
+
+void Engine::computeScript() {
+	// wait until time of milestone is up
+	if ((currentScript == Engine::ScriptType::NO_SCRIPT))
+		return;
+
+	if (scriptMilestoneDelay > 0) {
+		uint32_t now = millis();
+		if (lastScriptInvocation > 0) {
+			uint32_t timeDiff = now - lastScriptInvocation;
+			if (scriptMilestoneDelay > timeDiff) {
+				scriptMilestoneDelay -= timeDiff;
+				lastScriptInvocation = now;
+			}
+			else {
+				scriptMilestoneDelay = 0;
+				currentScriptMilestone++;
+				continousScriptComputation = false;
+			}
+		}
+		lastScriptInvocation = now;
+	}
+
+	// wait for next milestone?
+	realnum continousComputationRatio = 1.0;
+	if (scriptMilestoneDelay > 0) {
+		continousComputationRatio = (float)(saveScriptMilestoneDelay-scriptMilestoneDelay)/(float)saveScriptMilestoneDelay;
+
+		if (!continousScriptComputation)
+			return;
+	}
+
+	// last delay passed, execute new milestone
+ 	switch (currentScript) {
+	case WALL_APPEARS: {
+		switch (currentScriptMilestone) {
+			case 0:
+				turnOn();
+				wakeUp();
+				setTargetSpeed(1);
+				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,0,0)));
+				scriptState(7000);
+				break;
+			case 1:
+				setTargetSpeed(0);
+				setTargetBodyPose(Pose(Point(0,0,140),Rotation(0,radians(-15),0)));
+				scriptState(1000);
+				break;
+			case 2:
+				setTargetBodyPose(Pose(Point(20,0,80),Rotation(0,radians(10),0)));
+				scriptState(1000);
+				break;
+			case 3:
+				setTargetBodyPose(Pose(Point(0,0,130),Rotation(0,radians(0),0)));
+				scriptState(500);
+				break;
+			case 4:
+				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,radians(0),0)));
+				scriptState(500);
+				break;
+			case 5:
+				setTargetAngularSpeed(M_PI/4.0);
+				scriptState(2500);
+				break;
+			case 6:
+				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 7:
+				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 8:
+				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 9:
+				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 10:
+				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 11:
+				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
+				setTargetAngularSpeed(0);
+				setTargetSpeed(1);
+				scriptState(800);
+				break;
+			case 12:
+				currentScript = NO_SCRIPT;
+				break;
+		}
+		break;
+	}
+	case HILL_APPEARS: {
+		switch (currentScriptMilestone) {
+			case 0:
+				turnOn();
+				wakeUp();
+				setTargetSpeed(0);
+				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,0,0)));
+				scriptState(5000);
+				break;
+			case 1:
+				setGaitMode(FourLegWalk);
+				setTargetFrontLegPose(Point(250,0,100));
+				setTargetSpeed(0);
+				setTargetBodyPose(Pose(Point(25,0,140),Rotation(radians(0),radians(-7),0)));
+				scriptState(2000);
+				break;
+			case 2:
+				setTargetSpeed(1);
+				scriptState(500);
+				break;
+			case 3: {
+				realnum duration = 10000;
+				realnum alpha = continousComputationRatio*M_PI*2*duration/1000;
+				Point p(sin(alpha)*40,cos(alpha),70);
+				setTargetFrontLegPose(Point(300 + sin(alpha/2)*40,sin(alpha)*40,150+cos(alpha)*40));
+				scriptState(duration, true);
+				break;
+			}
+			case 4:
+				setTargetFrontLegPose(Point(280,0,150));
+				scriptState(500);
+				break;
+			case 5:
+				currentScript = NO_SCRIPT;
+		};
+		break;
+	}
+	case BOX_APPEARS: {
+		switch (currentScriptMilestone) {
+		case 0:
+			turnOn();
+			wakeUp();
+			setTargetSpeed(1);
+			setTargetBodyPose(Pose(Point(0,0,70),Rotation(0,0,0)));
+			scriptState(7000);
+			break;
+		case 1:
+			setTargetSpeed(1);
+			scriptState(2000);
+			break;
+		case 2:
+			setGaitRadius(280);
+			setTargetBodyPose(Pose(Point(0,0,70),Rotation(radians(0),radians(0),0)));
+			scriptState(400);
+			break;
+		case 3: {
+			realnum duration = 10000;
+			realnum alpha = continousComputationRatio*M_PI*duration/1000;
+			Point p(sin(alpha)*50,cos(alpha)*50,70);
+			setTargetBodyPose(Pose(p,Rotation(radians(5)*cos(alpha),-radians(5)*sin(alpha),0)));
+			scriptState(duration, true);
+			break;
+		}
+		case 4:
+			setTargetBodyPose(Pose(Point(0,0,90),Rotation(radians(0),radians(0),0)));
+			scriptState(500);
+			break;
+		case 5:
+			currentScript = NO_SCRIPT;
+			break;
+		default:
+			break;
+		};
+		break;
+	}
+	case NO_SCRIPT:
+		return;
+
+	default:
+		break;
+	}
+}
+
+void Engine::executeScript(ScriptType script ) {
+	currentScript = script;
+	currentScriptMilestone = 0;
+	scriptMilestoneDelay = 0;
+	saveScriptMilestoneDelay = 0;
+	lastScriptInvocation = 0;
+	continousScriptComputation = false;
+	targetContinousScriptComputation = false;
+}
+
+void Engine::getScript(ScriptType& script, int &milestonenumber) {
+	script = currentScript;
+	milestonenumber = currentScriptMilestone;
+
 }

@@ -42,13 +42,14 @@ public:
 	static EngineProxy& getInstance();
 	void setupRemoteEngine(string engineWebserverHost, int engineWebserverPort);
 	void setupSimulatedEngine();
-
+	void setupCommon();
 	void loop();
 
 	// switch on/off the bot
 	void turnOn();
 	void turnOff();
 	bool isTurnedOn();
+	void executeScript (Engine::ScriptType script);
 
 	// start wakeup and fallasleep procedure
 	// void wakeUp(const Pose& targetBodyPose);
@@ -71,7 +72,6 @@ public:
 
 	// switch to another gait type including a switching procedure, which might take some time
 	void setGaitMode(GaitModeType gaitType);
-
 
 	GaitModeType getGaitMode();
 
@@ -173,6 +173,8 @@ public:
 	bool isEstimatedPoseAvailable();
 	bool isNavigationStatusAvailable();
 
+	void getCurrentScript(Engine::ScriptType & newScript, int &newScriptMilestone);
+
 private:
 	void updateLaserScan();
 	void updateGlobalMaps();
@@ -182,7 +184,6 @@ private:
 	void updateTrajectory();
 	void updatePlan();
 	void updateNavigation();
-
 
 	bool newLaserScanAvailable = false;
 	bool newBotDataAvailable = false;
@@ -222,6 +223,9 @@ private:
 
 	Pose navigationGoal;
 	NavigationStatusType navigationStatus;
+
+	Engine::ScriptType currentScript;
+	int currentScriptMilestone;
 };
 
 #endif /* KINEMATICSDISPATCHER_H_ */
