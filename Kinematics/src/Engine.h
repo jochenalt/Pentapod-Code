@@ -110,11 +110,11 @@ public:
     Pose getOdomPose() { return Pose(gaitControl.getCurrentPositionWorld(), Rotation(0,0,getCurrentNoseOrientation())); };
 
     // return the mode in terms of sleeping, walking, terrain-walking,...
-	GeneralEngineModeType getGeneralMode() { return generalMode; };
-	bool isAwake() { return ((generalMode == WalkingMode)  || (generalMode == TerrainMode)); };
+	GeneralEngineModeType getGeneralEngineMode() { return generalMode; };
+	bool isWalking() { return ((generalMode == WalkingMode)  || (generalMode == TerrainMode)); };
 
 	// return true, if we can receive speed commands
-	bool isListeningToMovements() { return (generalMode == GeneralEngineModeType::WalkingMode) || (generalMode == GeneralEngineModeType::TerrainMode); };
+	bool isListeningToMovements() { return isWalking(); };
 
 	// to be called when distance sensors have a new distance measured
 	angle_deg getFootAngle(int legNo) { return bodyKinematics.getFootsDeviationAngleFromZ(legNo); };

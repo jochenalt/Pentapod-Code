@@ -107,9 +107,9 @@ bool Engine::setupCommon() {
 
 void Engine::wakeUp() {
 	ROS_DEBUG_STREAM("wake up");
-	if ((generalMode != WalkingMode) && (generalMode != TerrainMode) && (generalMode != LiftBody)){
+	if (!isWalking() && (generalMode != LiftBody)){
 		generalMode = LiftBody;
-		inputBodyPose.position.z = standardBodyHeigh;
+		inputBodyPose.position.z = standardBodyHeight;
 		bodyKinematics.startupPhase(true);
 		gaitControl.setAdaptionTypeToGaitRefPoint(ADAPT_TO_GAIT_POINT_WHERE_APPROPRIATE);
 	}
@@ -221,7 +221,7 @@ void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	// ROS_DEBUG_STREAM("setTargetBodyPose(" << newBodyPose << "," << immediately <<")");
 
 	// dont take this if we actually wake up
-	if ((generalMode == WalkingMode) || (generalMode == TerrainMode) || (generalMode == LiftBody) || (generalMode == FallASleep))
+	if (isWalking() || (generalMode == LiftBody) || (generalMode == FallASleep))
 		inputBodyPose = newBodyPose;
 	if (immediately) {
 		currentBodyPose = newBodyPose;
@@ -329,10 +329,10 @@ void Engine::loop() {
 				shutdownMode = InitiateShutDown;
 				targetSpeed = 0;
 				targetAngularSpeed = 0;
-				inputBodyPose = Pose(Point(0,0,standardBodyHeigh), Rotation(0,0,0));
+				inputBodyPose = Pose(Point(0,0,standardBodyHeight), Rotation(0,0,0));
 			}
 			case InitiateShutDown: {
-				if ((currentBodyPose.position.z - standardBodyHeigh < floatPrecision)
+				if ((currentBodyPose.position.z - standardBodyHeight < floatPrecision)
 					 && (getCurrentSpeed() < floatPrecision)) {
 					ROS_ERROR_STREAM("Better shut me down due to fatal error. Fall asleep.");
 					fallAsleep();
@@ -386,7 +386,7 @@ bool Engine::wakeUpIfNecessary() {
 		}
 	}
 
-	return ((generalMode == WalkingMode) || (generalMode == TerrainMode));
+	return !isWalking();
 }
 
 void Engine::setTargetSpeed (mmPerSecond newSpeed /* mm/s */) {
@@ -492,7 +492,7 @@ void Engine::computeBodyPose() {
 			realnum bodySpeed = maxBodyHeightSpeed;
 ;
 
-			if ((generalMode != WalkingMode) && (generalMode != TerrainMode))
+			if (!isWalking())
 				gaitControl.setAdaptionTypeToGaitRefPoint(DO_NOT_ADAPT_GAIT_POINT);
 			if ((generalMode == LiftBody) || (generalMode == FallASleep))
 				bodySpeed = maxLiftBodyPositionSpeed;
@@ -506,7 +506,7 @@ void Engine::computeBodyPose() {
 		imu.z = 0;
 		Pose imuCompensation;
 		Rotation error;
-		bool modeIsIMUAware = (generalMode == WalkingMode) || (generalMode == TerrainMode);
+		bool modeIsIMUAware = isWalking();
 		if (modeIsIMUAware) {
 			if (cortex.isIMUValueValid()) {
 				// PID controller on orientation of x/y axis only, z is not used
@@ -950,7 +950,6 @@ void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 	}
 }
 
-
 void Engine::computeSensoredDistance() {
 	// average all differences between assumed and measured ground
 	realnum totalGroundHeight = 0;
@@ -1000,7 +999,7 @@ void Engine::getState(EngineState &data) {
 	data.currentAngularSpeed = getCurrentAngularSpeed();
 	data.currentWalkingDirection = getCurrentWalkingDirection();
 	data.currentGaitMode = getGaitMode();
-	data.engineMode = getGeneralMode();
+	data.engineMode = getGeneralEngineMode();
 	data.currentGaitRefPoints = getGaitRefPoints();
 	data.frontLegPose = getFrontLegPoseWorld();
 	data.currentOdomPose = getOdomPose();

@@ -43,7 +43,7 @@ const realnum legSettleDownSpeed = 50.0/1000.0; // [mm/ms]
 // maximum and minimum body height
 const realnum maxBodyHeight = 260.0;			// maximum height of the body (goes along with minFootTouchPointRadius)
 const realnum minBodyHeight = 45.0;				// minimum height of the body (goes along with maxFootTouchPointRadius)
-const realnum standardBodyHeigh = 130.0;		// default height when walking
+const realnum standardBodyHeight = 130.0;		// default height when walking
 const realnum uprightBodyHeigh = 240.0;		    // default height when walking upright
 
 // min/max radius of ground touch points

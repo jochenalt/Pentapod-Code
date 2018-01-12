@@ -198,7 +198,7 @@ void GluiReshapeCallback( int x, int y )
 
 void resetBodyPosition() {
 	inputBodyPose.null();
-	inputBodyPose.position.z = standardBodyHeigh;
+	inputBodyPose.position.z = standardBodyHeight;
 }
 
 void copyBodyPositionToView() {
@@ -430,7 +430,7 @@ void powerControlCallback(int controlNo) {
 			}
 
 			if ((wakeUpLiveVar == 1) && (powerLiveVar == 1)) {
-				inputBodyPose.position = Point(0,0,standardBodyHeigh);
+				inputBodyPose.position = Point(0,0,standardBodyHeight);
 				inputBodyPose.orientation = Rotation(0,0,0);
 				EngineProxy::getInstance().wakeUp();
 				EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);
@@ -447,15 +447,18 @@ void powerControlCallback(int controlNo) {
 				powerControlCallback(PowerCheckBoxID);
 			}
 
-			if ( powerLiveVar == 1) {
-				inputBodyPose.position = Point(0,0,170);
+			if ((terrainLiveVar == 1) && ( powerLiveVar == 1)) {
+				inputBodyPose.position = Point(0,0,150);
 				inputBodyPose.orientation = Rotation(0,0,0);
 				copyBodyPositionToView();
 				EngineProxy::getInstance().terrainMode(true);
 				EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);
+			} else {
+				inputBodyPose.position = Point(0,0,standardBodyHeight);
+				inputBodyPose.orientation = Rotation(0,0,0);
 
-				terrainModeCheckbox->set_int_val(0);
-				wakeUpCheckbox->set_int_val(1);
+				EngineProxy::getInstance().terrainMode(false);
+				EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);
 			}
 			break;
 		default:
@@ -577,7 +580,6 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 
 	terrainModeCheckbox = new GLUI_Checkbox(powerInputPanel, "Terrain", &terrainLiveVar, TerrainModeCheckBoxID,powerControlCallback);
 	terrainModeCheckbox->set_int_val(0);
-
 
 	GLUI_Panel* scriptPanel = new GLUI_Panel(interactivePanel,"Script Panel", GLUI_PANEL_NONE);
 	GLUI_Panel* scriptInputPanel = new GLUI_Panel(scriptPanel,"Script Panel", GLUI_PANEL_RAISED);
