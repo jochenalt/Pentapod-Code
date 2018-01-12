@@ -128,13 +128,7 @@ EngineProxy& EngineProxy::getInstance() {
 	return me;
 }
 
-
-void EngineProxy::setupCommon() {
-	currentScript = Engine::ScriptType::NO_SCRIPT;
-}
-
 void EngineProxy::setupSimulatedEngine() {
-	setupCommon();
 	callRemoteEngine = false;
 
 	engine.setupSimulation();
@@ -144,8 +138,6 @@ void EngineProxy::setupSimulatedEngine() {
 }
 
 void EngineProxy::setupRemoteEngine(string host, int port) {
-	setupCommon();
-
 	callRemoteEngine = true;
 
 	// initialize local and remote engine
@@ -202,7 +194,6 @@ void EngineProxy::loop() {
 			newMapPoseDataAvailable =  (data.baseLinkInMapFrame != lastData.baseLinkInMapFrame);
 			lastData = data;
 		}
-		engine.getScript(currentScript, currentScriptMilestone);
 	}
 }
 
@@ -217,7 +208,6 @@ void EngineProxy::turnOn() {
 		engine.turnOn();
 	}
 };
-
 
 void EngineProxy::turnOff() {
 	if (callRemoteEngine) {
@@ -258,28 +248,16 @@ void EngineProxy::terrainMode(bool terrainOn) {
 }
 
 void EngineProxy::setTargetBodyPose ( const Pose& bodyPose) {
-    if (callRemoteEngine) {
-        string responseStr;
-        std::ostringstream bodyposeIn;
-        bodyPose.serialize(bodyposeIn);
-
-        std::ostringstream url;
-        url << "/engine/setpose?bodypose="  << stringToJSonString(bodyposeIn.str());
-        remoteEngine.httpGET(url.str(), responseStr, 5000);
-    } else {
-        engine.setTargetBodyPose(bodyPose);
-    }
-}
-
-
-void EngineProxy::executeScript ( Engine::ScriptType script) {
 	if (callRemoteEngine) {
 		string responseStr;
+		std::ostringstream bodyposeIn;
+		bodyPose.serialize(bodyposeIn);
+
 		std::ostringstream url;
-		url << "/engine/script?script="  << intToString((int)script);
+		url << "/engine/setpose?bodypose="  << stringToJSonString(bodyposeIn.str());
 		remoteEngine.httpGET(url.str(), responseStr, 5000);
 	} else {
-		engine.executeScript(script);
+		engine.setTargetBodyPose(bodyPose);
 	}
 }
 
@@ -673,6 +651,7 @@ bool EngineProxy::isTrajectoryDataAvailable() {
 	return false;
 }
 
+
 bool EngineProxy::isEstimatedPoseAvailable() {
 	if (newMapPoseDataAvailable) {
 		newMapPoseDataAvailable = false;
@@ -681,10 +660,6 @@ bool EngineProxy::isEstimatedPoseAvailable() {
 	return false;
 }
 
-void EngineProxy::getCurrentScript(Engine::ScriptType & newScript, int &newScriptMilestone) {
-	newScript = currentScript;
-	newScriptMilestone = currentScriptMilestone;
-}
 
 bool EngineProxy::isNavigationStatusAvailable() {
 	if (newNavigationStatusIsAvailable) {
@@ -710,5 +685,3 @@ const Pose& EngineProxy::getOdomPose() {
 vector<Point>& EngineProxy::getDarkScaryHoles() {
 	return darkScaryHoles;
 }
-
-

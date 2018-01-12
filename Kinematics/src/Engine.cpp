@@ -288,8 +288,6 @@ void Engine::loop() {
 		}
 	}
 
-	computeScript();
-
 	if (isTurnedOn()) {
 		computeGaitCircleRadius();
 		computeBodyPose();
@@ -299,10 +297,8 @@ void Engine::loop() {
 		computeFrontLeg();
 		computeWakeUpProcedure();
 		computeAcceleration();
-
 		gaitControl.loop();
 	}
-
 
 	bool ok = bodyKinematics.computeKinematics(
 										currentBodyPose,
@@ -468,7 +464,7 @@ void Engine::computeBodyPose() {
 	// maximum speed the body moves its position or orientation
 	const realnum maxLiftBodyPositionSpeed = 80.0; 	// [mm/s]
 
-	const realnum maxBodyOrientationSpeed = 0.8; 	// [RAD/s]
+	const realnum maxBodyOrientationSpeed = 0.4; 	// [RAD/s]
 
 	realnum dT = bodyPoseSampler.dT();
 	if (dT > floatPrecision) {
@@ -676,83 +672,79 @@ void Engine::computeGaitMode() {
 }
 
 void Engine::computeGaitCircleRadius() {
-	if (inputGaitRadius != 0) {
-		gaitControl.setTargetGaitCircleRadius (inputGaitRadius, spiderWalkLegRatio, fourWalkLegRatio);
-	} else {
-		switch (generalMode) {
-			case FallASleep:
-				gaitControl.setTargetGaitCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-				gaitControl.assignTargetGaitCirclePoints();
-				inputBodyPose.orientation = Rotation(0,0,0);
-				inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
-				break;
-			case BeingAsleep:
-				gaitControl.setTargetGaitCircleRadius(standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-				gaitControl.assignTargetGaitCirclePoints();
-				inputBodyPose.orientation = Rotation(0,0,0);
-				inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
-				break;
-			case LiftBody:
-				gaitControl.setTargetGaitCircleRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
-				inputBodyPose.orientation = Rotation(0,0,0);
-				break;
-			default: {
+	switch (generalMode) {
+		case FallASleep:
+			gaitControl.setTargetGaitCircleRadius (sitDownTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitCirclePoints();
+			inputBodyPose.orientation = Rotation(0,0,0);
+			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
+			break;
+		case BeingAsleep:
+			gaitControl.setTargetGaitCircleRadius(standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			gaitControl.assignTargetGaitCirclePoints();
+			inputBodyPose.orientation = Rotation(0,0,0);
+			inputBodyPose.position.z = constrain(inputBodyPose.position.z, minBodyHeight, maxBodyHeight);
+			break;
+		case LiftBody:
+			gaitControl.setTargetGaitCircleRadius (standUpFootTouchPointRadius, spiderWalkLegRatio, fourWalkLegRatio);
+			inputBodyPose.orientation = Rotation(0,0,0);
+			break;
+		default: {
 
-					/* the gait circle is computed by assuming that the foot is perpendicular to the ground, i.e. only
-					 thigh is moving up. This holds true if the thigh is at least horizontal, when going down even more,
-					 not only the thigh goes down but the foot moves to the outside
+			    /* the gait circle is computed by assuming that the foot is perpendicular to the ground, i.e. only
+				 thigh is moving up. This holds true if the thigh is at least horizontal, when going down even more,
+			     not only the thigh goes down but the foot moves to the outside
 
-					 standard position    low body position   high body position
-					  \    /                   \   / /\            \   /
-					   \__/---|                 \_/-/  \            \_/\
-							  |                                         \
-																		 |
-																		 |
-					 */
-					realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
-					heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
+			     standard position    low body position   high body position
+ 				  \    /                   \   / /\            \   /
+				   \__/---|                 \_/-/  \            \_/\
+			              |                                         \
+			                                                         |
+			                                                         |
+			     */
+				realnum heightOverGround = moderatedBodyPose.position.z  - gaitControl.getAvrPerpendicularGroundHeight();
+				heightOverGround = constrain(heightOverGround, minBodyHeight, maxBodyHeight);
 
-					static const realnum horicontalThighHeight = CAD::HipMountingPointOverBody - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength) + CAD::FootLength;
-					static const realnum thighLength = (CAD::ThighKneeGapLength + CAD::ThighLength + CAD::KneeJointLength);
-					realnum radius = 0;
-					if (heightOverGround > horicontalThighHeight) {
-						radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(thighLength) - sqr((heightOverGround-horicontalThighHeight)));;
-					}
-					else {
-						static const realnum distanceKneeToe = sqrt(sqr(thighLength) + sqr(CAD::FootLength));
-						radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(distanceKneeToe) - sqr(heightOverGround - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength)));;
-					}
-					// realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
-					// realnum radius = 0.85*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
-
-					radius -= 30.0;
-					gaitControl.setTargetGaitCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
-
-					if (fourWalkLegRatio > 0) {
-						// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
-						// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
-						realnum hipOffset = fourWalkLegRatio*radians(360/NumberOfLegs - 360/4);
-
-						// change only other legs than the front leg
-						bodyKinematics.getLeg(0).setHipOffset(hipOffset);
-						bodyKinematics.getLeg(1).setHipOffset(hipOffset);
-						bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(-hipOffset);
-						bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
-					}
-					if (spiderWalkLegRatio > 0) {
-						// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
-						// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
-						realnum hipOffset = spiderWalkLegRatio*radians(360/NumberOfLegs - 360/7);
-
-						// change only other legs than the front leg
-						bodyKinematics.getLeg(0).setHipOffset(-hipOffset);
-						bodyKinematics.getLeg(1).setHipOffset(hipOffset);
-						bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(hipOffset);
-						bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
-					}
+				static const realnum horicontalThighHeight = CAD::HipMountingPointOverBody - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength) + CAD::FootLength;
+				static const realnum thighLength = (CAD::ThighKneeGapLength + CAD::ThighLength + CAD::KneeJointLength);
+				realnum radius = 0;
+				if (heightOverGround > horicontalThighHeight) {
+					radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(thighLength) - sqr((heightOverGround-horicontalThighHeight)));;
 				}
-				break;
-		}
+				else {
+					static const realnum distanceKneeToe = sqrt(sqr(thighLength) + sqr(CAD::FootLength));
+					radius = cos(CAD::HipNickAngle)*(CAD::HipCentreDistance + CAD::HipJointLength + CAD::HipLength)  + sqrt(sqr(distanceKneeToe) - sqr(heightOverGround - sin(CAD::HipNickAngle)*(CAD::HipJointLength + CAD::HipLength)));;
+				}
+				// realnum regularLegLength = (CAD::ThighLength + CAD::HipJointLength + CAD::KneeJointLength  + CAD::FootLength )*0.85;
+				// realnum radius = 0.85*sqrt(sqr(regularLegLength) - sqr(heightOverGround)) + CAD::HipCentreDistance  + CAD::HipLength;
+
+				radius -= 30.0;
+				gaitControl.setTargetGaitCircleRadius (radius, spiderWalkLegRatio, fourWalkLegRatio);
+
+				if (fourWalkLegRatio > 0) {
+					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
+					// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
+					realnum hipOffset = fourWalkLegRatio*radians(360/NumberOfLegs - 360/4);
+
+					// change only other legs than the front leg
+					bodyKinematics.getLeg(0).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(-hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
+				}
+				if (spiderWalkLegRatio > 0) {
+					// Hip offset is set in order to reflect the 5-leg polygon walk resp. the 4-leg gait shaped as a square
+					// fourWalkLegRatio is a factor going from 0 to 1 used to have a smooth migration between both modes
+					realnum hipOffset = spiderWalkLegRatio*radians(360/NumberOfLegs - 360/7);
+
+					// change only other legs than the front leg
+					bodyKinematics.getLeg(0).setHipOffset(-hipOffset);
+					bodyKinematics.getLeg(1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-1).setHipOffset(hipOffset);
+					bodyKinematics.getLeg(NumberOfLegs-2).setHipOffset(-hipOffset);
+				}
+			}
+			break;
 	}
 }
 
@@ -1082,218 +1074,4 @@ void Engine::computeAcceleration() {
 
 		getBodyKinematics().getCurrentNoseOrientation() = noseOrientation;
 	}
-}
-
-void Engine::scriptState(milliseconds delay, bool continous) {
-	targetScriptMilestoneDelay = delay;
-	targetContinousScriptComputation = continous;
-	if (!continousScriptComputation) {
-		scriptMilestoneDelay = targetScriptMilestoneDelay;
-		saveScriptMilestoneDelay = targetScriptMilestoneDelay;
-	}
-	continousScriptComputation = targetContinousScriptComputation;
-}
-
-void Engine::computeScript() {
-	// wait until time of milestone is up
-	if ((currentScript == Engine::ScriptType::NO_SCRIPT))
-		return;
-
-	if (scriptMilestoneDelay > 0) {
-		uint32_t now = millis();
-		if (lastScriptInvocation > 0) {
-			uint32_t timeDiff = now - lastScriptInvocation;
-			if (scriptMilestoneDelay > timeDiff) {
-				scriptMilestoneDelay -= timeDiff;
-				lastScriptInvocation = now;
-			}
-			else {
-				scriptMilestoneDelay = 0;
-				currentScriptMilestone++;
-				continousScriptComputation = false;
-			}
-		}
-		lastScriptInvocation = now;
-	}
-
-	// wait for next milestone?
-	realnum continousComputationRatio = 1.0;
-	if (scriptMilestoneDelay > 0) {
-		continousComputationRatio = (float)(saveScriptMilestoneDelay-scriptMilestoneDelay)/(float)saveScriptMilestoneDelay;
-
-		if (!continousScriptComputation)
-			return;
-	}
-
-	// last delay passed, execute new milestone
- 	switch (currentScript) {
-	case WALL_APPEARS: {
-		switch (currentScriptMilestone) {
-			case 0:
-				turnOn();
-				wakeUp();
-				setTargetSpeed(1);
-				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,0,0)));
-				scriptState(7000);
-				break;
-			case 1:
-				setTargetSpeed(0);
-				setTargetBodyPose(Pose(Point(0,0,140),Rotation(0,radians(-15),0)));
-				scriptState(1000);
-				break;
-			case 2:
-				setTargetBodyPose(Pose(Point(20,0,80),Rotation(0,radians(10),0)));
-				scriptState(1000);
-				break;
-			case 3:
-				setTargetBodyPose(Pose(Point(0,0,130),Rotation(0,radians(0),0)));
-				scriptState(500);
-				break;
-			case 4:
-				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,radians(0),0)));
-				scriptState(500);
-				break;
-			case 5:
-				setTargetAngularSpeed(M_PI/4.0);
-				scriptState(2500);
-				break;
-			case 6:
-				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 7:
-				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 8:
-				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 9:
-				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 10:
-				setTargetBodyPose(Pose(Point(0,20,80),Rotation(radians(5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 11:
-				setTargetBodyPose(Pose(Point(0,-20,80),Rotation(radians(-5),radians(0),0)));
-				setTargetAngularSpeed(0);
-				setTargetSpeed(1);
-				scriptState(800);
-				break;
-			case 12:
-				currentScript = NO_SCRIPT;
-				break;
-		}
-		break;
-	}
-	case HILL_APPEARS: {
-		switch (currentScriptMilestone) {
-			case 0:
-				turnOn();
-				wakeUp();
-				setTargetSpeed(0);
-				setTargetBodyPose(Pose(Point(0,0,100),Rotation(0,0,0)));
-				scriptState(5000);
-				break;
-			case 1:
-				setGaitMode(FourLegWalk);
-				setTargetFrontLegPose(Point(250,0,100));
-				setTargetSpeed(0);
-				setTargetBodyPose(Pose(Point(25,0,140),Rotation(radians(0),radians(-7),0)));
-				scriptState(2000);
-				break;
-			case 2:
-				setTargetSpeed(1);
-				scriptState(500);
-				break;
-			case 3: {
-				realnum duration = 10000;
-				realnum alpha = continousComputationRatio*M_PI*2*duration/1000;
-				Point p(sin(alpha)*40,cos(alpha),70);
-				setTargetFrontLegPose(Point(300 + sin(alpha/2)*40,sin(alpha)*40,150+cos(alpha)*40));
-				scriptState(duration, true);
-				break;
-			}
-			case 4:
-				setTargetFrontLegPose(Point(280,0,150));
-				scriptState(500);
-				break;
-			case 5:
-				currentScript = NO_SCRIPT;
-		};
-		break;
-	}
-	case BOX_APPEARS: {
-		switch (currentScriptMilestone) {
-		case 0:
-			turnOn();
-			wakeUp();
-			setTargetSpeed(1);
-			setTargetBodyPose(Pose(Point(0,0,70),Rotation(0,0,0)));
-			scriptState(7000);
-			break;
-		case 1:
-			setTargetSpeed(1);
-			scriptState(2000);
-			break;
-		case 2:
-			setGaitRadius(280);
-			setTargetBodyPose(Pose(Point(0,0,70),Rotation(radians(0),radians(0),0)));
-			scriptState(400);
-			break;
-		case 3: {
-			realnum duration = 10000;
-			realnum alpha = continousComputationRatio*M_PI*duration/1000;
-			Point p(sin(alpha)*50,cos(alpha)*50,70);
-			setTargetBodyPose(Pose(p,Rotation(radians(5)*cos(alpha),-radians(5)*sin(alpha),0)));
-			scriptState(duration, true);
-			break;
-		}
-		case 4:
-			setTargetBodyPose(Pose(Point(0,0,90),Rotation(radians(0),radians(0),0)));
-			scriptState(500);
-			break;
-		case 5:
-			currentScript = NO_SCRIPT;
-			break;
-		default:
-			break;
-		};
-		break;
-	}
-	case NO_SCRIPT:
-		return;
-
-	default:
-		break;
-	}
-}
-
-void Engine::executeScript(ScriptType script ) {
-	currentScript = script;
-	currentScriptMilestone = 0;
-	scriptMilestoneDelay = 0;
-	saveScriptMilestoneDelay = 0;
-	lastScriptInvocation = 0;
-	continousScriptComputation = false;
-	targetContinousScriptComputation = false;
-}
-
-void Engine::getScript(ScriptType& script, int &milestonenumber) {
-	script = currentScript;
-	milestonenumber = currentScriptMilestone;
-
 }

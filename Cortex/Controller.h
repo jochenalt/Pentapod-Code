@@ -1,8 +1,7 @@
 /* 
 * Controller.h
 *
-* Controller runs the main loop for servos, the IMU and the distance sensors in all legs
-*
+* Controller running the main loop for steppers, encoders and servos.
 * Author: JochenAlt
 */
 
