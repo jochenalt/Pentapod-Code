@@ -12,7 +12,7 @@
 // Knee (drs 0101) = legId*10 + 3 = [03,   13,  23,  33,  43 ]
 // Foot (drs 0201) = legId*10 + 4 = [02,   12,  22,  32,  42 ]
 
-// This method returns the herkulex ID of one sepcific limb
+// returns the herkulex ID of one sepcific limb
 int HerkulexServoDrive::getHerkulexId(int legId /* start with 0 */, int limbId /* hip is 0 */) {
 	switch (limbId) {
 		case HIP:   return legId*10 + 1;
@@ -23,13 +23,13 @@ int HerkulexServoDrive::getHerkulexId(int legId /* start with 0 */, int limbId /
 	return -1; // should never happen
 };
 
-// setup a servo, to be called before using it
+// setup a servo, to be called before sending any commands
 void HerkulexServoDrive::setup(LimbConfigType* newConfigData, HerkulexClass* newHerkulexMgr) {
 	// voltage is measured within low-prio loop
 	// but at this stage, we do not have a voltage yet.
 	voltage = 0;
 
-	// print memory content
+	// log memory content
 	configData = newConfigData;
 	herkulexMgr = newHerkulexMgr;
 	if (memory.persMem.logSetup) {
