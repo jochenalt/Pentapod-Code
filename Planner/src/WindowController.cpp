@@ -447,15 +447,12 @@ void powerControlCallback(int controlNo) {
 				powerControlCallback(PowerCheckBoxID);
 			}
 
-			if ( powerLiveVar == 1) {
-				inputBodyPose.position = Point(0,0,170);
-				inputBodyPose.orientation = Rotation(0,0,0);
+			if ((terrainLiveVar == 1) && ( powerLiveVar == 1)) {
 				copyBodyPositionToView();
 				EngineProxy::getInstance().terrainMode(true);
+			} else {
+				EngineProxy::getInstance().terrainMode(false);
 				EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);
-
-				terrainModeCheckbox->set_int_val(0);
-				wakeUpCheckbox->set_int_val(1);
 			}
 			break;
 		default:
@@ -577,7 +574,6 @@ GLUI* WindowController::createInteractiveWindow(int mainWindow) {
 
 	terrainModeCheckbox = new GLUI_Checkbox(powerInputPanel, "Terrain", &terrainLiveVar, TerrainModeCheckBoxID,powerControlCallback);
 	terrainModeCheckbox->set_int_val(0);
-
 
 	GLUI_Panel* scriptPanel = new GLUI_Panel(interactivePanel,"Script Panel", GLUI_PANEL_NONE);
 	GLUI_Panel* scriptInputPanel = new GLUI_Panel(scriptPanel,"Script Panel", GLUI_PANEL_RAISED);
