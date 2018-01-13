@@ -106,6 +106,7 @@ public:
 	realnum getGaitSpeed() { return gaitSpeed; };
 
 	void setGaitHeight(realnum newWalkGaitHeight, realnum newAdaptLegsGaitHeight) { walkingGaitHeight = newWalkGaitHeight; sortOutLegsGaitHeight = newAdaptLegsGaitHeight;};
+	realnum getGaitHeight() { return walkingGaitHeight;};
 
 	void setFrontLegWorld(const Point& x);
 	Point getFrontLegWorld();
