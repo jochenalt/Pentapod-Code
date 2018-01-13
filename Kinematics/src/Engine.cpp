@@ -516,7 +516,7 @@ void Engine::computeBodyPose() {
 			}
 		} else {
 			// in any other mode than walking keep the IMU in a reset state, so slowly reset it
-			imuPID.getPID(Rotation(), 0.50, 7.0, 0.0, maxError);
+			imuCompensation.orientation = imuPID.getPID(Rotation(), 0.50, 7.0, 0.0, maxError);
 		}
 		currentBodyPose = toBePose;
 		currentBodyPose.orientation += imuCompensation.orientation;
