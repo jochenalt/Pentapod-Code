@@ -854,7 +854,13 @@ void Engine::computeGaitHeight() {
 	// realnum currentHeight = moderatedBodyPose.position.z;
 	realnum gaitHeight = 70; // + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
-	gaitControl.setGaitHeight(gaitHeight, 55);
+	if (generalMode == TerrainMode)
+		gaitHeight = 130;
+
+	realnum currentGait = gaitControl.getGaitHeight();
+	if (currentGait != gaitHeight) {
+		gaitControl.setGaitHeight(gaitHeight, 55);
+	}
 }
 
 void Engine::computeFrontLeg() {
