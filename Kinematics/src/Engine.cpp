@@ -261,7 +261,6 @@ void Engine::loop() {
 		realnum distance[NumberOfLegs];
 		cortex.getDistanceSensor(distance);
 
-		// LOG(DEBUG) << "Distance" << distance[0]*cos(bodyKinematics.getFootAngle(0)) << " " << distance[1]*cos(bodyKinematics.getFootAngle(1)) << " "<< distance[2]*cos(bodyKinematics.getFootAngle(2)) << " " << distance[3]*cos(bodyKinematics.getFootAngle(3)) << " " << distance[4]*cos(bodyKinematics.getFootAngle(4));
 		// LOG(DEBUG) << "GROUND-z" << gaitControl.getAbsoluteGroundHeight(0) << " " << gaitControl.getAbsoluteGroundHeight(1) << " "<< gaitControl.getAbsoluteGroundHeight(2) << " "<< gaitControl.getAbsoluteGroundHeight(3) << " "<< gaitControl.getAbsoluteGroundHeight(4);
 		// LOG(DEBUG) << "Toe Points" << gaitControl.getToePoints()[0].z << " " << gaitControl.getToePoints()[1].z << " "<< gaitControl.getToePoints()[2].z << " "<< gaitControl.getToePoints()[3].z << " "<< gaitControl.getToePoints()[4].z;
 
@@ -855,7 +854,7 @@ void Engine::computeGaitHeight() {
 	realnum gaitHeight = 70; // + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
 	if (generalMode == TerrainMode)
-		gaitHeight = 130;
+		gaitHeight = 100;
 
 	realnum currentGait = gaitControl.getGaitHeight();
 	if (currentGait != gaitHeight) {
@@ -896,44 +895,56 @@ void Engine::imposeDistanceSensors(realnum distance[NumberOfLegs]) {
 
 void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 
+
+	ROS_DEBUG_STREAM("Distance (dist|toe|ground)" << std::fixed << std::setprecision(0)
+			   << distance[0]*cos(bodyKinematics.getFootsDeviationAngleFromZ(0)) << ":" << gaitControl.getToePointsWorld(0).z << ":" << gaitControl.getAbsoluteGroundHeight(0) << ((gaitControl.getLegsGaitPhase(0)==LegGaitDown)?"D":"") << ((gaitControl.getLegsGaitPhase(0)==LegGaitUp)?"U":"")<< " "
+			   << distance[1]*cos(bodyKinematics.getFootsDeviationAngleFromZ(1)) << ":" << gaitControl.getToePointsWorld(1).z << ":" << gaitControl.getAbsoluteGroundHeight(1) << ((gaitControl.getLegsGaitPhase(1)==LegGaitDown)?"D":"") << ((gaitControl.getLegsGaitPhase(1)==LegGaitUp)?"U":"")<< " "
+			   << distance[2]*cos(bodyKinematics.getFootsDeviationAngleFromZ(2)) << ":" << gaitControl.getToePointsWorld(2).z << ":" << gaitControl.getAbsoluteGroundHeight(2) << ((gaitControl.getLegsGaitPhase(2)==LegGaitDown)?"D":"") << ((gaitControl.getLegsGaitPhase(2)==LegGaitUp)?"U":"")<< " "
+			   << distance[3]*cos(bodyKinematics.getFootsDeviationAngleFromZ(3)) << ":" << gaitControl.getToePointsWorld(3).z << ":" << gaitControl.getAbsoluteGroundHeight(3) << ((gaitControl.getLegsGaitPhase(3)==LegGaitDown)?"D":"") << ((gaitControl.getLegsGaitPhase(3)==LegGaitUp)?"U":"")<< " "
+			   << distance[4]*cos(bodyKinematics.getFootsDeviationAngleFromZ(4)) << ":" << gaitControl.getToePointsWorld(4).z << ":" << gaitControl.getAbsoluteGroundHeight(4) << ((gaitControl.getLegsGaitPhase(4)==LegGaitDown)?"D":"") << ((gaitControl.getLegsGaitPhase(4)==LegGaitUp)?"U":"")<< " ");
+
 	if (generalMode == TerrainMode) {
 		realnum groundHeight[NumberOfLegs];
-		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
-			if ((distance[legNo] >= 0) && (distance[legNo] < 200)) {
 
-				// if we are not in the right leg phase, do not change the ground height correction
+
+		for (int legNo = 0;legNo<NumberOfLegs;legNo++) {
+
+				// do only ground height correction for the legs that are currently moving
 				groundHeight[legNo] = gaitControl.getAbsoluteGroundHeight(legNo);
+
+				// toeZ is the expected height, if the ground was perfectly flat
 				realnum toeZ = gaitControl.getToePointsWorld(legNo).z;
-				bool newPhase = gaitControl.getLegsGaitPhase(legNo) != gaitControl.getLastGaitPhase(legNo);
+
+				// compute perpendicular distance to ground by angle of lower leg
+				realnum perpendicularDistance = distance[legNo];
+				bool validDistance = (perpendicularDistance >= 0) && (perpendicularDistance < 200);
+				perpendicularDistance *= cos(bodyKinematics.getFootsDeviationAngleFromZ(legNo));
+
 				switch (gaitControl.getLegsGaitPhase(legNo)) {
 						break;
 					case LegGaitDown: {
-						if (newPhase) {
-							gaitControl.setAbsoluteGroundHeight(legNo,0);
+						// compare expected and measured distance from ground.
+						// the difference is the new absolute ground height
+						if (validDistance) {
+							groundHeight[legNo] = lowpass (groundHeight[legNo], toeZ - perpendicularDistance, 50 /* ms */, CORTEX_SAMPLE_RATE);
 						}
-						// compute perpendicular distance to ground by angle of lower leg
-						realnum currGroundHeight = toeZ - distance[legNo] * cos(bodyKinematics.getFootsDeviationAngleFromZ(legNo));
-						groundHeight[legNo] = currGroundHeight;
 						break;
 					}
 					case LegGaitUp: {
-						if (newPhase)
-							gaitControl.setAbsoluteGroundHeight(legNo,0);
-						realnum currGroundHeight = -toeZ + distance[legNo] * cos(bodyKinematics.getFootsDeviationAngleFromZ(legNo));
-						groundHeight[legNo] = currGroundHeight;
-						break;
+						// if the toe leaves the ground, reset the absolute height to 0 to
+						// avoid that the absolute ground height continously grows
+						groundHeight[legNo] = 0;
 					}
 					case LegGaitDuty:
-						// reset the ground height
-						// gaitControl.setAbsoluteGroundHeight(legNo,0);
+						// do not the absolute ground height if the toe is on the ground
 						break;
 				}
-			}
 		}
 
 		// level ground height of all legs such that average is 0
 		// this has an influence on the legs in the air only.
 		// legs in stance do not react on AbsoluteGroundHeight within gaitController
+
 		realnum totalGroundHeight = 0;
 		for (int legNo = 0;legNo< NumberOfLegs;legNo++)
 			totalGroundHeight += groundHeight[legNo];
@@ -942,7 +953,7 @@ void Engine::processDistanceSensors(realnum distance[NumberOfLegs]) {
 		// tell the gait controller the absolute height of the ground
 		// such that the average of all corrections is zero
 		for (int legNo = 0;legNo< NumberOfLegs;legNo++) {
-			groundHeight[legNo] -= totalGroundHeight;
+			// groundHeight[legNo] -= totalGroundHeight;
 
 			gaitControl.setAbsoluteGroundHeight(legNo, groundHeight[legNo]);
 		}
