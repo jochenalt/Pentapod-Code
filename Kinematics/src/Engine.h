@@ -169,6 +169,7 @@ private:
 	void computeAcceleration();				// compute acceleration, turning etc.
 	void computeWarpCompensation();		// compute compensation of warping legs
 	void computeScript();				// compute current script
+	void computeDefaultGaitCircleRadius();
 
 	BodyKinematics bodyKinematics;		// compute kinematics of all legs and the body
 	GaitController gaitControl;			// generates the gait
