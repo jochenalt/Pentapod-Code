@@ -77,7 +77,7 @@ const realnum maxFootSpeed = 400; 					// [mm/s]
 // maximum speed of a foot that is in the air during a gait
 const realnum maxStartupAngleSpeed = 0.3; 			// [RAD/s]
 
-const realnum maxBodyHeightSpeed = 40.0;
+const realnum maxBodyHeightSpeed = 80.0;
 
 // below that distance a toe is already moving with the ground
 // (prevents that a movement is blocked due to the weight of the bot, such that a leg touches the ground before its computed touch point)

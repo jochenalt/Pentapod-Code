@@ -463,7 +463,7 @@ void Engine::computeBodyPose() {
 	// maximum speed the body moves its position or orientation
 	const realnum maxLiftBodyPositionSpeed = 80.0; 	// [mm/s]
 
-	const realnum maxBodyOrientationSpeed = 0.4; 	// [RAD/s]
+	const realnum maxBodyOrientationSpeed = 0.8; 	// [RAD/s]
 
 	realnum dT = bodyPoseSampler.dT();
 	if (dT > floatPrecision) {
@@ -854,7 +854,7 @@ void Engine::computeGaitHeight() {
 	realnum gaitHeight = 70; // + 20 * moderate( (currentHeight - minBodyHeight)/(maxBodyHeight-minBodyHeight), 1.0);
 
 	if (generalMode == TerrainMode)
-		gaitHeight = 100;
+		gaitHeight = 130;
 
 	realnum currentGait = gaitControl.getGaitHeight();
 	if (currentGait != gaitHeight) {

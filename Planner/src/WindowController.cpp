@@ -195,12 +195,6 @@ void GluiReshapeCallback( int x, int y )
 	WindowController::getInstance().postRedisplay();
 }
 
-
-void resetBodyPosition() {
-	inputBodyPose.null();
-	inputBodyPose.position.z = standardBodyHeigh;
-}
-
 void copyBodyPositionToView() {
 	Pose currentBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 	for (CoordDimType coordIdx = X; coordIdx <= Z; coordIdx = CoordDimType(CoordDimType((int)coordIdx) + 1)) {
@@ -208,6 +202,17 @@ void copyBodyPositionToView() {
 			bodyPosePositionSpinner[coordIdx]->set_int_val(currentBodyPose.position[coordIdx]);
 	}
 }
+
+void resetBodyPosition() {
+	inputBodyPose.null();
+	inputBodyPose.position.z = standardBodyHeigh;
+	copyBodyPositionToView();
+	// send to bot
+	EngineProxy::getInstance().setTargetBodyPose(inputBodyPose);
+
+}
+
+
 
 void copyBodyPositionFromView() {
 	inputBodyPose.position = Point( bodyPosePositionSpinnerLiveVar[X],
@@ -307,7 +312,7 @@ void singleLegActiveCallback(int buttonNo) {
 
 void singleLegResetCallback (int buttonNo) {
 
-	Point nullPoint = Point(CAD::HipLength + CAD::HipJointLength + CAD::ThighLength + CAD::ThighKneeGapLength + CAD::KneeJointLength + CAD::FootLength + CAD::DampenerLength,0,0);
+	Point nullPoint = Point(CAD::HipLength + CAD::HipJointLength + (CAD::ThighLength + CAD::ThighKneeGapLength)*0.5 + CAD::KneeJointLength + CAD::FootLength + CAD::DampenerLength,0,0);
 	poseSpinner[X]->set_int_val(nullPoint[X]);
 	poseSpinner[Y]->set_int_val(nullPoint[Y]);
 	poseSpinner[Z]->set_int_val(nullPoint[Z]);

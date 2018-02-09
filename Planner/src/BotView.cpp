@@ -397,17 +397,54 @@ void BotView::MotionCallback(int x, int y) {
 
 	float diffX = (float) (x-lastMouseX);
 	float diffY = (float) (y-lastMouseY);
-	if (mouseViewPane) {
+	switch (mousePane) {
+	case BOT_BODY_PANE: {
+		Pose pose = EngineProxy::getInstance().getImuAwareBodyPose();
+		pose.position.x += diffX;
+		pose.position.z -= diffY;
+		EngineProxy::getInstance().setTargetBodyPose(pose);
+		postRedisplay();
+		break;
+	}
+	case BOT_BODYORIENTATION_PANE: {
+		Pose pose = EngineProxy::getInstance().getImuAwareBodyPose();
+		pose.orientation.z += diffX/60;
+		pose.orientation.y -= diffY/60;
+		EngineProxy::getInstance().setTargetBodyPose(pose);
+		postRedisplay();
+		break;
+	}
+
+	case BOT_FRONTLEG_HORIZ_PANE: {
+		LegPose pose = EngineProxy::getInstance().getFrontLegPoseWorld();
+		pose.position.y += diffX;
+		pose.position.z -= diffY;
+		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
+		postRedisplay();
+		break;
+	}
+	case BOT_FRONTLEG_VERTICAL_PANE: {
+		LegPose pose = EngineProxy::getInstance().getFrontLegPoseWorld();
+		pose.position.y += diffX;
+		pose.position.z -= diffY;
+		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
+		postRedisplay();
+		break;
+	}
+
+	case VIEW_PANE:
 		WindowController::getInstance().mainBotView.changeEyePosition(0, -diffX, -diffY);
 		postRedisplay();
-	} else
+		break;
+	default:
 		if (lastMouseScroll != 0) {
 			WindowController::getInstance().mainBotView.changeEyePosition(-getCurrentEyeDistance()*2*lastMouseScroll/100, 0,0);
 			postRedisplay();
 			lastMouseScroll = 0;
 		}
+	}
 
-	if (mouseViewPane) {
+	if (mousePane != NO_PANE) {
 		lastMouseX = x;
 		lastMouseY = y;
 	}
@@ -416,14 +453,28 @@ void BotView::MotionCallback(int x, int y) {
 
 void BotView::MouseCallback(int button, int button_state, int x, int y )
 {
-	mouseViewPane = false;
+	mousePane = NO_PANE;
 
 	bool withShift = glutGetModifiers() & GLUT_ACTIVE_SHIFT;
 	bool withCtrl= glutGetModifiers() & GLUT_ACTIVE_CTRL;
+	bool withAlt = glutGetModifiers() & GLUT_ACTIVE_ALT;
 
-	if ( button == GLUT_LEFT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl) {
-	    mouseViewPane = true;
+	if ( button == GLUT_LEFT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl && !withAlt) {
+		mousePane = VIEW_PANE;
 	} else {
+		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl &&  !withAlt) {
+			mousePane = BOT_BODY_PANE;
+		}
+		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl &&  withAlt) {
+			mousePane = BOT_BODYORIENTATION_PANE;
+		}
+		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && withShift && withCtrl &&  !withAlt) {
+			mousePane = BOT_FRONTLEG_HORIZ_PANE;
+		}
+		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && withShift && !withCtrl &&  !withAlt) {
+			mousePane = BOT_FRONTLEG_VERTICAL_PANE;
+		}
+
 		// Wheel reports as button 3(scroll up) and button 4(scroll down)
 		if ((button == 3) || (button == 4)) // It's a wheel event
 		{
@@ -438,7 +489,7 @@ void BotView::MouseCallback(int button, int button_state, int x, int y )
 		}
 	}
 
-	if (mouseViewPane) {
+	if (mousePane != NO_PANE) {
 	    lastMouseX = x;
 	    lastMouseY = y;
 	}

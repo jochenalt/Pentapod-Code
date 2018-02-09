@@ -60,7 +60,8 @@ private:
 	int lastMouseX = 0;
 	int lastMouseY = 0;
 	int lastMouseScroll = 0;
-	bool mouseViewPane = false;
+	enum mousePaneType { VIEW_PANE, BOT_BODY_PANE, BOT_BODYORIENTATION_PANE, BOT_FRONTLEG_HORIZ_PANE, BOT_FRONTLEG_VERTICAL_PANE, NO_PANE };
+	mousePaneType mousePane = NO_PANE;
 };
 
 #endif /* UI_BOTVIEW_H_ */
