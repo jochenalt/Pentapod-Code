@@ -74,8 +74,27 @@ void OdomPublisher::listenToBodyPose (const geometry_msgs::Twist::ConstPtr& body
 	bodyPose.orientation.y = bodypose_msg->angular.y;
 	bodyPose.orientation.z = bodypose_msg->angular.z;
 
-	ROS_DEBUG_STREAM("listenToBodyPose " << bodyPose);
+	ROS_INFO_STREAM("listenToBodyPose " << bodyPose);
 	engine->setTargetBodyPose(bodyPose);
+}
+
+void OdomPublisher::listenToGaitMode (const std_msgs::Int8 gait_mode_msg) {
+	GaitModeType gaitMode = (GaitModeType)gait_mode_msg.data;
+
+	ROS_INFO_STREAM("listenToGaitMode " << gaitMode);
+	engine->setGaitMode(gaitMode);
+}
+
+void OdomPublisher::listenToFrontLeg(const geometry_msgs::Point::ConstPtr& frontleg_msg) {
+	Point frontLeg;
+	frontLeg.x = frontleg_msg->x;
+	frontLeg.y = frontleg_msg->y;
+	frontLeg.z = frontleg_msg->z;
+
+
+	ROS_INFO_STREAM("listenToFrontLeg " << frontLeg);
+
+	engine->setTargetFrontLegPose(frontLeg);
 }
 
 void OdomPublisher::listenToMoveMode (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg) {
@@ -204,5 +223,8 @@ void OdomPublisher::setup(ros::NodeHandle& pHandle, Engine& pEngine) {
 	// they are published by pentapod_server
 	cmd_body_pose 	= handle->subscribe("/engine/cmd_pose" , 10 , &OdomPublisher::listenToBodyPose, this);
 	cmd_mode 		= handle->subscribe("/engine/cmd_mode" , 10 , &OdomPublisher::listenToMoveMode, this);
+	gait_mode 		= handle->subscribe("/engine/gait_mode" , 10 , &OdomPublisher::listenToGaitMode, this);
+	front_leg 		= handle->subscribe("/engine/front_leg" , 10 , &OdomPublisher::listenToFrontLeg, this);
+
 	state_pub 	    = handle->advertise<std_msgs::String>("/engine/get_state", 50);
 }

@@ -10,6 +10,8 @@
 #include "Trajectory.h"
 #include "basics/util.h"
 
+#include "Engine.h"
+
 #include "Dispatcher.h"
 #include "IntoDarkness.h"
 
@@ -85,6 +87,8 @@ void Dispatcher::setup(ros::NodeHandle& handle) {
 	cmdVel 			= handle.advertise<geometry_msgs::Twist>("cmd_vel", 50);
 	cmdBodyPose 	= handle.advertise<geometry_msgs::Twist>("/engine/cmd_pose", 50);
 	cmdModePub 		= handle.advertise<pentapod_engine::engine_command_mode>("/engine/cmd_mode", 50);
+	cmdGaitMode     = handle.advertise<std_msgs::Int8>("/engine/gait_mode", 10);
+	cmdFrontLeg     = handle.advertise<geometry_msgs::Point>("/engine/front_leg", 10);
 
 	// publish initial position (required by navigation
 	initalPosePub   = handle.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 10);
@@ -162,6 +166,20 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			response = getResponse(okOrNOk);
 			return true;
 		}
+		// /engine/setgaitmode
+		else if (hasPrefix(engineCommand, "setgaitmode")) {
+			string gaitModeStr;
+			bool ok = getURLParameter(urlParamName, urlParamValue, "gaitmode", gaitModeStr);
+			GaitModeType gaitMode =  (GaitModeType)stringToInt(gaitModeStr, ok);
+
+			if (ok)
+				advertiseGaitModeToEngine(gaitMode);
+
+			okOrNOk = true;
+			response = getResponse(okOrNOk);
+			return true;
+		}
+
 		// /engine/alarmstart?bodypose={...}
 		else if (hasPrefix(engineCommand, "terrain")) {
 			string terrainModeOnStr;
@@ -224,7 +242,6 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			response = getResponse(ok);
 			return true;
 		}
-		/*
 		// engine/setfrontleg?bodypose={...}
 		else if (hasPrefix(engineCommand, "setfrontleg")) {
 			string frontLegPoseStr;
@@ -234,12 +251,12 @@ bool Dispatcher::dispatch(string uri, string query, string body, string &respons
 			std::stringstream in (paramstr);
 			Point frontLeg;
 			frontLeg.deserialize(in,ok);
-			if (ok)
-				engine->setTargetFrontLegPose(frontLeg);
+			if (ok) {
+				advertiseFrontLegToEngine(frontLeg);
+			}
 			response = getResponse(ok);
 			return true;
 		}
-		*/
 		// engine/get
 		else if (hasPrefix(engineCommand, "get")) {
 			std::ostringstream out;
@@ -578,3 +595,23 @@ void Dispatcher::advertiseBodyPose() {
 		}
 	}
 }
+
+void Dispatcher::advertiseGaitModeToEngine(GaitModeType gaitMode) {
+	ROS_DEBUG_STREAM("advertiseGaitModeToEngine " << gaitMode);
+	std_msgs::Int8 rosGaitMode;
+	rosGaitMode.data = gaitMode;
+	cmdGaitMode.publish(rosGaitMode);
+
+}
+
+void Dispatcher::advertiseFrontLegToEngine(Point frontLeg) {
+	ROS_DEBUG_STREAM("advertiseBodyposeToEngine " << frontLeg);
+	geometry_msgs::Point  rosFrontLeg;
+	rosFrontLeg.x = frontLeg.x;
+	rosFrontLeg.y = frontLeg.y;
+	rosFrontLeg.z = frontLeg.z;
+
+	cmdFrontLeg.publish(rosFrontLeg);
+
+}
+

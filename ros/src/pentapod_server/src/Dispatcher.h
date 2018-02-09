@@ -27,6 +27,8 @@
 #include "std_msgs/Time.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "nav_msgs/Path.h"
+#include "std_msgs/Int8.h"
+#include <geometry_msgs/Point.h>
 #include <geometry_msgs/Twist.h>
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
@@ -83,6 +85,9 @@ private:
 	void listenerOdometry(const nav_msgs::Odometry::ConstPtr& odom);
 	void listenerBotState(const std_msgs::String::ConstPtr& fullStateStr);
 	void advertiseBodyPoseToEngine(const Pose& bodyPose);
+	void advertiseGaitModeToEngine(GaitModeType gaitMode);
+	void advertiseFrontLegToEngine(Point frontleg);
+
 	tf::TransformBroadcaster broadcaster;
 	std::string serializedLaserScan;
 
@@ -101,6 +106,8 @@ private:
 	ros::Publisher cmdBodyPose;
 	ros::Publisher cmdModePub;
 	ros::Publisher initalPosePub;
+	ros::Publisher cmdFrontLeg;
+	ros::Publisher cmdGaitMode;
 
 	ros::Subscriber laserScanSubscriber;
 	std::string serializedLaserData;

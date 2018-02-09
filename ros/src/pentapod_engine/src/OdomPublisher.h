@@ -17,6 +17,8 @@
 
 // bot topics
 #include <geometry_msgs/Twist.h>
+#include "std_msgs/Int8.h"
+#include <geometry_msgs/Point.h>
 
 // ROS messages for Pentapod
 #include "pentapod_engine/engine_command_mode.h"
@@ -37,7 +39,8 @@ public:
 	void listenToSpeedCommand (const geometry_msgs::Twist::ConstPtr& vel_msg);
 	void listenToBodyPose (const geometry_msgs::Twist::ConstPtr& bodypose_msg);
 	void listenToMoveMode (const pentapod_engine::engine_command_mode::ConstPtr& mode_msg);
-
+	void listenToFrontLeg(const geometry_msgs::Point::ConstPtr& frontleg_msg);
+	void listenToGaitMode (const std_msgs::Int8 gait_mode_msg);
 
 private:
 	tf::TransformBroadcaster broadcaster;
@@ -45,6 +48,8 @@ private:
 	ros::Subscriber cmd_vel;
 	ros::Subscriber cmd_body_pose;
 	ros::Subscriber cmd_mode;
+	ros::Subscriber gait_mode;
+	ros::Subscriber front_leg;
 
 	ros::Publisher odom_pub;
 	Engine* engine = NULL;
