@@ -397,48 +397,45 @@ void BotView::MotionCallback(int x, int y) {
 
 	float diffX = (float) (x-lastMouseX);
 	float diffY = (float) (y-lastMouseY);
+
+	cout << "x,y=" << diffX << "," << diffY << endl;
+
 	switch (mousePane) {
 	case BOT_BODY_PANE: {
-		Pose pose = EngineProxy::getInstance().getImuAwareBodyPose();
-		pose.position.x += diffX;
-		pose.position.z -= diffY;
-		EngineProxy::getInstance().setTargetBodyPose(pose);
-		cout << "pose=" << pose << endl;
+		mouseBodyPose.position.x += diffX;
+		mouseBodyPose.position.z -= diffY;
+		EngineProxy::getInstance().setTargetBodyPose(mouseBodyPose);
+		cout << "pose=" << bodyPose << endl;
 		postRedisplay();
 		break;
 	}
 	case BOT_BODYORIENTATION_PANE: {
-		Pose pose = EngineProxy::getInstance().getImuAwareBodyPose();
-		pose.orientation.z += diffX/60;
-		pose.orientation.y -= diffY/60;
-		EngineProxy::getInstance().setTargetBodyPose(pose);
-		cout << "pose=" << pose << endl;
+		mouseBodyPose.orientation.z += diffX/200.0;
+		mouseBodyPose.orientation.y -= diffY/200.0;
+		EngineProxy::getInstance().setTargetBodyPose(mouseBodyPose);
+		cout << "pose=" << bodyPose << endl;
 
 		postRedisplay();
 		break;
 	}
-
 	case BOT_FRONTLEG_HORIZ_PANE: {
-		LegPose pose = EngineProxy::getInstance().getFrontLegPoseWorld();
-		pose.position.y += diffX;
-		pose.position.z -= diffY;
-		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
-		cout << "front=" << pose << endl;
+		mouseSingleLeg.position.y += diffX/2.0;
+		mouseSingleLeg.position.z -= diffY/2.0;
+		EngineProxy::getInstance().setTargetFrontLegPoseWorld(mouseSingleLeg.position);
+		cout << "front=" << singleLegPose << endl;
 
 		postRedisplay();
 		break;
 	}
 	case BOT_FRONTLEG_VERTICAL_PANE: {
-		LegPose pose = EngineProxy::getInstance().getFrontLegPoseWorld();
-		pose.position.y += diffX;
-		pose.position.z -= diffY;
-		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
-		cout << "front=" << pose << endl;
+		mouseSingleLeg.position.y += diffX/2.0;
+		mouseSingleLeg.position.z -= diffY/2.0;
+		EngineProxy::getInstance().setTargetFrontLegPoseWorld(mouseSingleLeg.position);
+		cout << "front=" << singleLegPose << endl;
 
 		postRedisplay();
 		break;
 	}
-
 	case VIEW_PANE:
 		WindowController::getInstance().mainBotView.changeEyePosition(0, -diffX, -diffY);
 		postRedisplay();
@@ -471,15 +468,19 @@ void BotView::MouseCallback(int button, int button_state, int x, int y )
 	} else {
 		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl &&  !withAlt) {
 			mousePane = BOT_BODY_PANE;
+	        mouseBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 		}
 		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && !withShift && !withCtrl &&  withAlt) {
 			mousePane = BOT_BODYORIENTATION_PANE;
+	        mouseBodyPose = EngineProxy::getInstance().getImuAwareBodyPose();
 		}
 		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && withShift && withCtrl &&  !withAlt) {
 			mousePane = BOT_FRONTLEG_HORIZ_PANE;
+	        mouseSingleLeg = EngineProxy::getInstance().getFrontLegPoseWorld();
 		}
 		if ( button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN && withShift && !withCtrl &&  !withAlt) {
 			mousePane = BOT_FRONTLEG_VERTICAL_PANE;
+			mouseSingleLeg = EngineProxy::getInstance().getFrontLegPoseWorld();
 		}
 
 		// Wheel reports as button 3(scroll up) and button 4(scroll down)

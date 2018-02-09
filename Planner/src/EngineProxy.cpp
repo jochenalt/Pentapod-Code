@@ -259,7 +259,7 @@ void EngineProxy::terrainMode(bool terrainOn) {
 
 void EngineProxy::setTargetBodyPose ( const Pose& bodyPose) {
 	Pose limitedBodyPose(bodyPose);
-	limitedBodyPose.position.limit(Point(-50.0, -50, 0), Point(50,50,300));
+	limitedBodyPose.position.limit(Point(-50.0, -50, minBodyHeight), Point(50,50,maxBodyHeight));
 	limitedBodyPose.orientation.limit(Rotation(radians(-15.0),radians(-15.0),radians(-15.0)), Rotation(radians(15.0),radians(15.0),radians(15.0)));
 
 	if (callRemoteEngine) {

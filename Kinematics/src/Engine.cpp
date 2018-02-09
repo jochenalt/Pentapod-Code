@@ -214,6 +214,7 @@ LegPose Engine::getFrontLegPoseWorld() {
 }
 
 
+
 void Engine::setTargetBodyPose(const Pose& newBodyPose, bool immediately) {
 	// do not accept any more commands when in danger
 	if (cortex.betterShutMeDown())

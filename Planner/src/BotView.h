@@ -45,9 +45,8 @@ private:
 	string title;
 	LimbAngles singleLegAngles;
 	LegPose singleLegPose;
-
-
-
+	Pose mouseBodyPose;
+	LegPose mouseSingleLeg;
 	GLint viewport[4];                  // Where The Viewport Values Will Be Stored
 
 	PentaPointType gaitRefPoints;

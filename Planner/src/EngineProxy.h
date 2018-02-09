@@ -220,7 +220,6 @@ private:
 	Trajectory globalPlan;
 	vector<Point> darkScaryHoles;
 
-
 	Pose navigationGoal;
 	NavigationStatusType navigationStatus;
 
