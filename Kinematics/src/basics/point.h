@@ -60,6 +60,7 @@ class Point  : public Serializable {
 
 		// return as vector , i.e. a 3-dimensional vector
 		Vector getVector() const ;
+		void limit(const Point&min, const Point &max);
 
 		virtual std::ostream& serialize(std::ostream &out) const;
 		virtual std::istream& deserialize(std::istream &in, bool& ok);

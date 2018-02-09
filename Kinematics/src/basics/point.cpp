@@ -1,10 +1,10 @@
 
 #include "math.h"
 #include <cmath>
+#include "basics/util.h"
 
 #include "basics/point.h"
 #include "basics/stringhelper.h"
-
 
 ostream& operator<<(ostream& os, const Point& p)
 {
@@ -150,6 +150,12 @@ void Point::operator= (const HomogeneousVector& p) {
 		x = p[X];
 		y = p[Y];
 		z = p[Z];
+}
+
+void Point::limit(const Point &min, const Point &max) {
+	x = constrain(x, min.x, max.x);
+	y = constrain(y, min.y, max.y);
+	z = constrain(z, min.z, max.z);
 }
 
 

@@ -258,16 +258,20 @@ void EngineProxy::terrainMode(bool terrainOn) {
 }
 
 void EngineProxy::setTargetBodyPose ( const Pose& bodyPose) {
-    if (callRemoteEngine) {
+	Pose limitedBodyPose(bodyPose);
+	limitedBodyPose.position.limit(Point(-50.0, -50, 0), Point(50,50,300));
+	limitedBodyPose.orientation.limit(Rotation(radians(-15.0),radians(-15.0),radians(-15.0)), Rotation(radians(15.0),radians(15.0),radians(15.0)));
+
+	if (callRemoteEngine) {
         string responseStr;
         std::ostringstream bodyposeIn;
-        bodyPose.serialize(bodyposeIn);
+        limitedBodyPose.serialize(bodyposeIn);
 
         std::ostringstream url;
         url << "/engine/setpose?bodypose="  << stringToJSonString(bodyposeIn.str());
         remoteEngine.httpGET(url.str(), responseStr, 5000);
     } else {
-        engine.setTargetBodyPose(bodyPose);
+        engine.setTargetBodyPose(limitedBodyPose);
     }
 }
 

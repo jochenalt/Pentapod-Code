@@ -403,6 +403,7 @@ void BotView::MotionCallback(int x, int y) {
 		pose.position.x += diffX;
 		pose.position.z -= diffY;
 		EngineProxy::getInstance().setTargetBodyPose(pose);
+		cout << "pose=" << pose << endl;
 		postRedisplay();
 		break;
 	}
@@ -411,6 +412,8 @@ void BotView::MotionCallback(int x, int y) {
 		pose.orientation.z += diffX/60;
 		pose.orientation.y -= diffY/60;
 		EngineProxy::getInstance().setTargetBodyPose(pose);
+		cout << "pose=" << pose << endl;
+
 		postRedisplay();
 		break;
 	}
@@ -420,6 +423,8 @@ void BotView::MotionCallback(int x, int y) {
 		pose.position.y += diffX;
 		pose.position.z -= diffY;
 		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
+		cout << "front=" << pose << endl;
+
 		postRedisplay();
 		break;
 	}
@@ -428,6 +433,8 @@ void BotView::MotionCallback(int x, int y) {
 		pose.position.y += diffX;
 		pose.position.z -= diffY;
 		EngineProxy::getInstance().setTargetFrontLegPoseWorld(pose.position);
+		cout << "front=" << pose << endl;
+
 		postRedisplay();
 		break;
 	}
